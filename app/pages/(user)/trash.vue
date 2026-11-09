@@ -5,17 +5,17 @@
                 <SearchBox
                     v-model="searchQuery"
                     class="min-w-0 max-w-128 [flex:1_1_18rem] max-tablet:max-w-none"
-                    placeholder="Search trash..."
-                    aria-label="Search trash"
+                    :placeholder='$msg("Search trash...")'
+                    :aria-label='$msg("Search trash")'
                 />
                 <div class="flex flex-wrap items-center gap-2">
                     <button type="button" class="trash-button" :disabled="busy || !entries.length" @click="restoreItems(entries)">
                         <Icon name="solar:restart-linear" class="text-lg" />
-                        Restore all
+                        {{ $msg("Restore all") }}
                     </button>
                     <button type="button" class="trash-button trash-danger-button" :disabled="busy || !entries.length" @click="requestDelete(entries, true)">
                         <Icon name="solar:trash-bin-trash-linear" class="text-lg" />
-                        Empty trash
+                        {{ $msg("Empty trash") }}
                     </button>
                 </div>
             </div>
@@ -23,8 +23,7 @@
             <div class="flex items-start gap-3 rounded-xl border border-divider bg-surface px-4 py-3">
                 <Icon name="solar:info-circle-linear" class="mt-0.5 shrink-0 text-lg text-accent" />
                 <p class="m-0 text-sm leading-relaxed text-label">
-                    Restore items to their original location or delete them permanently to free up storage.
-                    Restoring or deleting a folder also includes its contents.
+                    {{ $msg("Restore items to their original location or delete them permanently to free up storage. Restoring or deleting a folder also includes its contents.") }}
                 </p>
             </div>
 
@@ -38,7 +37,7 @@
             <template #loading>
                 <div role="status" class="flex items-center gap-2 text-sm text-label">
                     <Icon name="solar:refresh-linear" class="animate-spin text-lg" />
-                    Loading trash...
+                    {{ $msg("Loading trash...") }}
                 </div>
             </template>
 
@@ -47,34 +46,34 @@
                     <Icon :name="loadError ? 'solar:danger-triangle-linear' : 'solar:trash-bin-trash-linear'" class="mb-2 text-[2.5rem] text-accent" />
                     <strong class="text-sm font-semibold text-foreground">{{ emptyTitle }}</strong>
                     <p class="m-0 max-w-96 text-sm leading-relaxed text-muted">{{ emptyDescription }}</p>
-                    <button v-if="loadError" type="button" class="trash-button mt-3" @click="loadTrash">Try again</button>
-                    <button v-else-if="entries.length" type="button" class="trash-button mt-3" @click="clearFilters">Clear filters</button>
-                    <NuxtLink v-else to="/files" class="trash-button mt-3 no-underline">Go to files</NuxtLink>
+                    <button v-if="loadError" type="button" class="trash-button mt-3" @click="loadTrash">{{ $msg("Try again") }}</button>
+                    <button v-else-if="entries.length" type="button" class="trash-button mt-3" @click="clearFilters">{{ $msg("Clear filters") }}</button>
+                    <NuxtLink v-else to="/files" class="trash-button mt-3 no-underline">{{ $msg("Go to files") }}</NuxtLink>
                 </div>
             </template>
 
             <template #list>
                 <div class="min-h-0 flex-1 overflow-auto">
                     <table class="mobile-item-table trash-table w-full min-w-200 table-fixed border-separate border-spacing-0">
-                        <caption class="sr-only">Deleted files, folders and notes</caption>
+                        <caption class="sr-only">{{ $msg("Deleted files, folders and notes") }}</caption>
                         <thead>
                             <tr>
                                 <th scope="col" class="file-table-heading w-14">
                                     <input
                                         type="checkbox"
                                         class="file-checkbox"
-                                        aria-label="Select all items on this page"
+                                        :aria-label='$msg("Select all items on this page")'
                                         :checked="allSelected"
                                         :indeterminate="partiallySelected"
                                         :disabled="busy"
                                         @change="toggleSelectAll"
                                     />
                                 </th>
-                                <th scope="col" class="file-table-heading w-[32%]">Name</th>
-                                <th scope="col" class="file-table-heading">Original location</th>
-                                <th scope="col" class="file-table-heading w-24">Size</th>
-                                <th scope="col" class="file-table-heading w-32">Deleted</th>
-                                <th scope="col" class="file-table-heading w-28">Actions</th>
+                                <th scope="col" class="file-table-heading w-[32%]">{{ $msg("Name") }}</th>
+                                <th scope="col" class="file-table-heading">{{ $msg("Original location") }}</th>
+                                <th scope="col" class="file-table-heading w-24">{{ $msg("Size") }}</th>
+                                <th scope="col" class="file-table-heading w-32">{{ $msg("Deleted") }}</th>
+                                <th scope="col" class="file-table-heading w-28">{{ $msg("Actions") }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -90,7 +89,7 @@
                                         type="checkbox"
                                         class="file-checkbox"
                                         :value="item.id"
-                                        :aria-label="`Select ${itemName(item)}`"
+                                        :aria-label="$msg('Select {p0}', { p0: itemName(item) })"
                                         :disabled="busy"
                                     />
                                 </td>
@@ -106,17 +105,17 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td data-label="Location" class="item-meta-cell file-table-cell truncate text-sm text-secondary" :title="originalLocation(item)">{{ originalLocation(item) }}</td>
-                                <td data-label="Size" class="item-meta-cell file-table-cell text-sm text-secondary">{{ itemSize(item) }}</td>
-                                <td data-label="Deleted" class="item-meta-cell file-table-cell text-sm text-secondary" :title="item.deleted_at">{{ formatFileTime(item.deleted_at) }}</td>
+                                <td :data-label='$msg("Location")' class="item-meta-cell file-table-cell truncate text-sm text-secondary" :title="originalLocation(item)">{{ originalLocation(item) }}</td>
+                                <td :data-label='$msg("Size")' class="item-meta-cell file-table-cell text-sm text-secondary">{{ itemSize(item) }}</td>
+                                <td :data-label='$msg("Deleted")' class="item-meta-cell file-table-cell text-sm text-secondary" :title="item.deleted_at">{{ formatFileTime(item.deleted_at) }}</td>
                                 <td class="item-actions-cell file-table-cell">
                                     <div class="flex items-center gap-1">
                                         <button
                                             type="button"
                                             class="trash-icon-button"
                                             :disabled="busy"
-                                            :aria-label="`Restore ${itemName(item)}`"
-                                            title="Restore"
+                                            :aria-label="$msg('Restore {p0}', { p0: itemName(item) })"
+                                            :title='$msg("Restore")'
                                             @click="restoreItems([item])"
                                         >
                                             <Icon name="solar:restart-linear" class="text-lg" />
@@ -125,8 +124,8 @@
                                             type="button"
                                             class="trash-icon-button text-danger hover:enabled:bg-danger-surface"
                                             :disabled="busy"
-                                            :aria-label="`Permanently delete ${itemName(item)}`"
-                                            title="Delete permanently"
+                                            :aria-label="$msg('Permanently delete {p0}', { p0: itemName(item) })"
+                                            :title='$msg("Delete permanently")'
                                             @click="requestDelete([item])"
                                         >
                                             <Icon name="solar:trash-bin-trash-linear" class="text-lg" />
@@ -143,27 +142,27 @@
         <Pagination v-if="!isLoading && !loadError" v-model="currentPage" :total-pages="totalPages" />
 
         <Transition name="dock">
-            <div v-if="selectedItems.length" role="region" aria-label="Selected trash items" class="selection-region mt-3 flex shrink-0 flex-wrap items-center justify-center gap-2 rounded-xl border
+            <div v-if="selectedItems.length" role="region" :aria-label='$msg("Selected trash items")' class="selection-region mt-3 flex shrink-0 flex-wrap items-center justify-center gap-2 rounded-xl border
                 border-divider bg-surface p-3">
-                <span class="mr-2 text-sm text-foreground" aria-live="polite">{{ selectedItems.length }} selected</span>
+                <span class="mr-2 text-sm text-foreground" aria-live="polite">{{ selectedItems.length }} {{ $msg("selected") }}</span>
                 <button type="button" class="trash-button" :disabled="busy" @click="restoreItems(selectedEntries)">
-                    <Icon name="solar:restart-linear" /> Restore
+                    <Icon name="solar:restart-linear" /> {{ $msg("Restore") }}
                 </button>
                 <button type="button" class="trash-button trash-danger-button" :disabled="busy" @click="requestDelete(selectedEntries)">
-                    <Icon name="solar:trash-bin-trash-linear" /> Delete permanently
+                    <Icon name="solar:trash-bin-trash-linear" /> {{ $msg("Delete permanently") }}
                 </button>
-                <button type="button" class="trash-button" :disabled="busy" @click="selectedItems = []">Deselect all</button>
+                <button type="button" class="trash-button" :disabled="busy" @click="selectedItems = []">{{ $msg("Deselect all") }}</button>
             </div>
 
         </Transition>
 
-        <div v-if="isWorking" role="status" class="mt-2 shrink-0 text-center text-xs text-label">{{ operation === 'restore' ? 'Restoring items...' : 'Deleting items permanently...' }}</div>
+        <div v-if="isWorking" role="status" class="mt-2 shrink-0 text-center text-xs text-label">{{ operation === 'restore' ? $msg('Restoring items...') : $msg('Deleting items permanently...') }}</div>
 
         <ConfirmModal
             :show="deleteTargets.length > 0"
-            :title="emptyingTrash ? 'Empty trash?' : 'Delete permanently?'"
+            :title="emptyingTrash ? $msg('Empty trash?') : $msg('Delete permanently?')"
             :message="deleteMessage"
-            :confirm-text="emptyingTrash ? 'Empty trash' : 'Delete permanently'"
+            :confirm-text="emptyingTrash ? $msg('Empty trash') : $msg('Delete permanently')"
             @cancel="deleteTargets = []"
             @confirm="deleteItems"
         />
@@ -207,9 +206,9 @@ const folderContents = (item: TrashItem) => item.item_type === 'folder'
     ? trash.value.filter(child => child.root_folder_id === item.item_id && child.id !== item.id)
     : []
 const itemDescription = (item: TrashItem) => {
-    if (item.item_type !== 'folder') return item.item_type === 'note' ? 'Note' : 'File'
+    if (item.item_type !== 'folder') return localizeItemType(item.item_type)
     const count = folderContents(item).length
-    return count ? `Folder · ${count} ${count === 1 ? 'item' : 'items'} inside` : 'Folder'
+    return count ? localizeCount('folderContents', count) : localizeItemType('folder')
 }
 const itemSize = (item: TrashItem) => {
     if (item.item_type !== 'folder') return item.size === null ? '—' : formatFileSize(item.size)
@@ -224,13 +223,13 @@ const originalLocation = (item: TrashItem) => {
         const folder = folders.value.find(folder => folder.id === parentId)
         const deletedFolder = trash.value.find(folder => folder.item_type === 'folder' && folder.item_id === parentId)
         if (!folder && !deletedFolder) {
-            parts.unshift('Deleted folder')
+            parts.unshift(localize("Deleted folder"))
             break
         }
-        parts.unshift(folder?.name || deletedFolder?.name || 'Untitled folder')
+        parts.unshift(folder?.name || deletedFolder?.name || localize("Untitled folder"))
         parentId = folder ? folder.parent_folder_id : deletedFolder!.parent_folder_id
     }
-    return parts.length ? parts.join(' / ') : 'My files'
+    return parts.length ? parts.join(' / ') : localize("My files")
 }
 
 const filteredItems = computed(() => {
@@ -247,13 +246,13 @@ const { selectedItems, allSelected, toggleSelectAll } = useSelection(paginatedIt
 const selectedEntries = computed(() => entries.value.filter(item => selectedItems.value.includes(item.id)))
 const partiallySelected = computed(() => !allSelected.value && paginatedItems.value.some(item => selectedItems.value.includes(item.id)))
 const emptyTitle = computed(() => {
-    if (loadError.value) return 'Unable to load trash'
-    return entries.value.length ? 'No matching items' : 'Your trash is empty'
+    if (loadError.value) return localize("Unable to load trash")
+    return entries.value.length ? localize("No matching items") : localize("Your trash is empty")
 })
-const emptyDescription = computed(() => loadError.value || (entries.value.length ? 'Try a different search or filter.' : 'Deleted files, folders and notes will appear here.'))
+const emptyDescription = computed(() => loadError.value || (entries.value.length ? localize("Try a different search or filter.") : localize("Deleted files, folders and notes will appear here.")))
 const deleteMessage = computed(() => {
-    const label = deleteTargets.value.length === 1 ? `"${itemName(deleteTargets.value[0]!)}"` : `${deleteTargets.value.length} items`
-    return `Permanently delete ${emptyingTrash.value ? 'everything in your trash' : label}? Folder contents will also be deleted. This cannot be undone.`
+    const label = deleteTargets.value.length === 1 ? `"${itemName(deleteTargets.value[0]!)}"` : localize("{p0} items", { p0: deleteTargets.value.length })
+    return localize("Permanently delete {p0}? Folder contents will also be deleted. This cannot be undone.", { p0: emptyingTrash.value ? 'everything in your trash' : label })
 })
 
 const clearFilters = () => {
@@ -312,26 +311,26 @@ const runOperation = async (items: TrashItem[], action: 'restore' | 'delete') =>
                 const result = await $fetch<{ success: boolean; diskDeleted?: boolean }>(`/api/trash/bulk-${action}`, { method: 'POST', body: { itemIds: batch.map(item => item.id) } })
                 diskDeleted = result.diskDeleted !== false
             }
-            if (!diskDeleted) openToast('Items were deleted, but some stored files could not be removed.', 'error')
+            if (!diskDeleted) openToast(localize("Items were deleted, but some stored files could not be removed."), 'error')
             remaining = remaining.slice(batch.length)
             if (remaining.length) {
                 error.value = null
                 await fetchTrash()
-                if (error.value) throw new Error('Items changed, but trash could not be refreshed. Please try again.')
+                if (error.value) throw new Error(localize("Items changed, but trash could not be refreshed. Please try again."))
                 const availableIds = new Set(trash.value.map(item => item.id))
                 remaining = remaining.filter(item => availableIds.has(item.id))
             }
         }
         completed = true
         selectedItems.value = []
-        openToast(action === 'restore' ? 'Items restored successfully.' : 'Items permanently deleted.', 'success', { notification: { title: action === 'restore' ? 'Items restored' : 'Trash updated', category: 'library', href: '/trash' } })
+        openToast(action === 'restore' ? localize("Items restored successfully.") : localize("Items permanently deleted."), 'success', { notification: { title: action === 'restore' ? localize("Items restored") : localize("Trash updated"), category: 'library', href: '/trash' } })
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'The operation could not be completed.', 'error')
+        openToast(resolveApiError(err, localize("The operation could not be completed.")), 'error')
     } finally {
         // Refresh even after a failed batch, since earlier batches may have succeeded.
         await syncTrash()
         if (action === 'delete') await fetchUser()
-        if (error.value) openToast('Some data could not be refreshed. Please reload the page.', 'error')
+        if (error.value) openToast(localize("Some data could not be refreshed. Please reload the page."), 'error')
         if (completed) loadError.value = null
         isWorking.value = false
     }

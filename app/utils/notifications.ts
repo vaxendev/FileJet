@@ -1,4 +1,6 @@
+import { localize, currentLocaleTag } from './messages.ts'
 import type { ActivityNotification, NotificationHistory } from '~~/shared/types/notification'
+import { normalizeMessageDescriptor } from '~~/shared/utils/messageDescriptor'
 
 export const NOTIFICATION_LIMIT = 50
 export const NOTIFICATION_RETENTION = 30 * 86400000
@@ -27,6 +29,8 @@ export const normalizeNotificationHistory = (value: unknown, now = Date.now()): 
         ids.add(entry.id)
         result.entries.push({
             id: entry.id, title: entry.title.trim().slice(0, 80), message: entry.message.slice(0, 500),
+            titleI18n: normalizeMessageDescriptor(entry.titleI18n),
+            messageI18n: normalizeMessageDescriptor(entry.messageI18n),
             kind: entry.kind as ActivityNotification['kind'], category: entry.category as ActivityNotification['category'],
             href: safeNotificationHref(entry.href), createdAt: entry.createdAt, read: entry.read === true
         })
@@ -50,12 +54,12 @@ export const normalizeNotificationHistory = (value: unknown, now = Date.now()): 
 
 export const formatNotificationTime = (createdAt: number, now = Date.now()) => {
     const seconds = Math.max(0, Math.floor((now - createdAt) / 1000))
-    if (seconds < 60) return 'Just now'
-    const formatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+    if (seconds < 60) return localize("Just now")
+    const formatter = new Intl.RelativeTimeFormat(currentLocaleTag(), { numeric: 'auto' })
     if (seconds < 3600) return formatter.format(-Math.floor(seconds / 60), 'minute')
     if (seconds < 86400) return formatter.format(-Math.floor(seconds / 3600), 'hour')
     if (seconds < 604800) return formatter.format(-Math.floor(seconds / 86400), 'day')
-    return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(createdAt)
+    return new Intl.DateTimeFormat(currentLocaleTag(), { month: 'short', day: 'numeric' }).format(createdAt)
 }
 
 export const getStorageStatus = (usedValue: string | number, limitValue: string | number) => {

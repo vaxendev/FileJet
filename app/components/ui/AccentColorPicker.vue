@@ -2,11 +2,11 @@
     <section aria-labelledby="accent-color-heading" class="rounded-xl border border-divider bg-surface px-5 py-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h2 id="accent-color-heading" class="text-sm font-semibold text-foreground">Accent color</h2>
-                <p class="mt-1 text-xs text-muted">Saved in this browser.</p>
+                <h2 id="accent-color-heading" class="text-sm font-semibold text-foreground">{{ $msg("Accent color") }}</h2>
+                <p class="mt-1 text-xs text-muted">{{ $msg("Saved in this browser.") }}</p>
             </div>
             <fieldset>
-                <legend class="sr-only">Accent color</legend>
+                <legend class="sr-only">{{ $msg("Accent color") }}</legend>
                 <div class="flex flex-wrap gap-2">
                     <label v-for="color in accentColors" :key="color.value" class="cursor-pointer">
                         <input v-model="model" type="radio" name="accent-color" :value="color.value" class="peer sr-only">

@@ -7,7 +7,7 @@
             v-if="!contextOnly"
             type="button"
             :disabled="disabled"
-            aria-label="Item actions"
+            :aria-label='$msg("Item actions")'
             :aria-expanded="isOpen"
             class="menu-trigger flex items-center justify-center bg-surface text-label border-0 rounded-lg text-lg
                 cursor-pointer hover:bg-control hover:text-foreground size-8"
@@ -61,7 +61,7 @@
                             "
                         />
 
-                        Open
+                        {{ $msg("Open") }}
                     </button>
 
                     <button
@@ -74,7 +74,7 @@
                             class="text-lg flex-none size-4.5"
                             name="solar:pen-bold"
                         />
-                        Rename
+                        {{ $msg("Rename") }}
                     </button>
 
                     <button
@@ -87,7 +87,7 @@
                             class="text-lg flex-none size-4.5"
                             name="solar:copy-bold"
                         />
-                        Copy
+                        {{ $msg("Copy") }}
                     </button>
 
                     <button
@@ -100,7 +100,7 @@
                             class="text-lg flex-none size-4.5"
                             name="solar:pen-bold"
                         />
-                        Edit
+                        {{ $msg("Edit") }}
                     </button>
 
                     <button
@@ -113,7 +113,7 @@
                             class="text-lg flex-none size-4.5"
                             name="solar:download-bold"
                         />
-                        Download
+                        {{ $msg("Download") }}
                     </button>
 
                     <button
@@ -127,7 +127,7 @@
                             :name="isFavorite ? 'solar:star-bold' : 'solar:star-linear'"
                         />
 
-                        {{ isFavorite ? 'Remove from Favorites' : 'Add to Favorites' }}
+                        {{ isFavorite ? $msg('Remove from Favorites') : $msg('Add to Favorites') }}
                     </button>
 
                     <button
@@ -140,7 +140,7 @@
                             class="text-lg flex-none size-4.5"
                             name="solar:trash-bin-trash-bold"
                         />
-                        Delete
+                        {{ $msg("Delete") }}
                     </button>
                 </div>
             </Transition>

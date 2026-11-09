@@ -3,25 +3,25 @@
         <dialog ref="dialog" aria-labelledby="request-form-title" class="request-dialog" @cancel.prevent="close" @pointerdown="onPointerDown" @click.self="onBackdropClick" @close="emit('close')">
             <form class="flex flex-col gap-4 p-6" @submit.prevent="save">
                 <div class="flex items-start justify-between gap-4">
-                    <div><h2 id="request-form-title" class="text-lg font-semibold text-foreground">{{ inbox ? 'Edit inbox' : 'Create inbox' }}</h2><p class="mt-1 text-sm text-muted">{{ inbox ? 'Update this inbox’s name and collection settings.' : 'Collect files and review them before saving.' }}</p></div>
-                    <button type="button" class="inbox-icon" aria-label="Close" :disabled="saving" @click="close"><Icon name="solar:close-circle-linear" size="23" /></button>
+                    <div><h2 id="request-form-title" class="text-lg font-semibold text-foreground">{{ inbox ? $msg('Edit inbox') : $msg('Create inbox') }}</h2><p class="mt-1 text-sm text-muted">{{ inbox ? $msg('Update this inbox’s name and collection settings.') : $msg('Collect files and review them before saving.') }}</p></div>
+                    <button type="button" class="inbox-icon" :aria-label='$msg("Close")' :disabled="saving" @click="close"><Icon name="solar:close-circle-linear" size="23" /></button>
                 </div>
-                <label class="request-field">Title<input ref="titleInput" v-model="title" required maxlength="120" placeholder="e.g. Project documents" class="inbox-input"></label>
-                <label class="request-field">Description <span class="text-muted">(optional)</span><textarea v-model="description" maxlength="1000" rows="3" placeholder="Tell people what to send…" class="inbox-input resize-y" /></label>
-                <div class="request-field"><span>Default FileJet folder</span>
-                    <FormSelect v-model="folderId" label="Default FileJet folder" :options="destinationOptions" :disabled="loadingFolders || saving" />
+                <label class="request-field">{{ $msg("Title") }}<input ref="titleInput" v-model="title" required maxlength="120" :placeholder='$msg("e.g. Project documents")' class="inbox-input"></label>
+                <label class="request-field">{{ $msg("Description") }} <span class="text-muted">{{ $msg("(optional)") }}</span><textarea v-model="description" maxlength="1000" rows="3" :placeholder='$msg("Tell people what to send…")' class="inbox-input resize-y" /></label>
+                <div class="request-field"><span>{{ $msg("Default FileJet folder") }}</span>
+                    <FormSelect v-model="folderId" :label='$msg("Default FileJet folder")' :options="destinationOptions" :disabled="loadingFolders || saving" />
                 </div>
-                <p class="text-xs leading-5 text-muted">You can choose a different destination each time you approve a file.</p>
-                <p v-if="folderError" role="alert" class="text-sm text-danger">{{ folderError }} <button type="button" class="underline" @click="loadFolders">Try again</button></p>
+                <p class="text-xs leading-5 text-muted">{{ $msg("You can choose a different destination each time you approve a file.") }}</p>
+                <p v-if="folderError" role="alert" class="text-sm text-danger">{{ folderError }} <button type="button" class="underline" @click="loadFolders">{{ $msg("Try again") }}</button></p>
                 <div class="grid grid-cols-2 gap-4 max-mobile:grid-cols-1">
-                    <label class="request-field">Limit per file (MB)<input v-model.number="maxSize" type="number" required :min="1 / 1048576" max="25" step="any" class="inbox-input"></label>
-                    <label class="request-field">Total file limit<input v-model.number="maxFiles" type="number" required :min="Math.max(1, inbox?.receivedCount ?? 1)" max="1000" step="1" class="inbox-input"></label>
+                    <label class="request-field">{{ $msg("Limit per file (MB)") }}<input v-model.number="maxSize" type="number" required :min="1 / 1048576" max="25" step="any" class="inbox-input"></label>
+                    <label class="request-field">{{ $msg("Total file limit") }}<input v-model.number="maxFiles" type="number" required :min="Math.max(1, inbox?.receivedCount ?? 1)" max="1000" step="1" class="inbox-input"></label>
                 </div>
-                <div class="request-field"><span>Link expires</span><FormSelect v-model="expiryDays" label="Link expires" :options="expiryOptions" :disabled="saving" /></div>
-                <p class="rounded-lg border border-divider bg-canvas p-3 text-xs leading-5 text-muted">Incoming files stay in Inbox until you approve them. Pending files use your storage space. Anyone with the link can upload without seeing your files.</p>
-                <p v-if="errorMessage" role="alert" class="text-sm text-danger">{{ errorMessage }}</p>
-                <div v-if="draftStored" class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted" role="status"><span>{{ draftRestored ? 'Draft restored.' : 'Draft saved on this browser.' }}</span><button type="button" class="underline" :disabled="saving" @click="discardDraft">Discard draft</button></div>
-                <div class="mt-1 flex justify-end gap-2"><button type="button" class="inbox-button" :disabled="saving" @click="close">Cancel</button><button type="submit" class="inbox-button inbox-primary" :disabled="saving || loadingFolders || !!folderError">{{ saving ? 'Saving…' : inbox ? 'Save changes' : 'Create inbox' }}</button></div>
+                <div class="request-field"><span>{{ $msg("Link expires") }}</span><FormSelect v-model="expiryDays" :label='$msg("Link expires")' :options="expiryOptions" :disabled="saving" /></div>
+                <p class="rounded-lg border border-divider bg-canvas p-3 text-xs leading-5 text-muted">{{ $msg("Incoming files stay in Inbox until you approve them. Pending files use your storage space. Anyone with the link can upload without seeing your files.") }}</p>
+                <p v-if="errorMessage" role="alert" class="text-sm text-danger">{{ $msg(errorMessage || '') }}</p>
+                <div v-if="draftStored" class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted" role="status"><span>{{ draftRestored ? $msg('Draft restored.') : $msg('Draft saved on this browser.') }}</span><button type="button" class="underline" :disabled="saving" @click="discardDraft">{{ $msg("Discard draft") }}</button></div>
+                <div class="mt-1 flex justify-end gap-2"><button type="button" class="inbox-button" :disabled="saving" @click="close">{{ $msg("Cancel") }}</button><button type="submit" class="inbox-button inbox-primary" :disabled="saving || loadingFolders || !!folderError">{{ saving ? $msg('Saving…') : inbox ? $msg('Save changes') : $msg('Create inbox') }}</button></div>
             </form>
         </dialog>
     </Teleport>
@@ -63,10 +63,10 @@ watch([title, description, folderId, maxSize, maxFiles, expiryDays], () => {
     draftRestored.value = false
 }, { flush: 'sync' })
 const { folders, folderOptions, loadingFolders, folderError, loadFolders } = useInboxFolders()
-const destinationOptions = computed(() => [{ value: '', label: 'Files (root)' }, ...folderOptions.value.map(folder => ({ value: folder.id, label: folder.label }))])
+const destinationOptions = computed(() => [{ value: '', get label() { return localize("Files (root)") } }, ...folderOptions.value.map(folder => ({ value: folder.id, label: folder.label }))])
 const expiryOptions = computed(() => [
-    ...(props.inbox ? [{ value: -1, label: props.inbox.expiresAt ? `Keep current date (${new Date(props.inbox.expiresAt).toLocaleString()})` : 'Keep no expiration' }] : []),
-    { value: 1, label: 'In 1 day' }, { value: 7, label: 'In 7 days' }, { value: 30, label: 'In 30 days' }, { value: 0, label: 'Never' }
+    ...(props.inbox ? [{ value: -1, label: props.inbox.expiresAt ? localize("Keep current date ({p0})", { p0: new Date(props.inbox.expiresAt).toLocaleString(currentLocaleTag()) }) : localize("Keep no expiration") }] : []),
+    { value: 1, get label() { return localize("In 1 day") } }, { value: 7, get label() { return localize("In 7 days") } }, { value: 30, get label() { return localize("In 30 days") } }, { value: 0, get label() { return localize("Never") } }
 ])
 const close = () => { if (!saving.value) emit('close') }
 let pointerStartedOutside = false
@@ -111,7 +111,7 @@ const save = async () => {
             expiresAt: expiryDays.value === -1 ? props.inbox?.expiresAt ?? null : expiryDays.value ? new Date(Date.now() + expiryDays.value * 86400000).toISOString() : null
         } })
         draftReady = false; clearDraft(); emit('saved'); emit('close')
-    } catch (error: any) { errorMessage.value = error.data?.message || 'Could not save inbox.' }
+    } catch (error: any) { errorMessage.value = resolveApiError(error, localize("Could not save inbox.")) }
     finally { saving.value = false }
 }
 </script>

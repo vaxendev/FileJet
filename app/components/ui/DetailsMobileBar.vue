@@ -24,38 +24,38 @@ const run = (action: () => void) => {
 
 <template>
     <header class="details-mobile-bar">
-        <button type="button" class="details-bar-button" aria-label="Back" @click="emit('back')">
+        <button type="button" class="details-bar-button" :aria-label='$msg("Back")' @click="emit('back')">
             <Icon name="solar:arrow-left-linear" size="22" />
         </button>
         <h1 :title="title">{{ title }}</h1>
-        <button type="button" class="details-bar-button" :popovertarget="menuId" aria-label="Item actions">
+        <button type="button" class="details-bar-button" :popovertarget="menuId" :aria-label='$msg("Item actions")'>
             <Icon name="solar:menu-dots-bold" size="24" />
         </button>
-        <div :id="menuId" ref="menu" popover class="details-mobile-menu" aria-label="Item actions">
+        <div :id="menuId" ref="menu" popover class="details-mobile-menu" :aria-label='$msg("Item actions")'>
             <div v-if="$slots.actions" class="details-extra-actions" @click="menu?.hidePopover()">
                 <slot name="actions" />
             </div>
             <button type="button" :disabled="busy" @click="run(() => emit('select', 'details'))">
-                <Icon name="solar:info-circle-linear" /> Details
+                <Icon name="solar:info-circle-linear" /> {{ $msg("Details") }}
             </button>
             <button type="button" :disabled="busy" @click="run(() => emit('select', 'edit'))">
-                <Icon name="solar:pen-linear" /> {{ itemType === 'note' ? 'Edit note' : 'Rename' }}
+                <Icon name="solar:pen-linear" /> {{ itemType === 'note' ? $msg('Edit note') : $msg('Rename') }}
             </button>
             <button type="button" :disabled="busy" @click="run(() => emit('select', 'share'))">
-                <Icon name="solar:share-linear" /> Share
+                <Icon name="solar:share-linear" /> {{ $msg("Share") }}
             </button>
             <button type="button" :disabled="busy" @click="run(() => emit('download'))">
-                <Icon name="solar:download-linear" /> Download
+                <Icon name="solar:download-linear" /> {{ $msg("Download") }}
             </button>
             <button v-if="itemType === 'file'" type="button" :disabled="busy" @click="run(() => emit('scan'))">
-                <Icon name="solar:shield-check-linear" /> Scan file
+                <Icon name="solar:shield-check-linear" /> {{ $msg("Scan file") }}
             </button>
             <button type="button" :disabled="busy" @click="run(() => emit('favorite'))">
                 <Icon :name="isFavorite ? 'solar:star-bold' : 'solar:star-linear'" />
-                {{ isFavorite ? 'Remove from favorites' : 'Add to favorites' }}
+                {{ isFavorite ? $msg('Remove from favorites') : $msg('Add to favorites') }}
             </button>
             <button type="button" class="details-menu-delete" :disabled="busy" @click="run(() => emit('delete'))">
-                <Icon name="solar:trash-bin-trash-linear" /> Delete
+                <Icon name="solar:trash-bin-trash-linear" /> {{ $msg("Delete") }}
             </button>
         </div>
     </header>

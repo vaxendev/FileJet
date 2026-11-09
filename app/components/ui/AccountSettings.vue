@@ -1,9 +1,9 @@
 <template>
-    <section aria-label="Account settings" class="mb-5">
+    <section :aria-label='$msg("Account settings")' class="mb-5">
         <div class="space-y-5">
             <details class="account-card group" open>
                 <summary class="account-card-heading">
-                    <span>Profile</span>
+                    <span>{{ $msg("Profile") }}</span>
                     <Icon
                         name="solar:alt-arrow-down-linear"
                         size="18"
@@ -15,7 +15,7 @@
                     <fieldset :disabled="saving" class="min-w-0">
                         <div class="space-y-4 p-5">
                             <div>
-                                <label for="account-username" class="account-label">Username</label>
+                                <label for="account-username" class="account-label">{{ $msg("Username") }}</label>
                                 <input
                                     id="account-username"
                                     v-model="profile.username"
@@ -28,24 +28,24 @@
                                 >
                             </div>
                             <div>
-                                <label for="account-email" class="account-label">Email address <span class="font-normal text-muted">(optional)</span></label>
+                                <label for="account-email" class="account-label">{{ $msg("Email address") }} <span class="font-normal text-muted">{{ $msg("(optional)") }}</span></label>
                                 <input
                                     id="account-email"
                                     v-model="profile.email"
                                     type="email"
                                     autocomplete="email"
                                     maxlength="255"
-                                    placeholder="you@example.com"
+                                    :placeholder='$msg("you@example.com")'
                                     class="account-input"
                                 >
                             </div>
                         </div>
 
                         <div class="account-card-footer">
-                            <button type="button" :disabled="!profileDirty" class="account-cancel" @click="resetProfile">Cancel</button>
+                            <button type="button" :disabled="!profileDirty" class="account-cancel" @click="resetProfile">{{ $msg("Cancel") }}</button>
                             <button type="submit" :disabled="!profileChanged" class="account-save">
                                 <Icon :name="profileSaving ? 'solar:refresh-linear' : 'solar:check-read-linear'" size="16" :class="{ 'animate-spin': profileSaving }" />
-                                {{ profileSaving ? 'Saving…' : 'Save profile' }}
+                                {{ profileSaving ? $msg('Saving…') : $msg('Save profile') }}
                             </button>
                         </div>
                     </fieldset>
@@ -54,7 +54,7 @@
 
             <details class="account-card group">
                 <summary class="account-card-heading">
-                    <span>Password</span>
+                    <span>{{ $msg("Password") }}</span>
                     <Icon
                         name="solar:alt-arrow-down-linear"
                         size="18"
@@ -66,7 +66,7 @@
                     <fieldset :disabled="saving" class="min-w-0">
                         <div class="space-y-4 p-5">
                             <div>
-                                <label for="password-current" class="account-label">Current password</label>
+                                <label for="password-current" class="account-label">{{ $msg("Current password") }}</label>
                                 <input
                                     id="password-current"
                                     v-model="password.currentPassword"
@@ -78,7 +78,7 @@
                                 >
                             </div>
                             <div>
-                                <label for="password-new" class="account-label">New password</label>
+                                <label for="password-new" class="account-label">{{ $msg("New password") }}</label>
                                 <input
                                     id="password-new"
                                     v-model="password.newPassword"
@@ -91,7 +91,7 @@
                                 >
                             </div>
                             <div>
-                                <label for="password-confirm" class="account-label">Confirm new password</label>
+                                <label for="password-confirm" class="account-label">{{ $msg("Confirm new password") }}</label>
                                 <input
                                     id="password-confirm"
                                     v-model="password.confirmPassword"
@@ -103,23 +103,23 @@
                                     aria-describedby="new-password-hint"
                                     class="account-input"
                                 >
-                                <p id="new-password-hint" class="mt-2 text-[11px] leading-5 text-muted">8–100 characters. Your new passwords must match.</p>
+                                <p id="new-password-hint" class="mt-2 text-[11px] leading-5 text-muted">{{ $msg("8–100 characters. Your new passwords must match.") }}</p>
                             </div>
                             <label class="flex w-fit cursor-pointer items-center gap-2 text-xs text-label">
                                 <input v-model="showPasswords" type="checkbox" class="file-checkbox">
-                                Show passwords
+                                {{ $msg("Show passwords") }}
                             </label>
                         </div>
 
                         <div class="account-card-footer">
-                            <button type="button" :disabled="!passwordDirty" class="account-cancel" @click="resetPassword">Clear</button>
+                            <button type="button" :disabled="!passwordDirty" class="account-cancel" @click="resetPassword">{{ $msg("Clear") }}</button>
                             <button type="submit" :disabled="!passwordDirty" class="account-save">
                                 <Icon
                                     :name="passwordSaving ? 'solar:refresh-linear' : 'solar:lock-password-linear'"
                                     size="16"
                                     :class="{ 'animate-spin': passwordSaving }"
                                 />
-                                {{ passwordSaving ? 'Updating…' : 'Update password' }}
+                                {{ passwordSaving ? $msg('Updating…') : $msg('Update password') }}
                             </button>
                         </div>
                     </fieldset>
@@ -172,7 +172,7 @@ const saveProfile = async () => {
     const parsed = accountProfileSchema.safeParse(profile)
 
     if (!parsed.success) {
-        openToast(parsed.error.issues[0]?.message || 'Check your account details.', 'error')
+        openToast(localize(parsed.error.issues[0]?.message || localize("Check your account details.")), 'error')
         return
     }
 
@@ -187,9 +187,9 @@ const saveProfile = async () => {
         currentUser.value = response.user
         user.value = response.user
         resetProfile()
-        openToast('Your account details have been updated.', 'success', { notification: { title: 'Account updated', category: 'account', href: '/settings/preferences' } })
+        openToast(localize("Your account details have been updated."), 'success', { notification: { get title() { return localize("Account updated") }, category: 'account', href: '/settings/preferences' } })
     } catch (error: any) {
-        openToast(error.data?.message || error.message || 'Your account details could not be updated.', 'error')
+        openToast(resolveApiError(error, localize("Your account details could not be updated.")), 'error')
     } finally {
         profileSaving.value = false
     }
@@ -201,7 +201,7 @@ const changePassword = async () => {
     const parsed = passwordChangeSchema.safeParse(password)
 
     if (!parsed.success) {
-        openToast(parsed.error.issues[0]?.message || 'Check your password details.', 'error', { notification: false })
+        openToast(localize(parsed.error.issues[0]?.message || localize("Check your password details.")), 'error', { notification: false })
         return
     }
 
@@ -210,9 +210,9 @@ const changePassword = async () => {
     try {
         await $fetch('/api/users/@me/password', { method: 'PATCH', body: parsed.data })
         resetPassword()
-        openToast('Your password has been updated.', 'success', { notification: { title: 'Password changed', category: 'account', href: '/settings/preferences' } })
+        openToast(localize("Your password has been updated."), 'success', { notification: { get title() { return localize("Password changed") }, category: 'account', href: '/settings/preferences' } })
     } catch (error: any) {
-        openToast(error.data?.message || error.message || 'Your password could not be updated.', 'error')
+        openToast(resolveApiError(error, localize("Your password could not be updated.")), 'error')
     } finally {
         passwordSaving.value = false
     }

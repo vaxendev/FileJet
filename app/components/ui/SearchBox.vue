@@ -10,9 +10,9 @@
         <input class="bg-transparent border-0 outline-none text-content text-sm font-medium leading-normal min-w-0 p-0
             size-full"
             type="search"
-            :aria-label="placeholder || 'Search'"
+            :aria-label="placeholder || $msg('Search')"
             :value="modelValue"
-            :placeholder="placeholder || 'Search...'"
+            :placeholder="placeholder || $msg('Search...')"
             @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
         />
     </div>

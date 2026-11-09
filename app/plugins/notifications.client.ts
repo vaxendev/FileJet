@@ -18,8 +18,8 @@ export default defineNuxtPlugin(() => {
             const status = getStorageStatus(profile.storageUsed, profile.storageLimit)
             if (status.level === 'normal') return
             addNotification({
-                title: status.level === 'full' ? 'Storage limit reached' : 'Your storage is almost full',
-                message: status.level === 'full' ? 'Free up some space before uploading more files.' : `${Math.floor(status.percent)}% of your storage is in use. Review your files or empty items you no longer need.`,
+                title: status.level === 'full' ? localize("Storage limit reached") : localize("Your storage is almost full"),
+                message: status.level === 'full' ? localize("Free up some space before uploading more files.") : `${Math.floor(status.percent)}% of your storage is in use. Review your files or empty items you no longer need.`,
                 kind: 'warning', category: 'storage', href: '/home',
                 dedupeKey: `storage:${status.level}:${new Date().toISOString().slice(0, 10)}`
             }, account.id)

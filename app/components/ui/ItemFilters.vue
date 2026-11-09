@@ -1,7 +1,7 @@
 <template>
     <div
         role="group"
-        aria-label="Filter items"
+        :aria-label='$msg("Filter items")'
         class="item-filters flex min-w-0 max-w-full items-center gap-1 overflow-x-auto rounded-xl border
             border-divider bg-surface p-1"
     >
@@ -18,7 +18,7 @@
             :aria-pressed="model === option"
             @click="model = option"
         >
-            {{ option }}
+            {{ $msg(option) }}
         </button>
     </div>
 </template>

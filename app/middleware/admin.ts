@@ -3,6 +3,6 @@ export default defineNuxtRouteMiddleware(async () => {
         await useRequestFetch()('/api/admin')
     } catch (error: any) {
         if (error?.statusCode === 401 || error?.status === 401) return navigateTo('/login')
-        throw createError({ statusCode: error?.statusCode ?? error?.status ?? 403, statusMessage: 'Administrator access required.' })
+        throw createError({ statusCode: error?.statusCode ?? error?.status ?? 403, statusMessage: localize("Administrator access required.") })
     }
 })

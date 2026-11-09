@@ -5,7 +5,7 @@
             type="button"
             class="account-trigger"
             :class="{ 'is-open': isOpen }"
-            :aria-label="`Account menu for ${username}`"
+            :aria-label="$msg('Account menu for {p0}', { p0: username })"
             :aria-expanded="isOpen"
             :aria-controls="menuId"
             aria-haspopup="menu"
@@ -16,7 +16,7 @@
             <span class="account-avatar" aria-hidden="true">{{ initials }}</span>
             <span v-if="placement === 'sidebar'" class="account-trigger-text">
                 <strong>{{ username }}</strong>
-                <span>Personal account</span>
+                <span>{{ $msg("Personal account") }}</span>
             </span>
             <Icon
                 class="account-chevron"
@@ -32,7 +32,7 @@
                 ref="popover"
                 popover="auto"
                 role="menu"
-                aria-label="Account"
+                :aria-label='$msg("Account")'
                 class="account-popover"
                 :style="menuPosition"
                 @toggle="onToggle"
@@ -42,30 +42,30 @@
                     <span class="account-avatar account-avatar--large" aria-hidden="true">{{ initials }}</span>
                     <div class="account-identity-text">
                         <strong>{{ username }}</strong>
-                        <span>{{ currentUser?.email || 'Personal account' }}</span>
+                        <span>{{ currentUser?.email || $msg('Personal account') }}</span>
                     </div>
                 </div>
 
                 <div class="account-storage" role="presentation">
-                    <div><span>Storage</span><span>{{ usedStorage }} <span class="account-storage-limit">/ {{ totalStorage }}</span></span></div>
-                    <meter :value="storagePercent" min="0" max="100" aria-label="Storage used">{{ storagePercent }}%</meter>
+                    <div><span>{{ $msg("Storage") }}</span><span>{{ usedStorage }} <span class="account-storage-limit">/ {{ totalStorage }}</span></span></div>
+                    <meter :value="storagePercent" min="0" max="100" :aria-label='$msg("Storage used")'>{{ storagePercent }}%</meter>
                 </div>
 
                 <div class="account-menu-items" role="presentation">
                     <NuxtLink to="/settings/preferences" role="menuitem" tabindex="-1" class="account-menu-item" @click="closeMenu()">
                         <Icon name="solar:user-circle-linear" size="19" aria-hidden="true" />
-                        <span>Account &amp; preferences</span>
+                        <span>{{ $msg("Account & preferences") }}</span>
                         <Icon name="solar:alt-arrow-right-linear" class="account-item-arrow" size="14" aria-hidden="true" />
                     </NuxtLink>
                     <NuxtLink to="/settings/personalization" role="menuitem" tabindex="-1" class="account-menu-item" @click="closeMenu()">
                         <Icon name="solar:palette-linear" size="19" aria-hidden="true" />
-                        <span>Appearance</span>
+                        <span>{{ $msg("Appearance") }}</span>
                         <Icon name="solar:alt-arrow-right-linear" class="account-item-arrow" size="14" aria-hidden="true" />
                     </NuxtLink>
                 </div>
 
-                <div class="account-theme-section" role="group" aria-label="Theme">
-                    <div class="account-theme-heading"><span>Theme</span><span>{{ theme === 'system' ? 'Follows device' : resolvedTheme === 'light' ? 'Light mode' : 'Dark mode' }}</span></div>
+                <div class="account-theme-section" role="group" :aria-label='$msg("Theme")'>
+                    <div class="account-theme-heading"><span>{{ $msg("Theme") }}</span><span>{{ theme === 'system' ? $msg('Follows device') : resolvedTheme === 'light' ? $msg('Light mode') : $msg('Dark mode') }}</span></div>
                     <div class="account-theme-controls">
                         <button v-for="option in themeModes" :key="option.value" type="button" role="menuitemradio" tabindex="-1"
                             class="account-theme-button" :aria-checked="theme === option.value" :disabled="!preferencesLoaded"
@@ -78,7 +78,7 @@
                 <div class="account-menu-footer" role="presentation">
                     <button type="button" role="menuitem" tabindex="-1" class="account-menu-item account-logout" :disabled="isSigningOut" @click="logout">
                         <Icon name="solar:logout-2-linear" size="19" aria-hidden="true" />
-                        <span>{{ isSigningOut ? 'Logging out…' : 'Log out' }}</span>
+                        <span>{{ isSigningOut ? $msg('Logging out…') : $msg('Log out') }}</span>
                     </button>
                 </div>
             </div>
@@ -104,7 +104,7 @@ const isOpen = ref(false)
 const menuId = `account-menu-${useId()}`
 const menuPosition = ref<Record<string, string>>({})
 
-const username = computed(() => currentUser.value?.username || 'My account')
+const username = computed(() => currentUser.value?.username || localize("My account"))
 const initials = computed(() => {
     const words = username.value.trim().split(/\s+/)
     return (words.length > 1 ? words[0]![0]! + words.at(-1)![0]! : username.value.slice(0, 2)).toUpperCase()

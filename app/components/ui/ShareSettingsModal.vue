@@ -9,10 +9,10 @@
         <template v-if="item">
             <header class="flex items-start justify-between gap-3 border-b border-divider px-5 py-4">
                 <div class="min-w-0">
-                    <h2 :id="`${id}-title`" class="text-sm font-semibold">Share settings</h2>
+                    <h2 :id="`${id}-title`" class="text-sm font-semibold">{{ $msg("Share settings") }}</h2>
                     <p class="mt-1 truncate text-xs text-muted" :title="item.name">{{ item.name }}</p>
                 </div>
-                <button type="button" :disabled="saving" aria-label="Close share settings" class="grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg text-label hover:bg-raised
+                <button type="button" :disabled="saving" :aria-label='$msg("Close share settings")' class="grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg text-label hover:bg-raised
                     disabled:cursor-not-allowed disabled:opacity-40" @click="close">
                     <Icon name="solar:close-circle-linear" size="20" />
                 </button>

@@ -51,7 +51,7 @@ useEventListener(panel, 'keydown', (event: KeyboardEvent) => {
         :aria-labelledby="compact && open ? headingId : undefined">
         <div class="details-panel-heading">
             <h2 :id="headingId">{{ props.title }}</h2>
-            <button ref="closeButton" type="button" class="details-bar-button" aria-label="Close actions" @click="open = false">
+            <button ref="closeButton" type="button" class="details-bar-button" :aria-label='$msg("Close actions")' @click="open = false">
                 <Icon name="solar:close-circle-linear" size="24" />
             </button>
         </div>

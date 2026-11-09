@@ -50,13 +50,13 @@
             >
                 <template #controls>
                     <UploadButton
-                        text="Upload Files"
+                        :text="$msg('Upload Files')"
                         mode="file"
                         :disabled="busy || pending"
                         @files="uploadFilesHere"
                     />
                     <UploadButton
-                        text="Upload Folder"
+                        :text="$msg('Upload Folder')"
                         mode="folder"
                         :disabled="busy || pending"
                         @folder="uploadFolderHere"
@@ -73,27 +73,27 @@
                         class="max-w-full text-heading-muted text-[0.8125rem] wrap-anywhere first:text-accent first:text-[2.5rem]"
                         name="solar:cloud-upload-bold"
                     />
-                    <strong class="text-[0.9375rem] first:text-accent first:text-[2.5rem]">Drop files or folders to upload</strong>
-                    <span class="max-w-full text-heading-muted text-[0.8125rem] wrap-anywhere first:text-accent first:text-[2.5rem]">Upload to {{ folder.name }}</span>
+                    <strong class="text-[0.9375rem] first:text-accent first:text-[2.5rem]">{{ $msg("Drop files or folders to upload") }}</strong>
+                    <span class="max-w-full text-heading-muted text-[0.8125rem] wrap-anywhere first:text-accent first:text-[2.5rem]">{{ $msg("Upload to") }} {{ folder.name }}</span>
                 </div>
             </div>
             <UploadProgress
                 :active="isUploading || folderActions.isUploading.value"
                 :progress="isUploading ? uploadProgress : folderActions.uploadProgress.value"
                 :processing="isProcessing || folderActions.uploadProgress.value === 100"
-                label="Uploading files and folders..."
+                :label='$msg("Uploading files and folders...")'
             />
         </div>
         <template #mobile-actions>
-            <UploadButton text="Upload Files" mode="file" :disabled="busy || pending" @files="uploadFilesHere" />
-            <UploadButton text="Upload Folder" mode="folder" :disabled="busy || pending" @folder="uploadFolderHere" />
+            <UploadButton :text="$msg('Upload Files')" mode="file" :disabled="busy || pending" @files="uploadFilesHere" />
+            <UploadButton :text="$msg('Upload Folder')" mode="folder" :disabled="busy || pending" @folder="uploadFolderHere" />
         </template>
         <template #edit>
             <form
                 class="folder-edit flex flex-col gap-3"
                 @submit.prevent="saveRename"
             >
-                <label class="text-foreground text-sm leading-[inherit]" for="folder-name">Folder name</label>
+                <label class="text-foreground text-sm leading-[inherit]" for="folder-name">{{ $msg("Folder name") }}</label>
                 <input class="text-content bg-control border border-control-border rounded-md py-2.5 px-3 min-w-0
                     focus:outline-none focus:border-accent"
                     id="folder-name"
@@ -107,13 +107,13 @@
                     v-if="dirty"
                     class="muted text-muted text-[0.8125rem]"
                 >
-                    Unsaved changes
+                    {{ $msg("Unsaved changes") }}
                 </span>
                 <p
                     v-if="saveError"
                     class="error text-danger m-0"
                 >
-                    {{ saveError }}
+                    {{ $msg(saveError || '') }}
                 </p>
                 <div class="edit-actions flex justify-end flex-wrap gap-3">
                     <button class="text-content bg-control border border-control-border rounded-md py-2.5 px-3 min-w-0 cursor-pointer
@@ -122,7 +122,7 @@
                         :disabled="busy"
                         @click="cancelRename"
                     >
-                        Cancel
+                        {{ $msg("Cancel") }}
                     </button>
                     <button
                         type="submit"
@@ -130,7 +130,7 @@
                             border-primary hover:enabled:bg-primary/85 disabled:opacity-60 disabled:cursor-not-allowed"
                         :disabled="busy || !dirty"
                     >
-                        {{ isSaving ? 'Saving...' : 'Save' }}
+                        {{ isSaving ? $msg('Saving...') : $msg('Save') }}
                     </button>
                 </div>
             </form>
@@ -140,16 +140,16 @@
         v-else
         class="detail-error p-5 text-content"
     >
-        <h1>Unable to load folder</h1>
-        <p>The folder could not be found or accessed.</p>
+        <h1>{{ $msg("Unable to load folder") }}</h1>
+        <p>{{ $msg("The folder could not be found or accessed.") }}</p>
         <button class="text-content bg-control border border-control-border rounded-md py-2.5 px-3 min-w-0 cursor-pointer
             hover:enabled:bg-divider disabled:opacity-60 disabled:cursor-not-allowed"
             type="button"
             @click="refresh()"
         >
-            Try again
+            {{ $msg("Try again") }}
         </button>
-        <NuxtLink class="text-accent ml-3" :to="returnPage.path">Back to {{ returnPage.name }}</NuxtLink>
+        <NuxtLink class="text-accent ml-3" :to="returnPage.path">{{ $msg("Back to") }} {{ returnPage.name }}</NuxtLink>
     </div>
 </template>
 
@@ -234,7 +234,7 @@ const refreshContents = async () => {
 
     if (fetchError.value)
         throw new Error(
-            'The folder was updated, but its contents could not be refreshed. Try again.'
+            localize("The folder was updated, but its contents could not be refreshed. Try again.")
         )
 }
 
@@ -270,9 +270,9 @@ const saveRename = async () => {
         if (listed) listed.name = folder.value.name
 
         activeTab.value = 'details'
-        openToast('Folder renamed successfully.', 'success', { notification: { title: 'Folder renamed', category: 'library', href: '/folders' } })
+        openToast(localize("Folder renamed successfully."), 'success', { notification: { get title() { return localize("Folder renamed") }, category: 'library', href: '/folders' } })
     } catch (error: any) {
-        saveError.value = error.data?.message || error.message || 'Could not rename folder.'
+        saveError.value = resolveApiError(error, localize("Could not rename folder."))
 
         openToast(saveError.value, 'error')
     } finally {
@@ -304,7 +304,7 @@ const removeFolder = async () => {
 
         await goBack()
     } catch (error: any) {
-        openToast(error.data?.message || error.message || 'Could not delete folder.', 'error')
+        openToast(resolveApiError(error, localize("Could not delete folder.")), 'error')
     } finally {
         working.value = false
     }
@@ -372,7 +372,7 @@ const itemAction = async (action: string, item: LibraryItem) => {
                     : item.name
 
             const name = window.prompt(
-                item.type === 'file' ? 'New name (the extension is preserved)' : 'New name',
+                item.type === 'file' ? localize("New name (the extension is preserved)") : localize("New name"),
                 currentName
             )
 
@@ -385,12 +385,12 @@ const itemAction = async (action: string, item: LibraryItem) => {
         }
 
         openToast(
-            action === 'copy' ? 'Copied to clipboard.' : 'Action completed successfully.',
+            action === 'copy' ? localize("Copied to clipboard.") : localize("Action completed successfully."),
             'success'
         )
     } catch (error: any) {
         openToast(
-            error.data?.message || error.message || 'The action could not be completed.',
+            resolveApiError(error, localize("The action could not be completed.")),
             'error'
         )
     } finally {
@@ -425,14 +425,14 @@ const deleteSelected = async (items: LibraryItem[]) => {
 
         if (deletedIds.length < items.length) {
             openToast(
-                `${items.length - deletedIds.length} items could not be moved to Trash.`,
+                localize("{p0} items could not be moved to Trash.", { p0: items.length - deletedIds.length }),
                 'error'
             )
         }
 
         await refreshContents()
     } catch (error: any) {
-        openToast(error.data?.message || error.message || 'Could not refresh folder.', 'error')
+        openToast(resolveApiError(error, localize("Could not refresh folder.")), 'error')
     } finally {
         working.value = false
     }
@@ -447,7 +447,7 @@ const handleDrop = async (event: DragEvent) => {
         const { files, folderFiles } = await getDroppedUploadItems(event.dataTransfer)
 
         if (!files.length && !folderFiles.length) {
-            openToast('The dropped folders contain no files to upload.', 'error')
+            openToast(localize("The dropped folders contain no files to upload."), 'error')
 
             return
         }
@@ -471,16 +471,16 @@ const handleDrop = async (event: DragEvent) => {
                 await upload()
                 completed++
             } catch (error: any) {
-                failures.push(error.data?.message || error.message || 'Upload failed.')
+                failures.push(resolveApiError(error, localize("Upload failed.")))
             }
         }
 
         if (completed) {
             openToast(
                 failures.length
-                    ? 'Some items were uploaded successfully.'
-                    : 'Files and folders uploaded successfully.',
-                'success', { notification: { title: 'Upload complete', category: 'upload', href: `/folders/${id}` } }
+                    ? localize("Some items were uploaded successfully.")
+                    : localize("Files and folders uploaded successfully."),
+                'success', { notification: { get title() { return localize("Upload complete") }, category: 'upload', href: `/folders/${id}` } }
             )
         }
 
@@ -489,7 +489,7 @@ const handleDrop = async (event: DragEvent) => {
         if (completed) await refreshContents()
     } catch (error: any) {
         openToast(
-            error.data?.message || error.message || 'Could not read the dropped items.',
+            resolveApiError(error, localize("Could not read the dropped items.")),
             'error'
         )
     } finally {
@@ -510,9 +510,9 @@ const uploadFilesHere = async (files: FileList) => {
     try {
         await fileActions.uploadFiles(files, refreshContents)
 
-        openToast('Files uploaded successfully.', 'success', { notification: { title: 'Upload complete', category: 'upload', href: '/files' } })
+        openToast(localize("Files uploaded successfully."), 'success', { notification: { get title() { return localize("Upload complete") }, category: 'upload', href: '/files' } })
     } catch (error: any) {
-        openToast(error.data?.message || error.message || 'Upload failed.', 'error')
+        openToast(resolveApiError(error, localize("Upload failed.")), 'error')
     }
 }
 
@@ -522,9 +522,9 @@ const uploadFolderHere = async (directory: FileSystemDirectoryHandle | FileList)
     try {
         await folderActions.uploadFolders(directory, refreshContents, id)
 
-        openToast('Folder uploaded successfully.', 'success', { notification: { title: 'Folder upload complete', category: 'upload', href: '/folders' } })
+        openToast(localize("Folder uploaded successfully."), 'success', { notification: { get title() { return localize("Folder upload complete") }, category: 'upload', href: '/folders' } })
     } catch (error: any) {
-        openToast(error.data?.message || error.message || 'Upload failed.', 'error')
+        openToast(resolveApiError(error, localize("Upload failed.")), 'error')
     }
 }
 
@@ -536,23 +536,23 @@ const metadataRows = computed(() => {
     const sharing = item.share
 
     return [
-        { label: 'Folder name', value: item.name },
-        { label: 'Parent folder', value: item.parent?.name ?? 'None' },
-        { label: 'Files count', value: item.counts.files },
-        { label: 'Subfolders count', value: item.counts.folders },
-        { label: 'Notes count', value: item.counts.notes },
-        { label: 'Total size', value: formatFileSize(item.totalSize) },
-        { label: 'Created date', value: item.created_at ? formatFileTime(item.created_at) : null },
-        { label: 'Modified date', value: item.updated_at ? formatFileTime(item.updated_at) : null },
-        { label: 'Favorite status', value: isFavorite.value ? 'Favorited' : 'Not favorited' },
+        { get label() { return localize("Folder name") }, value: item.name },
+        { get label() { return localize("Parent folder") }, value: item.parent?.name ?? 'None' },
+        { get label() { return localize("Files count") }, value: item.counts.files },
+        { get label() { return localize("Subfolders count") }, value: item.counts.folders },
+        { get label() { return localize("Notes count") }, value: item.counts.notes },
+        { get label() { return localize("Total size") }, value: formatFileSize(item.totalSize) },
+        { get label() { return localize("Created date") }, value: item.created_at ? formatFileTime(item.created_at) : null },
+        { get label() { return localize("Modified date") }, value: item.updated_at ? formatFileTime(item.updated_at) : null },
+        { get label() { return localize("Favorite status") }, value: isFavorite.value ? 'Favorited' : localize("Not favorited") },
         {
-            label: 'Share status',
-            value: !sharing.url ? 'Not shared' : sharing.isExpired ? 'Expired' : 'Active'
+            get label() { return localize("Share status") },
+            value: !sharing.url ? localize("Not shared") : sharing.isExpired ? localize("Expired") : localize("Active")
         },
-        { label: 'Password protection', value: sharing.hasPassword ? 'Enabled' : 'Disabled' },
+        { get label() { return localize("Password protection") }, value: sharing.hasPassword ? localize("Enabled") : localize("Disabled") },
         {
-            label: 'Link expiration',
-            value: sharing.expiresAt ? new Date(sharing.expiresAt).toLocaleString('en-US') : 'Never'
+            get label() { return localize("Link expiration") },
+            value: sharing.expiresAt ? new Date(sharing.expiresAt).toLocaleString(currentLocaleTag()) : 'Never'
         }
     ]
 })

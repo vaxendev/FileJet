@@ -4,7 +4,7 @@
             <div class="favorites-toolbar flex items-center justify-between flex-wrap gap-2 min-w-0">
                 <SearchBox class="[flex:1_1_18rem] min-w-0 max-w-128 max-tablet:basis-full max-tablet:max-w-none"
                     v-model="searchQuery"
-                    placeholder="Search favorites..."
+                    :placeholder='$msg("Search favorites...")'
                 />
 
                 <div class="toolbar-actions flex items-center flex-wrap gap-2 min-w-0">
@@ -30,7 +30,7 @@
             :is-loading="isInitialLoading"
         >
             <template #loading>
-                <div class="loading-state text-label text-[0.85rem]">Loading favorites...</div>
+                <div class="loading-state text-label text-[0.85rem]">{{ $msg("Loading favorites...") }}</div>
             </template>
 
             <template
@@ -65,17 +65,17 @@
                                 </th>
                                 <th class="w-[42%] file-table-heading" scope="col">
                                     <div class="name-header flex items-center gap-[0.3rem]">
-                                        Name
+                                        {{ $msg("Name") }}
                                         <Icon
                                             name="solar:sort-vertical-linear"
                                             class="text-base leading-[inherit]"
                                         />
                                     </div>
                                 </th>
-                                <th class="file-table-heading" scope="col">Type</th>
-                                <th class="file-table-heading" scope="col">Size</th>
-                                <th class="file-table-heading" scope="col">Added</th>
-                                <th class="file-table-heading" scope="col">Actions</th>
+                                <th class="file-table-heading" scope="col">{{ $msg("Type") }}</th>
+                                <th class="file-table-heading" scope="col">{{ $msg("Size") }}</th>
+                                <th class="file-table-heading" scope="col">{{ $msg("Added") }}</th>
+                                <th class="file-table-heading" scope="col">{{ $msg("Actions") }}</th>
                             </tr>
                         </thead>
 
@@ -121,9 +121,9 @@
                                     </div>
                                 <ItemTags :tags="getItemTags(item)" />
                                 </td>
-                                <td data-label="Type" class="item-meta-cell favorite-type h-[4.2rem] text-secondary text-[0.85rem] capitalize file-table-cell">{{ getItemType(item) }}</td>
-                                <td data-label="Size" class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ getItemSize(item) }}</td>
-                                <td data-label="Added" class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileTime(item.created_at) }}</td>
+                                <td :data-label='$msg("Type")' class="item-meta-cell favorite-type h-[4.2rem] text-secondary text-[0.85rem] capitalize file-table-cell">{{ getItemType(item) }}</td>
+                                <td :data-label='$msg("Size")' class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ getItemSize(item) }}</td>
+                                <td :data-label='$msg("Added")' class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileTime(item.created_at) }}</td>
                                 <td class="item-actions-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell"
                                     @click.stop
                                 >
@@ -306,17 +306,17 @@ const filteredFavorites = computed(() => {
 })
 
 const emptyTitle = computed(() => {
-    if (error.value) return 'Unable to load favorites'
-    if (favorites.value.length) return 'No matching favorites'
+    if (error.value) return localize("Unable to load favorites")
+    if (favorites.value.length) return localize("No matching favorites")
 
-    return 'No favorites yet'
+    return localize("No favorites yet")
 })
 
 const emptyDescription = computed(() => {
     if (error.value) return error.value
-    if (favorites.value.length) return 'Try a different search or filter.'
+    if (favorites.value.length) return localize("Try a different search or filter.")
 
-    return 'Your favorite files, folders and notes will appear here.'
+    return localize("Your favorite files, folders and notes will appear here.")
 })
 
 const { sortedItems: sortedFavorites } = useSort(
@@ -407,9 +407,9 @@ const handleRemove = async (item: FavoriteItem) => {
 
         if (error.value) throw new Error(error.value)
 
-        openToast('Removed from favorites.', 'success')
+        openToast(localize("Removed from favorites."), 'success')
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Could not remove from favorites.', 'error')
+        openToast(resolveApiError(err, localize("Could not remove from favorites.")), 'error')
     } finally {
         isRemoving.value = false
     }
@@ -434,7 +434,7 @@ const handleDownload = async (item: FavoriteItem) => {
             link.remove()
         }
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Item could not be downloaded.', 'error')
+        openToast(resolveApiError(err, localize("Item could not be downloaded.")), 'error')
     }
 }
 
@@ -453,7 +453,7 @@ const handleDelete = async (item: FavoriteItem) => {
             await noteActions.deleteNote(id)
         }
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Could not move item to Trash.', 'error')
+        openToast(resolveApiError(err, localize("Could not move item to Trash.")), 'error')
     }
 }
 
@@ -490,7 +490,7 @@ const handleDeleteSelected = async () => {
         notifyTrashed(combined, undefined, true)
 
         if (combined.failedIds.length) {
-            openToast(`${combined.failedIds.length} items could not be moved to Trash.`, 'error')
+            openToast(localize("{p0} items could not be moved to Trash.", { p0: combined.failedIds.length }), 'error')
         }
     } finally {
         isBulkDeleting.value = false

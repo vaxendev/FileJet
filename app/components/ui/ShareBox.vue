@@ -8,13 +8,13 @@
             v-if="!embedded"
             class="share-title flex items-center gap-2 mb-3 text-foreground text-[0.9rem] font-semibold"
         >
-            <Icon name="solar:link-bold" /> Share
+            <Icon name="solar:link-bold" /> {{ $msg("Share") }}
         </div>
         <p
             v-if="isLoading"
             class="share-description block mt-0 mr-0 mb-3 ml-0 text-muted text-xs leading-normal"
         >
-            Loading share settings...
+            {{ $msg("Loading share settings...") }}
         </p>
         <div v-else>
             <div
@@ -34,8 +34,8 @@
                         leading-normal cursor-pointer w-10 shrink-0 bg-raised text-content border border-control-border
                         hover:bg-raised hover:text-foreground disabled:opacity-60 disabled:cursor-not-allowed
                         focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
-                    title="Copy link"
-                    aria-label="Copy share link"
+                    :title='$msg("Copy link")'
+                    :aria-label='$msg("Copy share link")'
                     @click="copyShareLink"
                 >
                     <Icon :name="copied ? 'solar:check-circle-bold' : 'solar:copy-bold'" />
@@ -51,18 +51,18 @@
                     :aria-controls="qrPanelId"
                     @click="showQrCode = !showQrCode"
                 >
-                    <Icon name="solar:qr-code-linear" /> QR code
+                    <Icon name="solar:qr-code-linear" /> {{ $msg("QR code") }}
                 </button>
             </div>
             <p class="share-description block mt-0 mr-0 mb-3 ml-0 text-muted text-xs leading-normal">
                 {{
                     state.url
                         ? state.isLimitReached
-                            ? 'Download limit reached. Increase or remove the limit to reopen this link.'
+                            ? $msg('Download limit reached. Increase or remove the limit to reopen this link.')
                             : shareExpired
-                            ? 'This link has expired.'
-                            : 'Share this link to give access to this item.'
-                        : 'Create a share link for this item.'
+                            ? $msg('This link has expired.')
+                            : $msg('Share this link to give access to this item.')
+                        : $msg('Create a share link for this item.')
                 }}
             </p>
 
@@ -80,14 +80,14 @@
                         type="checkbox"
                         :disabled="busy"
                     />
-                    <span>Password protection</span>
+                    <span>{{ $msg("Password protection") }}</span>
                 </label>
                 <div
                     v-if="passwordEnabled"
                     class="setting-field flex flex-col gap-2"
                 >
                     <label class="text-content text-sm leading-normal" :for="`share-password-${itemId}`">{{
-                        state.hasPassword ? 'Change password' : 'Link password'
+                        state.hasPassword ? $msg('Change password') : $msg('Link password')
                     }}</label>
                     <input class="w-full min-w-0 h-10 py-0 px-3 text-content bg-input border border-control-border rounded-md text-sm
                         outline-none focus:border-accent disabled:opacity-60 disabled:cursor-not-allowed leading-[inherit]"
@@ -101,27 +101,27 @@
                         :disabled="busy"
                         :placeholder="
                             state.hasPassword
-                                ? 'Leave blank to keep the current password'
-                                : 'At least 4 characters'
+                                ? $msg('Leave blank to keep the current password')
+                                : $msg('At least 4 characters')
                         "
                     />
                     <span class="setting-help block m-0 text-muted text-xs leading-normal"
-                        >The password is verified when opening the link.</span
+                        >{{ $msg("The password is verified when opening the link.") }}</span
                     >
                 </div>
                 <div class="setting-field flex flex-col gap-2">
-                    <label class="text-content text-sm leading-normal" :for="`share-expiration-${itemId}`">Link expiration</label>
+                    <label class="text-content text-sm leading-normal" :for="`share-expiration-${itemId}`">{{ $msg("Link expiration") }}</label>
                     <select class="w-full min-w-0 h-10 py-0 px-3 text-content bg-input border border-control-border rounded-md text-sm
                         outline-none focus:border-accent disabled:opacity-60 disabled:cursor-not-allowed leading-[inherit]"
                         :id="`share-expiration-${itemId}`"
                         v-model="expiration"
                         :disabled="busy"
                     >
-                        <option value="never">Never</option>
-                        <option value="1">1 day</option>
-                        <option value="7">7 days</option>
-                        <option value="30">30 days</option>
-                        <option value="custom">Custom expiration date</option>
+                        <option value="never">{{ $msg("Never") }}</option>
+                        <option value="1">{{ $msg("1 day") }}</option>
+                        <option value="7">{{ $msg("7 days") }}</option>
+                        <option value="30">{{ $msg("30 days") }}</option>
+                        <option value="custom">{{ $msg("Custom expiration date") }}</option>
                     </select>
                     <input class="w-full min-w-0 h-10 py-0 px-3 text-content bg-input border border-control-border rounded-md text-sm
                         outline-none focus:border-accent disabled:opacity-60 disabled:cursor-not-allowed leading-[inherit]"
@@ -133,15 +133,15 @@
                     />
                 </div>
                 <div class="setting-field flex flex-col gap-2">
-                    <label class="text-content text-sm" :for="`share-limit-${itemId}`">Download limit</label>
+                    <label class="text-content text-sm" :for="`share-limit-${itemId}`">{{ $msg("Download limit") }}</label>
                     <input :id="`share-limit-${itemId}`" v-model="maxDownloads" type="number" min="1" max="1000000" step="1"
-                        placeholder="Unlimited" :disabled="busy"
+                        :placeholder='$msg("Unlimited")' :disabled="busy"
                         class="w-full min-w-0 h-10 px-3 text-content bg-input border border-control-border rounded-md text-sm outline-none focus:border-accent disabled:opacity-60" />
                     <div class="flex flex-wrap gap-2">
-                        <button type="button" :disabled="busy" class="text-xs text-accent cursor-pointer disabled:opacity-60" @click="maxDownloads = 1">One download</button>
-                        <button type="button" :disabled="busy" class="text-xs text-accent cursor-pointer disabled:opacity-60" @click="maxDownloads = ''">Unlimited</button>
+                        <button type="button" :disabled="busy" class="text-xs text-accent cursor-pointer disabled:opacity-60" @click="maxDownloads = 1">{{ $msg("One download") }}</button>
+                        <button type="button" :disabled="busy" class="text-xs text-accent cursor-pointer disabled:opacity-60" @click="maxDownloads = ''">{{ $msg("Unlimited") }}</button>
                     </div>
-                    <p class="text-xs text-muted leading-relaxed">{{ state.downloadCount ?? 0 }} downloads started{{ state.maxDownloads != null ? ` / ${state.maxDownloads} allowed` : '' }}.
+                    <p class="text-xs text-muted leading-relaxed">{{ state.downloadCount ?? 0 }} {{ $msg("downloads started") }}{{ state.maxDownloads != null ? $msg('/ {p0} allowed', { p0: state.maxDownloads }) : '' }}.
                         Leave blank for unlimited downloads. Previews do not count. Each download start counts, including retries and downloads by you.
                         A folder ZIP counts once; downloading a child separately counts once. The link closes when the limit is reached.</p>
                 </div>
@@ -149,7 +149,7 @@
                     v-if="errorMessage"
                     class="share-error text-danger m-0 text-[0.8125rem] leading-normal"
                 >
-                    {{ errorMessage }}
+                    {{ $msg(errorMessage || '') }}
                 </p>
                 <p
                     v-if="savedMessage"
@@ -164,7 +164,7 @@
                         :disabled="busy"
                     >
                         <Icon name="solar:link-circle-bold" />
-                        {{ isSaving ? 'Saving...' : state.url ? 'Save settings' : 'Create Link' }}
+                        {{ isSaving ? $msg('Saving...') : state.url ? $msg('Save settings') : $msg('Create Link') }}
                     </button>
                     <button
                         v-if="state.url && allowRemove"
@@ -176,7 +176,7 @@
                         :disabled="busy"
                         @click="removeShareLink"
                     >
-                        <Icon name="solar:trash-bin-trash-linear" /> Remove Link
+                        <Icon name="solar:trash-bin-trash-linear" /> {{ $msg("Remove Link") }}
                     </button>
                 </div>
             </form>
@@ -188,7 +188,7 @@
             class="create-share-btn"
             @click="loadShareLink"
         >
-            Try again
+            {{ $msg("Try again") }}
         </button>
     </section>
 </template>
@@ -269,7 +269,7 @@ const loadShareLink = async () => {
         if (id === requestId) applyState(value)
     } catch (err: any) {
         if (id === requestId) {
-            errorMessage.value = err?.data?.message || 'Could not load share settings.'
+            errorMessage.value = resolveApiError(err, localize("Could not load share settings."))
             loadFailed.value = true
         }
     } finally {
@@ -281,19 +281,19 @@ const settingsPayload = () => {
     const passwordAction = passwordEnabled.value ? (password.value ? 'set' : 'keep') : 'remove'
 
     if (passwordEnabled.value && !state.value.hasPassword && !password.value)
-        throw new Error('Enter a password with at least 4 characters.')
+        throw new Error(localize("Enter a password with at least 4 characters."))
 
     if (
         passwordEnabled.value &&
         password.value &&
         (password.value.length < 4 || password.value.length > 128)
     )
-        throw new Error('Password must contain 4–128 characters.')
+        throw new Error(localize("Password must contain 4–128 characters."))
 
     let expiresAt: string | null = null
 
     if (expiration.value === 'custom') {
-        if (!customExpiration.value) throw new Error('Select an expiration date.')
+        if (!customExpiration.value) throw new Error(localize("Select an expiration date."))
 
         expiresAt =
             state.value.expiresAt && localDate(state.value.expiresAt) === customExpiration.value
@@ -307,11 +307,11 @@ const settingsPayload = () => {
         expiresAt !== state.value.expiresAt &&
         new Date(expiresAt).getTime() <= Date.now()
     )
-        throw new Error('Expiration must be in the future.')
+        throw new Error(localize("Expiration must be in the future."))
 
     const limit = maxDownloads.value === '' ? null : Number(maxDownloads.value)
     if (limit !== null && (!Number.isSafeInteger(limit) || limit < 1 || limit > 1000000))
-        throw new Error('Download limit must be between 1 and 1,000,000.')
+        throw new Error(localize("Download limit must be between 1 and 1,000,000."))
 
     return {
         maxDownloads: limit,
@@ -353,12 +353,12 @@ const saveSettings = async () => {
         if (id !== requestId) return
 
         applyState(value)
-        savedMessage.value = 'Share settings saved.'
-        openToast(savedMessage.value, 'success', { notification: { title: 'Sharing updated', category: 'sharing', href: '/shared' } })
+        savedMessage.value = localize("Share settings saved.")
+        openToast(savedMessage.value, 'success', { notification: { get title() { return localize("Sharing updated") }, category: 'sharing', href: '/shared' } })
     } catch (err: any) {
         if (id === requestId)
             errorMessage.value =
-                err?.data?.message || err?.message || 'Could not save share settings.'
+                resolveApiError(err, localize("Could not save share settings."))
     } finally {
         if (id === requestId) isSaving.value = false
     }
@@ -380,10 +380,10 @@ const removeShareLink = async () => {
         if (id !== requestId) return
 
         applyState(emptyShareState())
-        openToast('Share link removed successfully.', 'success', { notification: { title: 'Share link removed', category: 'sharing', href: '/shared' } })
+        openToast(localize("Share link removed successfully."), 'success', { notification: { get title() { return localize("Share link removed") }, category: 'sharing', href: '/shared' } })
     } catch (err: any) {
         if (id === requestId)
-            errorMessage.value = err?.data?.message || 'Could not remove share link.'
+            errorMessage.value = resolveApiError(err, localize("Could not remove share link."))
     } finally {
         if (id === requestId) isSaving.value = false
     }
@@ -399,9 +399,9 @@ const copyShareLink = async () => {
         copyTimer = setTimeout(() => {
             copied.value = false
         }, 1500)
-        openToast('Share link copied.', 'success')
+        openToast(localize("Share link copied."), 'success')
     } catch {
-        openToast('Could not copy share link.', 'error')
+        openToast(localize("Could not copy share link."), 'error')
     }
 }
 

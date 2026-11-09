@@ -59,7 +59,7 @@
                             name="solar:download-linear"
                             size="1.25rem"
                         />
-                        Download
+                        {{ $msg("Download") }}
                     </button>
                     <button
                         type="button"
@@ -138,7 +138,7 @@
                                 max-phone:px-2.5"
                         >
                             <dt class="text-muted">{{ row.label }}</dt>
-                            <dd class="min-w-0 m-0 text-content wrap-anywhere">{{ row.value ?? 'Unavailable' }}</dd>
+                            <dd class="min-w-0 m-0 text-content wrap-anywhere">{{ row.value ?? $msg('Unavailable') }}</dd>
                         </div>
                     </dl>
                 </div>

@@ -52,10 +52,10 @@ const model = defineModel<'newest' | 'oldest' | 'name-asc' | 'name-desc'>({
 const isOpen = ref(false)
 
 const options = [
-    { label: 'Newest first', value: 'newest' },
-    { label: 'Oldest first', value: 'oldest' },
-    { label: 'Name A-Z', value: 'name-asc' },
-    { label: 'Name Z-A', value: 'name-desc' }
+    { get label() { return localize("Newest first") }, value: 'newest' },
+    { get label() { return localize("Oldest first") }, value: 'oldest' },
+    { get label() { return localize("Name A-Z") }, value: 'name-asc' },
+    { get label() { return localize("Name Z-A") }, value: 'name-desc' }
 ] as const
 
 const currentLabel = computed(() => options.find(option => option.value === model.value)?.label)

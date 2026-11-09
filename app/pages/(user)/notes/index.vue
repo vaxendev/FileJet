@@ -4,16 +4,16 @@
             <div class="notes-toolbar flex items-center justify-between flex-wrap gap-2 min-w-0">
                 <SearchBox class="[flex:1_1_18rem] min-w-0 max-w-128 max-tablet:basis-full max-tablet:max-w-none"
                     v-model="searchQuery"
-                    placeholder="Search notes..."
+                    :placeholder='$msg("Search notes...")'
                 />
 
                 <div class="toolbar-actions flex items-center flex-wrap gap-2 min-w-0">
-                    <a href="/offline-notes.html" class="inbox-button no-underline">Offline notes</a>
+                    <a href="/offline-notes.html" class="inbox-button no-underline">{{ $msg("Offline notes") }}</a>
                     <TagFilter v-model="activeTag" :items="notes" />
                     <SortDropdown v-model="sortMode" />
                     <ViewSwitcher v-model="viewMode" />
                     <UploadButton
-                        text="Upload"
+                        :text="$msg('Upload')"
                         mode="file"
                         accept=".txt,.md"
                         @files="handleNoteUpload"
@@ -31,7 +31,7 @@
                             name="solar:add-circle-bold"
                             class="new-note-icon block text-lg shrink-0 size-4.5"
                         />
-                        New Note
+                        {{ $msg("New Note") }}
                     </button>
                 </div>
             </div>
@@ -40,11 +40,11 @@
         <DataView
             :view-mode="viewMode"
             :is-loading="isInitialLoading"
-            drop-text="Drop notes to upload"
+            :drop-text="$msg('Drop notes to upload')"
             @drop="handleDrop"
         >
             <template #loading>
-                <div class="loading-state text-label text-[0.85rem]">Loading notes...</div>
+                <div class="loading-state text-label text-[0.85rem]">{{ $msg("Loading notes...") }}</div>
             </template>
             <template
                 v-if="!isInitialLoading && filteredNotes.length === 0"
@@ -58,16 +58,16 @@
                     />
                     <strong class="text-foreground text-sm font-semibold leading-normal">{{
                         error
-                            ? 'Unable to load notes'
+                            ? $msg('Unable to load notes')
                             : notes.length
-                              ? 'No matching notes'
-                              : 'No notes yet'
+                              ? $msg('No matching notes')
+                              : $msg('No notes yet')
                     }}</strong>
                     <span class="empty-state-description text-muted text-sm font-normal leading-normal">{{
                         error ||
                         (notes.length
-                            ? 'Try a different search.'
-                            : 'Create your first note to get started.')
+                            ? $msg('Try a different search.')
+                            : $msg('Create your first note to get started.'))
                     }}</span>
                 </div>
             </template>
@@ -91,7 +91,7 @@
 
                                 <th class="w-[42%] file-table-heading">
                                     <div class="name-header flex items-center gap-[0.3rem]">
-                                        Name
+                                        {{ $msg("Name") }}
                                         <Icon
                                             name="solar:sort-vertical-linear"
                                             class="text-base leading-[inherit]"
@@ -99,10 +99,10 @@
                                     </div>
                                 </th>
 
-                                <th class="file-table-heading">Type</th>
-                                <th class="file-table-heading">Size</th>
-                                <th class="file-table-heading">Modified</th>
-                                <th class="file-table-heading">Actions</th>
+                                <th class="file-table-heading">{{ $msg("Type") }}</th>
+                                <th class="file-table-heading">{{ $msg("Size") }}</th>
+                                <th class="file-table-heading">{{ $msg("Modified") }}</th>
+                                <th class="file-table-heading">{{ $msg("Actions") }}</th>
                             </tr>
                         </thead>
 
@@ -144,9 +144,9 @@
                                 <ItemTags :tags="note.tags" />
                                 </td>
 
-                                <td data-label="Type" class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">Note</td>
-                                <td data-label="Size" class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileSize(note.size) }}</td>
-                                <td data-label="Modified" class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileTime(note.updated_at) }}</td>
+                                <td :data-label='$msg("Type")' class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ $msg("Note") }}</td>
+                                <td :data-label='$msg("Size")' class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileSize(note.size) }}</td>
+                                <td :data-label='$msg("Modified")' class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileTime(note.updated_at) }}</td>
 
                                 <td class="item-actions-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell" @click.stop>
                                     <ItemMenu
@@ -231,7 +231,7 @@
             :active="isUploading"
             :progress="uploadProgress"
             :processing="isProcessing"
-            label="Uploading notes..."
+            :label='$msg("Uploading notes...")'
         />
         <NoteFormModal
             :open="noteModalOpen"
@@ -359,9 +359,9 @@ const handleNoteUpload = async (files: FileList) => {
 
             if (error.value) throw new Error(error.value)
         })
-        openToast('Notes uploaded successfully.', 'success', { notification: { title: 'Notes imported', category: 'upload', href: '/notes' } })
+        openToast(localize("Notes uploaded successfully."), 'success', { notification: { get title() { return localize("Notes imported") }, category: 'upload', href: '/notes' } })
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Note upload failed.', 'error')
+        openToast(resolveApiError(err, localize("Note upload failed.")), 'error')
     }
 }
 
@@ -441,9 +441,9 @@ const favoriteNote = async (note: NoteItem) => {
 
         if (error.value) throw new Error(error.value)
 
-        openToast(favorite ? 'Note removed from favorites.' : 'Note added to favorites.', 'success')
+        openToast(favorite ? localize("Note removed from favorites.") : localize("Note added to favorites."), 'success')
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Could not update favorite.', 'error')
+        openToast(resolveApiError(err, localize("Could not update favorite.")), 'error')
     } finally {
         isFavoriting.value = false
     }
@@ -456,7 +456,7 @@ const deleteNote = async (note: NoteItem) => {
         await removeNote(note.id)
         notes.value = notes.value.filter(item => item.id !== note.id)
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Could not delete note.', 'error')
+        openToast(resolveApiError(err, localize("Could not delete note.")), 'error')
     }
 }
 
@@ -473,10 +473,10 @@ const handleDeleteSelected = async () => {
         selectedNotes.value = selectedNotes.value.filter(id => !deleted.has(id))
 
         if (result.failedIds.length) {
-            openToast(`${result.failedIds.length} items could not be moved to Trash.`, 'error')
+            openToast(localize("{p0} items could not be moved to Trash.", { p0: result.failedIds.length }), 'error')
         }
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Could not delete selected notes.', 'error')
+        openToast(resolveApiError(err, localize("Could not delete selected notes.")), 'error')
     } finally {
         isBulkDeleting.value = false
     }

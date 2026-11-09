@@ -12,9 +12,9 @@
                 <div class="modal-heading flex items-start justify-between gap-4">
                     <div>
                         <h2 class="m-0 text-[1.1rem]" :id="`${id}-title`">
-                            Move {{ items.length }} {{ items.length === 1 ? 'item' : 'items' }}
+                            {{ $countMsg('moveItems', items.length) }}
                         </h2>
-                        <p class="text-heading-muted text-[0.8125rem] leading-normal">Choose the folder you want to move your selection to.</p>
+                        <p class="text-heading-muted text-[0.8125rem] leading-normal">{{ $msg("Choose the folder you want to move your selection to.") }}</p>
                     </div>
                     <button
                         type="button"
@@ -34,7 +34,7 @@
                         :disabled="isMoving"
                         @click="navigate(null)"
                     >
-                        My files
+                        {{ $msg("My files") }}
                     </button>
                     <template
                         v-for="folder in breadcrumbs"
@@ -58,7 +58,7 @@
                         ref="searchInput"
                         v-model="search"
                         type="search"
-                        placeholder="Search folders here..."
+                        :placeholder='$msg("Search folders here...")'
                         :disabled="isMoving"
                     />
                 </label>
@@ -68,18 +68,18 @@
                         class="list-message text-heading-muted text-[0.8125rem] leading-normal flex flex-col items-center
                             justify-center min-h-36 py-0 px-4 text-center"
                     >
-                        Loading folders...
+                        {{ $msg("Loading folders...") }}
                     </p>
                     <div
                         v-else-if="loadError"
                         class="list-message flex flex-col items-center justify-center min-h-36 py-0 px-4 text-center"
                     >
-                        <p class="text-heading-muted text-[0.8125rem] leading-normal">{{ loadError }}</p>
+                        <p class="text-heading-muted text-[0.8125rem] leading-normal">{{ $msg(loadError || '') }}</p>
                         <button class="move-button"
                             type="button"
                             @click="loadFolders"
                         >
-                            Try again
+                            {{ $msg("Try again") }}
                         </button>
                     </div>
                     <template v-else>
@@ -94,7 +94,7 @@
                             :disabled="isMoving || excludedFolders.has(folder.id)"
                             :title="
                                 excludedFolders.has(folder.id)
-                                    ? 'A selected folder and its subfolders cannot be destinations.'
+                                    ? $msg('A selected folder and its subfolders cannot be destinations.')
                                     : folder.name
                             "
                             @click="navigate(folder.id)"
@@ -113,8 +113,8 @@
                         >
                             {{
                                 search
-                                    ? 'No matching folders.'
-                                    : 'No subfolders here. You can move your selection to this folder.'
+                                    ? $msg('No matching folders.')
+                                    : $msg('No subfolders here. You can move your selection to this folder.')
                             }}
                         </p>
                     </template>
@@ -123,18 +123,18 @@
                     v-if="saveError"
                     class="form-error text-danger text-[0.8125rem] leading-normal wrap-anywhere"
                 >
-                    {{ saveError }}
+                    {{ $msg(saveError || '') }}
                 </p>
                 <div class="modal-footer flex items-center justify-between flex-wrap gap-3 border-t border-t-control-border pt-4
                     mt-3">
-                    <span class="destination-label max-w-56 text-muted text-[0.8125rem] truncate">To: {{ destinationLabel }}</span>
+                    <span class="destination-label max-w-56 text-muted text-[0.8125rem] truncate">{{ $msg("To:") }} {{ destinationLabel }}</span>
                     <div class="footer-actions flex gap-2 ml-auto">
                         <button class="move-button"
                             type="button"
                             :disabled="isMoving"
                             @click="close"
                         >
-                            Cancel
+                            {{ $msg("Cancel") }}
                         </button>
                         <button
                             type="button"
@@ -146,7 +146,7 @@
                             @click="move"
                         >
                             <Icon name="solar:folder-path-connect-linear" />
-                            {{ isMoving ? 'Moving...' : 'Move here' }}
+                            {{ isMoving ? $msg('Moving...') : $msg('Move here') }}
                         </button>
                     </div>
                 </div>
@@ -238,7 +238,7 @@ const childFolders = computed(() => {
 
 const destinationLabel = computed(() => {
     if (!destinationId.value) {
-        return 'My files'
+        return localize("My files")
     }
 
     const destinationFolder = folderMap.value.get(destinationId.value)
@@ -318,7 +318,7 @@ const loadFolders = async () => {
         }
     } catch (error: any) {
         if (version === loadVersion) {
-            loadError.value = error.data?.message || error.message || 'Could not load folders.'
+            loadError.value = resolveApiError(error, localize("Could not load folders."))
         }
     } finally {
         if (version === loadVersion) {
@@ -375,15 +375,15 @@ const move = async () => {
 
         openToast(
             result.movedCount
-                ? 'Selection moved successfully.'
-                : 'The items are already in this folder.',
-            'success', { notification: result.movedCount ? { title: 'Items moved', category: 'library', href: '/folders' } : false }
+                ? localize("Selection moved successfully.")
+                : localize("The items are already in this folder."),
+            'success', { notification: result.movedCount ? { get title() { return localize("Items moved") }, category: 'library', href: '/folders' } : false }
         )
         emit('moved')
         emit('close')
     } catch (error: any) {
         saveError.value =
-            error.data?.message || error.message || 'Could not move the selected items.'
+            resolveApiError(error, localize("Could not move the selected items."))
     }
 }
 </script>

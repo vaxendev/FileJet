@@ -6,7 +6,7 @@
         <div class="contents-toolbar flex items-center flex-wrap gap-2 justify-between">
             <SearchBox class="[flex:1_1_12rem] min-w-0"
                 v-model="search"
-                placeholder="Search this folder..."
+                :placeholder='$msg("Search this folder...")'
             />
             <div class="contents-controls flex items-center flex-wrap gap-2">
                 <TagFilter v-if="!readOnly" v-model="activeTag" :items="items" />
@@ -20,7 +20,7 @@
             :is-loading="pending"
         >
             <template #loading>
-                <div class="contents-empty flex flex-col items-center justify-center gap-3 min-h-48 text-muted">Loading folder contents...</div>
+                <div class="contents-empty flex flex-col items-center justify-center gap-3 min-h-48 text-muted">{{ $msg("Loading folder contents...") }}</div>
             </template>
             <template
                 v-if="!pending && !filtered.length"
@@ -31,7 +31,7 @@
                         name="solar:folder-linear"
                         size="2.5rem"
                     />
-                    <strong>{{ search ? 'No matching items' : 'This folder is empty' }}</strong>
+                    <strong>{{ search ? $msg('No matching items') : $msg('This folder is empty') }}</strong>
                 </div>
             </template>
             <template #list>
@@ -50,11 +50,11 @@
                                         @change="toggleSelectAll"
                                     />
                                 </th>
-                                <th class="w-[42%] p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted">Name</th>
-                                <th class="p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted">Type</th>
-                                <th class="p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted">Size</th>
-                                <th class="p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted">Modified</th>
-                                <th class="p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted" v-if="!readOnly">Actions</th>
+                                <th class="w-[42%] p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted">{{ $msg("Name") }}</th>
+                                <th class="p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted">{{ $msg("Type") }}</th>
+                                <th class="p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted">{{ $msg("Size") }}</th>
+                                <th class="p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted">{{ $msg("Modified") }}</th>
+                                <th class="p-3 border-b border-b-divider sticky top-0 bg-surface font-medium text-heading-muted" v-if="!readOnly">{{ $msg("Actions") }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -86,11 +86,11 @@
                                     </div>
                                 <ItemTags :tags="item.tags" />
                                 </td>
-                                <td data-label="Type" class="item-meta-cell p-3 border-b border-b-divider">{{ item.type }}</td>
-                                <td data-label="Size" class="item-meta-cell p-3 border-b border-b-divider">
+                                <td :data-label='$msg("Type")' class="item-meta-cell p-3 border-b border-b-divider">{{ item.type }}</td>
+                                <td :data-label='$msg("Size")' class="item-meta-cell p-3 border-b border-b-divider">
                                     {{ item.type === 'folder' ? '—' : formatFileSize(item.size) }}
                                 </td>
-                                <td data-label="Modified" class="item-meta-cell p-3 border-b border-b-divider">{{ formatFileTime(item.updated_at ?? item.created_at) }}</td>
+                                <td :data-label='$msg("Modified")' class="item-meta-cell p-3 border-b border-b-divider">{{ formatFileTime(item.updated_at ?? item.created_at) }}</td>
                                 <td class="item-actions-cell p-3 border-b border-b-divider"
                                     v-if="!readOnly"
                                     @click.stop
@@ -188,7 +188,7 @@
                         </template>
                         <template #metadata>
                             <span class="min-w-0 first:shrink-0 truncate">{{
-                                item.type === 'folder' ? 'Folder' : formatFileSize(item.size)
+                                item.type === 'folder' ? $msg('Folder') : formatFileSize(item.size)
                             }}</span>
                             &middot;
                             <span class="min-w-0 first:shrink-0 truncate">{{ formatFileTime(item.created_at) }}</span>

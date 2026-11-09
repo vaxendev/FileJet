@@ -11,7 +11,7 @@ export const useTheme = () => {
         try {
             savePreferences({ ...preferences.value, theme })
         } catch {
-            openToast('Could not save the theme. Check your browser storage settings.', 'error')
+            openToast(localize("Could not save the theme. Check your browser storage settings."), 'error')
         }
     }
 

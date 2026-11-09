@@ -1,13 +1,13 @@
 <template>
     <figure class="m-0 flex min-w-0 flex-col items-center gap-3 rounded-xl border border-divider bg-raised p-4">
         <figcaption class="text-center text-sm font-medium text-foreground">
-            Scan to open this {{ itemType }}
+            {{ $msg("Scan to open this") }} {{ itemType }}
         </figcaption>
-        <p v-if="loading" role="status" class="m-0 text-xs text-muted">Generating QR code...</p>
+        <p v-if="loading" role="status" class="m-0 text-xs text-muted">{{ $msg("Generating QR code...") }}</p>
         <template v-else-if="imageUrl">
             <img
                 :src="imageUrl"
-                :alt="`QR code for the shared ${itemType}`"
+                :alt="$msg('QR code for the shared {p0}', { p0: itemType })"
                 width="240"
                 height="240"
                 class="block size-60 max-w-full h-auto rounded-lg bg-white"
@@ -19,19 +19,19 @@
                     bg-surface px-3 text-sm font-medium text-content no-underline hover:text-foreground
                     focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
             >
-                <Icon name="solar:download-minimalistic-linear" /> Download QR code
+                <Icon name="solar:download-minimalistic-linear" /> {{ $msg("Download QR code") }}
             </a>
         </template>
         <div v-else-if="errorMessage" class="text-center">
-            <p role="alert" class="m-0 text-xs text-danger">{{ errorMessage }}</p>
+            <p role="alert" class="m-0 text-xs text-danger">{{ $msg(errorMessage || '') }}</p>
             <button type="button" class="mt-2 min-h-10 cursor-pointer rounded-md px-3 text-sm text-accent
                 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2" @click="generate">
-                Try again
+                {{ $msg("Try again") }}
             </button>
         </div>
         <p class="m-0 text-center text-xs leading-normal text-muted">
-            Open your phone's camera and scan the code.
-            {{ hasPassword ? 'The link password is required to access this item.' : 'Anyone with this code can access this item.' }}
+            {{ $msg("Open your phone's camera and scan the code.") }}
+            {{ hasPassword ? $msg('The link password is required to access this item.') : $msg('Anyone with this code can access this item.') }}
         </p>
     </figure>
 </template>
@@ -64,7 +64,7 @@ const generate = async () => {
 
         if (id === requestId && url === props.url) imageUrl.value = image
     } catch {
-        if (id === requestId) errorMessage.value = 'Could not generate the QR code.'
+        if (id === requestId) errorMessage.value = localize("Could not generate the QR code.")
     } finally {
         if (id === requestId) loading.value = false
     }

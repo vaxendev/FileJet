@@ -15,7 +15,7 @@ export const useNoteAutosave = <T extends NoteContent>(options: {
     const isSaving = ref(false), saveError = ref(''), lastSaved = ref<Date | null>(null)
     const dirty = computed(() => !!options.note.value && (draftTitle.value !== options.note.value.title || draftContent.value !== options.note.value.content))
     const validationError = computed(() => options.validate({ title: draftTitle.value, content: draftContent.value }))
-    const saveStatus = computed(() => isSaving.value ? 'Saving…' : saveError.value ? 'Not saved — retry' : dirty.value ? validationError.value ? 'Enter a title and content to save' : 'Waiting to save…' : 'All changes saved')
+    const saveStatus = computed(() => isSaving.value ? localize("Saving…") : saveError.value ? localize("Not saved — retry") : dirty.value ? validationError.value ? localize("Enter a title and content to save") : localize("Waiting to save…") : localize("All changes saved"))
     let timer: ReturnType<typeof setTimeout> | null = null
     let pending: Promise<boolean> | null = null
     let disposed = false
@@ -46,7 +46,7 @@ export const useNoteAutosave = <T extends NoteContent>(options: {
                 }
                 return !dirty.value
             } catch (error: any) {
-                saveError.value = error.data?.message || error.message || 'Could not save note. Your changes are still in the editor.'
+                saveError.value = resolveApiError(error, localize("Could not save note. Your changes are still in the editor."))
                 return false
             } finally { isSaving.value = false; pending = null; clear(); if (dirty.value && !saveError.value) schedule() }
         })()

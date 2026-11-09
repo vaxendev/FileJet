@@ -2,8 +2,8 @@
     <div class="min-h-0 flex-1 overflow-y-auto">
         <div class="mx-auto w-full max-w-300 p-6 max-mobile:p-3">
             <header class="mb-6">
-                <h2 class="text-lg font-semibold tracking-tight text-foreground">Appearance</h2>
-                <p class="mt-1 text-sm leading-6 text-muted">Make your workspace feel like yours.</p>
+                <h2 class="text-lg font-semibold tracking-tight text-foreground">{{ $msg("Appearance") }}</h2>
+                <p class="mt-1 text-sm leading-6 text-muted">{{ $msg("Make your workspace feel like yours.") }}</p>
             </header>
 
             <form class="overflow-hidden rounded-xl border border-divider bg-surface" @submit.prevent="save">
@@ -12,11 +12,11 @@
                         <section aria-labelledby="color-heading" class="min-w-0 p-6 max-mobile:p-4">
                             <ThemePicker v-model="themeMode" class="mb-6 border-b border-divider pb-6" />
 
-                            <h3 id="color-heading" class="text-sm font-semibold text-foreground">Accent color</h3>
-                            <p class="mt-1 text-xs leading-5 text-muted">Saved for your account in this browser.</p>
+                            <h3 id="color-heading" class="text-sm font-semibold text-foreground">{{ $msg("Accent color") }}</h3>
+                            <p class="mt-1 text-xs leading-5 text-muted">{{ $msg("Saved for your account in this browser.") }}</p>
 
                             <fieldset class="mt-6">
-                                <legend class="sr-only">Choose an accent color</legend>
+                                <legend class="sr-only">{{ $msg("Choose an accent color") }}</legend>
                                 <div class="grid grid-cols-3 gap-3 max-tiny:grid-cols-2">
                                     <label v-for="color in accentColors" :key="color.value" class="cursor-pointer">
                                         <input v-model="accentColor" type="radio" name="personalization-accent" :value="color.value" class="peer sr-only">
@@ -40,7 +40,7 @@
                                 hover:enabled:text-foreground focus-visible:outline-2 focus-visible:outline-offset-3
                                 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40" @click="accentColor = 'indigo'">
                                 <Icon name="solar:restart-linear" size="15" />
-                                Restore default
+                                {{ $msg("Restore default") }}
                             </button>
                         </section>
 
@@ -50,21 +50,21 @@
                                 max-mobile:p-4"
                         >
                             <div class="mb-5 flex items-center justify-between gap-3">
-                                <h3 id="preview-heading" class="text-sm font-semibold text-foreground">Preview</h3>
+                                <h3 id="preview-heading" class="text-sm font-semibold text-foreground">{{ $msg("Preview") }}</h3>
                                 <span class="inline-flex items-center gap-2 text-xs text-muted" aria-live="polite">
                                     <span class="size-2 rounded-full" :style="{ backgroundColor: selectedColor.accent }" />
                                     {{ selectedColor.label }}
                                 </span>
                             </div>
 
-                            <div :style="previewStyle" class="overflow-hidden rounded-lg border border-divider bg-canvas" aria-label="File browser color preview">
+                            <div :style="previewStyle" class="overflow-hidden rounded-lg border border-divider bg-canvas" :aria-label='$msg("File browser color preview")'>
                                 <div class="flex h-11 items-center justify-between border-b border-divider bg-surface px-4">
                                     <span class="flex items-center gap-2 text-xs font-semibold text-foreground">
                                         <Icon name="solar:folder-with-files-bold-duotone" size="19" class="text-accent" />
                                         FileJet
                                     </span>
                                     <span class="flex size-6 items-center justify-center rounded-full bg-primary text-[9px] font-semibold
-                                        text-on-primary">VX</span>
+                                        text-on-primary">{{ $msg("VX") }}</span>
                                 </div>
 
                                 <div class="flex min-h-64">
@@ -82,11 +82,11 @@
 
                                     <div class="min-w-0 flex-1 p-4">
                                         <div class="mb-4 flex items-center justify-between gap-2">
-                                            <span class="text-xs font-semibold text-foreground">Files</span>
+                                            <span class="text-xs font-semibold text-foreground">{{ $msg("Files") }}</span>
                                             <span class="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-[10px] font-medium
                                                 text-on-primary">
                                                 <Icon name="solar:add-circle-linear" size="12" />
-                                                Upload
+                                                {{ $msg("Upload") }}
                                             </span>
                                         </div>
 
@@ -120,22 +120,22 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="mt-3 text-xs leading-5 text-muted">{{ previewTheme === 'light' ? 'Light' : 'Dark' }} preview · {{ selectedColor.label }} accent. Save to apply across FileJet.</p>
+                            <p class="mt-3 text-xs leading-5 text-muted">{{ previewTheme === 'light' ? $msg('Light') : $msg('Dark') }} {{ $msg("preview ·") }} {{ selectedColor.label }} {{ $msg("accent. Save to apply across FileJet.") }}</p>
                         </section>
                     </div>
 
                     <footer class="flex flex-wrap items-center justify-between gap-4 border-t border-divider px-6 py-4 max-mobile:px-4">
-                        <p class="text-xs text-muted" aria-live="polite">{{ dirty ? 'Unsaved changes' : 'All changes saved' }}</p>
+                        <p class="text-xs text-muted" aria-live="polite">{{ dirty ? $msg('Unsaved changes') : $msg('All changes saved') }}</p>
                         <div class="ml-auto flex items-center gap-3">
                             <button type="button" :disabled="!dirty" class="h-10 cursor-pointer border border-control-border bg-control px-4 text-xs text-secondary
                                 transition-colors hover:enabled:bg-raised focus-visible:outline-2 focus-visible:outline-offset-2
-                                focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40" @click="cancel">Cancel</button>
+                                focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40" @click="cancel">{{ $msg("Cancel") }}</button>
                             <button type="submit" :disabled="!dirty" class="inline-flex h-10 cursor-pointer items-center gap-2 border border-primary bg-primary px-4 text-xs
                                 font-medium text-on-primary transition-[filter] hover:enabled:brightness-110 focus-visible:outline-2
                                 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed
                                 disabled:opacity-40">
                                 <Icon name="solar:check-read-linear" size="16" />
-                                Save changes
+                                {{ $msg("Save changes") }}
                             </button>
                         </div>
                     </footer>
@@ -154,7 +154,7 @@ definePageMeta({
     layout: 'user'
 })
 
-useHead({ title: 'Appearance · FileJet' })
+useHead({ get title() { return localize("Appearance · FileJet") } })
 
 const { preferences, preferencesLoaded, savePreferences } = usePreferences()
 const { openToast } = useToast()
@@ -170,15 +170,15 @@ const previewStyle = computed(() => ({
 }))
 
 const previewNavigation = [
-    { label: 'Home', icon: 'solar:home-2-linear' },
-    { label: 'Files', icon: 'solar:document-linear' },
-    { label: 'Folders', icon: 'solar:folder-linear' },
-    { label: 'Notes', icon: 'solar:notebook-linear' }
+    { get label() { return localize("Home") }, icon: 'solar:home-2-linear' },
+    { get label() { return localize("Files") }, icon: 'solar:document-linear' },
+    { get label() { return localize("Folders") }, icon: 'solar:folder-linear' },
+    { get label() { return localize("Notes") }, icon: 'solar:notebook-linear' }
 ]
 
 const previewItems = [
-    { name: 'Project files', type: 'Folder', icon: 'solar:folder-bold' },
-    { name: 'Meeting notes', type: 'Note', icon: 'solar:notebook-bold' },
+    { name: localize("Project files"), type: 'Folder', icon: 'solar:folder-bold' },
+    { name: localize("Meeting notes"), type: 'Note', icon: 'solar:notebook-bold' },
     { name: 'Cover.png', type: 'Image', icon: 'solar:gallery-bold' }
 ]
 
@@ -196,9 +196,9 @@ const save = () => {
 
     try {
         savePreferences({ ...preferences.value, accentColor: accentColor.value, theme: themeMode.value })
-        openToast('Appearance saved.', 'success')
+        openToast(localize("Appearance saved."), 'success')
     } catch {
-        openToast('Appearance could not be saved. Allow this browser to store site data and try again.', 'error')
+        openToast(localize("Appearance could not be saved. Allow this browser to store site data and try again."), 'error')
     }
 }
 </script>

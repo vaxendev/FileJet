@@ -4,7 +4,7 @@
             <div class="folders-toolbar flex flex-row items-center justify-between gap-2 flex-wrap min-w-0">
                 <SearchBox class="[flex:1_1_12rem] min-w-0 max-tablet:basis-full max-tablet:w-full max-tablet:box-border"
                     v-model="searchQuery"
-                    placeholder="Search folders..."
+                    :placeholder='$msg("Search folders...")'
                 />
 
                 <div class="toolbar-actions flex flex-row items-center gap-2 flex-wrap min-w-0">
@@ -12,7 +12,7 @@
                     <SortDropdown v-model="sortMode" />
                     <ViewSwitcher v-model="viewMode" />
                     <UploadButton
-                        text="Upload"
+                        :text="$msg('Upload')"
                         mode="folder"
                         @folder="handleFolders"
                     />
@@ -35,7 +35,7 @@
                             name="solar:add-folder-bold"
                             class="new-folder-icon block shrink-0 text-on-primary text-lg size-4.5"
                         />
-                        <span>New Folder</span>
+                        <span>{{ $msg("New Folder") }}</span>
                     </button>
                 </div>
             </div>
@@ -45,7 +45,7 @@
             :view-mode="viewMode"
             :is-dragging="isDragging"
             :is-loading="pending"
-            drop-text="Drop folders to upload"
+            :drop-text="$msg('Drop folders to upload')"
             @dragover="isDragging = true"
             @dragleave="isDragging = false"
             @drop="handleDrop"
@@ -54,7 +54,7 @@
                 <div class="loading-state text-label text-[0.85rem] flex flex-col items-center gap-[0.8rem]">
                     <span class="loading-spinner border-3 border-divider border-t-primary rounded-full animate-spin
                         [animation-duration:0.8s] motion-reduce:animate-none size-8" />
-                    <span>Loading folders...</span>
+                    <span>{{ $msg("Loading folders...") }}</span>
                 </div>
             </template>
 
@@ -68,12 +68,12 @@
                         size="2.5rem"
                         class="empty-state-icon empty-state-folder-icon block shrink-0 mb-2 text-accent text-[2.5rem]"
                     />
-                    <strong class="text-foreground text-sm font-semibold leading-normal">{{ folders.length ? 'No matching folders' : 'No folders yet' }}</strong>
+                    <strong class="text-foreground text-sm font-semibold leading-normal">{{ folders.length ? $msg('No matching folders') : $msg('No folders yet') }}</strong>
                     <span class="empty-state-description text-muted text-sm font-normal leading-normal">
                         {{
                             folders.length
-                                ? 'Try a different search.'
-                                : 'Create your first folder to organize your files.'
+                                ? $msg('Try a different search.')
+                                : $msg('Create your first folder to organize your files.')
                         }}
                     </span>
                 </div>
@@ -98,7 +98,7 @@
 
                                 <th class="w-[42%] file-table-heading">
                                     <div class="name-header flex items-center gap-[0.3rem]">
-                                        Name
+                                        {{ $msg("Name") }}
                                         <Icon
                                             name="solar:sort-vertical-linear"
                                             class="text-base leading-[inherit]"
@@ -106,10 +106,10 @@
                                     </div>
                                 </th>
 
-                                <th class="file-table-heading">Type</th>
-                                <th class="file-table-heading">Created</th>
-                                <th class="file-table-heading">Modified</th>
-                                <th class="file-table-heading">Actions</th>
+                                <th class="file-table-heading">{{ $msg("Type") }}</th>
+                                <th class="file-table-heading">{{ $msg("Created") }}</th>
+                                <th class="file-table-heading">{{ $msg("Modified") }}</th>
+                                <th class="file-table-heading">{{ $msg("Actions") }}</th>
                             </tr>
                         </thead>
 
@@ -142,16 +142,16 @@
                                         <div class="folder-info flex flex-col gap-1 min-w-0">
                                             <strong class="text-foreground text-sm font-semibold leading-normal truncate" :title="folder.name">{{ folder.name }}</strong>
                                             <span class="text-muted text-xs font-normal leading-normal truncate">
-                                                Folder • {{ formatFileTime(folder.created_at) }}
+                                                {{ $msg("Folder •") }} {{ formatFileTime(folder.created_at) }}
                                             </span>
                                         </div>
                                     </div>
                                 <ItemTags :tags="folder.tags" />
                                 </td>
 
-                                <td data-label="Type" class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">Folder</td>
-                                <td data-label="Created" class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileTime(folder.created_at) }}</td>
-                                <td data-label="Modified" class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileTime(folder.updated_at) }}</td>
+                                <td :data-label='$msg("Type")' class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ $msg("Folder") }}</td>
+                                <td :data-label='$msg("Created")' class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileTime(folder.created_at) }}</td>
+                                <td :data-label='$msg("Modified")' class="item-meta-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell">{{ formatFileTime(folder.updated_at) }}</td>
 
                                 <td class="item-actions-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell" @click.stop>
                                     <ItemMenu
@@ -213,7 +213,7 @@
                             />
                         </template>
                         <template #metadata>
-                            <span class="min-w-0 first:shrink-0 truncate">Folder</span>
+                            <span class="min-w-0 first:shrink-0 truncate">{{ $msg("Folder") }}</span>
                             ·
                             <span class="min-w-0 first:shrink-0 truncate">{{ formatFileTime(folder.created_at) }}</span>
                         </template>
@@ -327,9 +327,9 @@ const { sortedItems: sortedFolders } = useSort(
 const handleFolders = async (folder: FileSystemDirectoryHandle | FileList) => {
     try {
         await uploadFolders(folder, fetchAll)
-        openToast('Folder uploaded successfully.', 'success', { notification: { title: 'Folder upload complete', category: 'upload', href: '/folders' } })
+        openToast(localize("Folder uploaded successfully."), 'success', { notification: { get title() { return localize("Folder upload complete") }, category: 'upload', href: '/folders' } })
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Folder upload failed.', 'error')
+        openToast(resolveApiError(err, localize("Folder upload failed.")), 'error')
     }
 }
 
@@ -350,9 +350,9 @@ const favoriteFolder = async (folder: FolderItem) => {
 
         if (error.value) throw new Error(error.value)
 
-        openToast('Favorite updated.', 'success')
+        openToast(localize("Favorite updated."), 'success')
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Could not update favorite.', 'error')
+        openToast(resolveApiError(err, localize("Could not update favorite.")), 'error')
     }
 }
 
@@ -362,7 +362,7 @@ const deleteFolder = async (folder: FolderItem) => {
     try {
         await folderActions.deleteFolder(folder.id)
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Could not delete folder.', 'error')
+        openToast(resolveApiError(err, localize("Could not delete folder.")), 'error')
     }
 }
 
@@ -419,10 +419,10 @@ const handleDeleteSelected = async () => {
         selectedFolders.value = selectedFolders.value.filter(id => !deleted.has(id))
 
         if (result.failedIds.length) {
-            openToast(`${result.failedIds.length} items could not be moved to Trash.`, 'error')
+            openToast(localize("{p0} items could not be moved to Trash.", { p0: result.failedIds.length }), 'error')
         }
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'Could not delete folders.', 'error')
+        openToast(resolveApiError(err, localize("Could not delete folders.")), 'error')
     }
 }
 

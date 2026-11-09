@@ -1,4 +1,4 @@
-import { createError } from 'h3'
+import { throwError } from './error.ts'
 
 export const MAX_REQUEST_FILE_SIZE = 25 * 1024 * 1024
 export const MAX_REQUEST_BATCH_SIZE = 50 * 1024 * 1024
@@ -6,11 +6,11 @@ export const MAX_REQUEST_BATCH_FILES = 6
 
 export function parseInboxReviewIds(value: unknown): string[] {
     if (!Array.isArray(value) || !value.length || value.length > 1000 || value.some(id => typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)))
-        throw createError({ statusCode: 400, message: 'Select between 1 and 1000 incoming files.' })
+        throwError(400, 'Select between 1 and 1000 incoming files.')
     return [...new Set(value)]
 }
 
-const invalid = (message: string): never => { throw createError({ statusCode: 400, message }) }
+const invalid = (message: string): never => { throwError(400, message) }
 
 export function parseFileRequest(body: Record<string, unknown>, now = Date.now(), allowUnchangedExpiration = false) {
     const title = typeof body.title === 'string' ? body.title.trim() : ''
@@ -37,9 +37,9 @@ export function parseFileRequest(body: Record<string, unknown>, now = Date.now()
 
 export function assertRequestOpen(request: { is_open: boolean; expires_at: Date | null; received_count: number; max_files: number }, count = 1, now = Date.now()) {
     if (!request.is_open || (request.expires_at && request.expires_at.getTime() <= now))
-        throw createError({ statusCode: 410, message: 'This file request is closed or expired.' })
+        throwError(410, 'This file request is closed or expired.')
     if (request.received_count + count > request.max_files)
-        throw createError({ statusCode: 410, message: 'This file request has reached its file limit.' })
+        throwError(410, 'This file request has reached its file limit.')
 }
 
 export function validateRequestFiles(parts: { filename: string; data: Buffer }[], maxFileSize: number) {
@@ -48,10 +48,10 @@ export function validateRequestFiles(parts: { filename: string; data: Buffer }[]
     for (const part of parts) {
         if (!part.filename || part.filename === '.' || part.filename === '..' || /[/\\\0\r\n]/.test(part.filename) || Buffer.byteLength(part.filename, 'utf8') > 255)
             invalid('Invalid filename.')
-        if (part.data.length > maxFileSize) throw createError({ statusCode: 413, message: `Each file must be ${Math.floor(maxFileSize / 1024 / 1024)} MB or smaller.` })
+        if (part.data.length > maxFileSize) throwError(413, `Each file must be ${Math.floor(maxFileSize / 1024 / 1024)} MB or smaller.`)
         total += part.data.length
     }
-    if (total > MAX_REQUEST_BATCH_SIZE) throw createError({ statusCode: 413, message: 'Upload up to 50 MB at a time.' })
+    if (total > MAX_REQUEST_BATCH_SIZE) throwError(413, 'Upload up to 50 MB at a time.')
     return BigInt(total)
 }
 

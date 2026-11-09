@@ -10,10 +10,10 @@ export const useUnsavedChanges = (dirty: Ref<boolean>, saving: Ref<boolean>, flu
         if (!dirty.value) return true
 
         const discard = await confirm({
-            title: 'Unsaved changes',
-            message: 'Your changes will be lost if you leave this page.',
-            confirmText: 'Discard changes',
-            cancelText: 'Keep editing',
+            get title() { return localize("Unsaved changes") },
+            get message() { return localize("Your changes will be lost if you leave this page.") },
+            get confirmText() { return localize("Discard changes") },
+            get cancelText() { return localize("Keep editing") },
             variant: 'neutral'
         })
 

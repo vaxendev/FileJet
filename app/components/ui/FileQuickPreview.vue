@@ -2,23 +2,23 @@
     <Teleport to="body">
         <dialog ref="dialog" class="quick-preview-dialog" aria-labelledby="quick-preview-title" @cancel.prevent="emit('close')" @close="emit('close')" @pointerdown="outsideStart = outside($event)" @click.self="outsideStart && outside($event) && emit('close')">
             <header class="flex shrink-0 items-center gap-3 border-b border-divider p-4">
-                <div class="min-w-0 flex-1"><h2 id="quick-preview-title" class="truncate font-semibold" :title="item?.name">{{ item?.name }}</h2><p class="mt-1 text-xs text-muted">{{ item?.size ? formatFileSize(item.size) : '' }} · Quick preview · Esc to close</p></div>
-                <a v-if="item" :href="downloadUrl" class="inbox-button" download aria-label="Download file"><Icon name="solar:download-linear" /></a>
-                <button ref="closeButton" type="button" class="inbox-icon" aria-label="Close preview" @click="emit('close')"><Icon name="solar:close-circle-linear" size="25" /></button>
+                <div class="min-w-0 flex-1"><h2 id="quick-preview-title" class="truncate font-semibold" :title="item?.name">{{ item?.name }}</h2><p class="mt-1 text-xs text-muted">{{ item?.size ? formatFileSize(item.size) : '' }} {{ $msg("· Quick preview · Esc to close") }}</p></div>
+                <a v-if="item" :href="downloadUrl" class="inbox-button" download :aria-label='$msg("Download file")'><Icon name="solar:download-linear" /></a>
+                <button ref="closeButton" type="button" class="inbox-icon" :aria-label='$msg("Close preview")' @click="emit('close')"><Icon name="solar:close-circle-linear" size="25" /></button>
             </header>
             <section class="relative min-h-0 flex-1 overflow-auto bg-canvas p-4" :aria-busy="loading">
-                <p v-if="loading" role="status" class="text-center text-sm text-muted">Loading preview…</p>
-                <div v-if="errorMessage" role="alert" class="flex min-h-64 flex-col items-center justify-center gap-3 text-center"><p class="text-sm text-label">{{ errorMessage }}</p><button type="button" class="inbox-button" @click="load">Try again</button></div>
+                <p v-if="loading" role="status" class="text-center text-sm text-muted">{{ $msg("Loading preview…") }}</p>
+                <div v-if="errorMessage" role="alert" class="flex min-h-64 flex-col items-center justify-center gap-3 text-center"><p class="text-sm text-label">{{ $msg(errorMessage || '') }}</p><button type="button" class="inbox-button" @click="load">{{ $msg("Try again") }}</button></div>
                 <template v-else>
                     <ImageViewer v-if="kind === 'image'" :key="previewUrl" :src="previewUrl" :alt="item?.name ?? ''" class="rounded-lg" @load="loading = false" @error="failed" />
                     <MarkdownContent v-else-if="item?.type === 'note' && !loading" :content="text" />
                     <pre v-else-if="kind === 'text' && !loading" class="m-0 whitespace-pre-wrap wrap-anywhere font-mono text-sm leading-7 text-content">{{ text }}</pre>
-                    <iframe v-else-if="kind === 'pdf'" :key="previewUrl" :src="previewUrl" title="PDF preview" class="h-full min-h-80 w-full rounded-lg border-0 bg-white" referrerpolicy="no-referrer" @load="loading = false" />
+                    <iframe v-else-if="kind === 'pdf'" :key="previewUrl" :src="previewUrl" :title='$msg("PDF preview")' class="h-full min-h-80 w-full rounded-lg border-0 bg-white" referrerpolicy="no-referrer" @load="loading = false" />
                     <video v-else-if="kind === 'video'" :key="previewUrl" :src="previewUrl" controls playsinline preload="metadata" class="mx-auto max-h-full w-full rounded-lg bg-black" @loadedmetadata="loading = false" @error="failed" />
                     <audio v-else-if="kind === 'audio'" :key="previewUrl" :src="previewUrl" controls preload="metadata" class="mx-auto mt-12 w-full max-w-lg" @loadedmetadata="loading = false" @error="failed" />
-                    <p v-else-if="kind === 'unsupported'" class="py-16 text-center text-sm text-muted">Preview is not available for this file type. Use Download to open it.</p>
+                    <p v-else-if="kind === 'unsupported'" class="py-16 text-center text-sm text-muted">{{ $msg("Preview is not available for this file type. Use Download to open it.") }}</p>
                 </template>
-                <p v-if="truncated && !loading" class="mt-4 text-xs text-muted">Showing the first 1 MB. Download to read the rest.</p>
+                <p v-if="truncated && !loading" class="mt-4 text-xs text-muted">{{ $msg("Showing the first 1 MB. Download to read the rest.") }}</p>
             </section>
         </dialog>
     </Teleport>
@@ -39,7 +39,7 @@ const outside = (event: MouseEvent) => {
     const r = dialog.value?.getBoundingClientRect()
     return event.target === dialog.value && !!r && (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom)
 }
-const failed = () => { loading.value = false; errorMessage.value = 'Could not load the preview. The file may have been removed or the format may not be supported.' }
+const failed = () => { loading.value = false; errorMessage.value = localize("Could not load the preview. The file may have been removed or the format may not be supported.") }
 const load = async () => {
     const current = ++generation
     controller?.abort(); controller = null; text.value = ''; errorMessage.value = ''; truncated.value = false; outsideStart = false

@@ -12,7 +12,7 @@
         ]"
     >
         <template v-if="actionVariant === 'trash-undo'">
-            <span class="trash-toast-message flex-auto min-w-0 text-content text-sm font-normal leading-normal truncate">{{ message }}</span>
+            <span class="trash-toast-message flex-auto min-w-0 text-content text-sm font-normal leading-normal truncate">{{ $msg(message) }}</span>
 
             <div class="trash-toast-controls flex-none flex flex-nowrap items-center gap-3.5">
                 <button
@@ -24,7 +24,7 @@
                     :disabled="pending"
                     @click="$emit('action')"
                 >
-                    {{ pending ? 'Restoring...' : actionLabel }}
+                    {{ pending ? $msg('Restoring...') : $msg(actionLabel) }}
                 </button>
 
                 <button
@@ -59,7 +59,7 @@
                 size="1rem"
             />
 
-            <span class="toast-message min-w-0 text-[0.8rem] leading-normal whitespace-pre-line wrap-anywhere">{{ message }}</span>
+            <span class="toast-message min-w-0 text-[0.8rem] leading-normal whitespace-pre-line wrap-anywhere">{{ $msg(message) }}</span>
 
             <button
                 v-if="actionLabel"
@@ -69,7 +69,7 @@
                 :disabled="pending"
                 @click="$emit('action')"
             >
-                {{ pending ? 'Restoring...' : actionLabel }}
+                {{ pending ? $msg('Restoring...') : actionLabel }}
             </button>
         </template>
     </div>

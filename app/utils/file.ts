@@ -1,3 +1,4 @@
+import { currentLocaleTag } from './messages.ts'
 export const canCopyFile = (mimeType: string | null | undefined, fileName = '') => {
     if (fileName.trim().toLowerCase().endsWith('.exe')) return false
 
@@ -82,22 +83,16 @@ export const getFileCategory = (fileName: string) => {
 
 export const formatFileSize = (bytes: number | string) => {
     const size = Number(bytes)
-
-    if (size === 0) return '0 B'
-
-    if (size < 1024) return `${size} B`
-
-    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
-
-    if (size < 1024 * 1024 * 1024) {
-        return `${(size / 1024 / 1024).toFixed(1)} MB`
-    }
-
-    return `${(size / 1024 / 1024 / 1024).toFixed(1)} GB`
+    const unit = size < 1024 ? 0 : size < 1024 ** 2 ? 1 : size < 1024 ** 3 ? 2 : 3
+    const amount = (size / 1024 ** unit).toLocaleString(currentLocaleTag(), {
+        minimumFractionDigits: unit ? 1 : 0,
+        maximumFractionDigits: unit ? 1 : 0
+    })
+    return `${amount} ${['B', 'KB', 'MB', 'GB'][unit]}`
 }
 
 export const formatFileTime = (date: string | null) => {
     if (!date) return ''
 
-    return new Date(date).toLocaleDateString('tr-TR')
+    return new Date(date).toLocaleDateString(currentLocaleTag())
 }

@@ -6,7 +6,7 @@
             class="navigation-toggle hidden max-laptop:grid size-11 shrink-0 place-items-center mr-2 rounded-lg border
                 border-control-border bg-control text-foreground cursor-pointer focus-visible:outline-2
                 focus-visible:outline-accent"
-            aria-label="Open navigation"
+            :aria-label='$msg("Open navigation")'
             aria-controls="mobile-navigation"
             aria-haspopup="dialog"
             :aria-expanded="navigationOpen"
@@ -29,7 +29,7 @@
                             name="solar:arrow-left-linear"
                             size="1.2rem"
                         />
-                        <span>Back to {{ fileHeader.returnName }}</span>
+                        <span>{{ $msg("Back to") }} {{ $msg(fileHeader.returnName) }}</span>
                     </NuxtLink>
                     <span class="header-separator text-muted">/</span>
                     <span
@@ -38,21 +38,22 @@
                         >{{ fileHeader.fileName }}</span
                     >
                 </nav>
-                <h1 class="m-0 text-foreground text-2xl font-semibold leading-tight" v-else>{{ title }}</h1>
+                <h1 class="m-0 text-foreground text-2xl font-semibold leading-tight" v-else>{{ $msg(title) }}</h1>
                 <template #fallback>
-                    <h1 class="m-0 text-foreground text-2xl font-semibold leading-tight">{{ title }}</h1>
+                    <h1 class="m-0 text-foreground text-2xl font-semibold leading-tight">{{ $msg(title) }}</h1>
                 </template>
             </ClientOnly>
         </div>
 
         <div class="header-actions header-workspace-actions shrink-0 flex items-center gap-2">
             <button class="header-theme-shortcut" type="button" :disabled="!preferencesLoaded"
-                :aria-label="resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
-                :title="resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+                :aria-label="resolvedTheme === 'dark' ? $msg('Switch to light theme') : $msg('Switch to dark theme')"
+                :title="resolvedTheme === 'dark' ? $msg('Switch to light theme') : $msg('Switch to dark theme')"
                 @click="setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')">
                 <Icon :name="resolvedTheme === 'dark' ? 'solar:sun-2-linear' : 'solar:moon-linear'" size="20" />
             </button>
 
+            <LanguageSelector />
             <NotificationCenter />
 
             <div class="header-account hidden max-laptop:block">

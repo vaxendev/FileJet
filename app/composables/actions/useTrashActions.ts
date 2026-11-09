@@ -12,11 +12,11 @@ export const useTrashActions = () => {
         const label = type ? type[0]!.toUpperCase() + type.slice(1) : 'Item'
         const count = result.deletedIds.length
 
-        openToast(bulk ? `${count} items moved to Trash` : `${label} moved to Trash`, 'success', {
+        openToast(bulk ? localize("{p0} items moved to Trash", { p0: count }) : localize("{p0} moved to Trash", { p0: label }), 'success', {
             duration: 8000,
-            notification: { title: 'Moved to Trash', category: 'library', href: '/trash' },
+            notification: { get title() { return localize("Moved to Trash") }, category: 'library', href: '/trash' },
             action: {
-                label: 'Undo',
+                get label() { return localize("Undo") },
                 variant: 'trash-undo',
                 run: async () => {
                     if (trashIds.length === 1) {
@@ -40,10 +40,10 @@ export const useTrashActions = () => {
 
                     openToast(
                         bulk
-                            ? `${count} items restored successfully`
-                            : `${label} restored successfully`,
+                            ? localize("{p0} items restored successfully", { p0: count })
+                            : localize("{p0} restored successfully", { p0: label }),
                         'success',
-                        { notification: { title: 'Items restored', category: 'library', href: '/files' } }
+                        { notification: { get title() { return localize("Items restored") }, category: 'library', href: '/files' } }
                     )
                 }
             }

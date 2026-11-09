@@ -152,6 +152,8 @@ async function renderNote(page) {
     const output = { exports: {} }
     new Function('require', 'exports', compiled)(require, output.exports)
     const app = vue.createSSRApp({ setup: () => ({ ...page, formatFileSize }), render: output.exports.render })
+    app.config.globalProperties.$msg = globalThis.localize
+    app.config.globalProperties.$countMsg = globalThis.localizeCount
     app.component('DetailsWorkspace', {
         inheritAttrs: false,
         setup: (_, { slots }) => () => vue.h('section', [slots.default?.(), slots.edit?.()])

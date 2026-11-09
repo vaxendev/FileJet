@@ -8,10 +8,10 @@ export const useAccountActions = () => {
         if (isSigningOut.value) return
 
         const accepted = await confirm({
-            title: 'Log out?',
-            message: 'Log out of your account? Device copies of offline notes, including unsynced drafts, will be removed.',
-            confirmText: 'Log out',
-            cancelText: 'Stay signed in',
+            get title() { return localize("Log out?") },
+            get message() { return localize("Log out of your account? Device copies of offline notes, including unsynced drafts, will be removed.") },
+            get confirmText() { return localize("Log out") },
+            get cancelText() { return localize("Stay signed in") },
             variant: 'danger'
         })
 
@@ -27,12 +27,12 @@ export const useAccountActions = () => {
             await $fetch('/api/auth/logout', { method: 'POST' })
         } catch {
             isSigningOut.value = false
-            openToast('Could not log out. Please try again.', 'error')
+            openToast(localize("Could not log out. Please try again."), 'error')
             return
         }
 
         currentUser.value = null
-        openToast('Logged out successfully', 'success')
+        openToast(localize("Logged out successfully"), 'success')
 
         try {
             await navigateTo('/login')

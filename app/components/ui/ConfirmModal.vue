@@ -18,9 +18,9 @@
                     @keydown.esc.prevent.stop="emit('cancel')"
                     @keydown.tab="trapFocus"
                 >
-                    <h3 :id="titleId" class="mb-2 text-base font-semibold text-foreground">{{ title }}</h3>
+                    <h3 :id="titleId" class="mb-2 text-base font-semibold text-foreground">{{ $msg(title) }}</h3>
 
-                    <p :id="messageId" class="text-sm leading-6 text-label">{{ message }}</p>
+                    <p :id="messageId" class="text-sm leading-6 text-label">{{ $msg(message) }}</p>
 
                     <div class="modal-actions mt-6 flex justify-end gap-3">
                         <button
@@ -31,7 +31,7 @@
                                 focus-visible:outline-accent"
                             @click="emit('cancel')"
                         >
-                            {{ cancelText || 'Cancel' }}
+                            {{ $msg(cancelText || 'Cancel') }}
                         </button>
 
                         <button
@@ -41,7 +41,7 @@
                             :class="variant === 'danger' ? 'border-red-700 bg-red-700 hover:bg-red-600' : 'border-primary bg-primary hover:brightness-110'"
                             @click="emit('confirm')"
                         >
-                            {{ confirmText || 'Confirm' }}
+                            {{ $msg(confirmText || 'Confirm') }}
                         </button>
                     </div>
                 </div>

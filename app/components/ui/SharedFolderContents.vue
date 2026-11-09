@@ -9,7 +9,7 @@
                         cursor-pointer no-underline hover:brightness-110 leading-[inherit]"
                     @click="goBack"
                 >
-                    Back
+                    {{ $msg("Back") }}
                 </button>
                 <Icon class="text-accent" name="solar:folder-bold" />
                 <h1 class="m-0 text-[1.1rem] wrap-anywhere">{{ contents?.name ?? rootName }}</h1>
@@ -18,21 +18,21 @@
                 class="folder-button primary py-2.5 px-3 text-on-primary bg-primary border rounded-md text-sm
                     cursor-pointer no-underline border-primary hover:brightness-110 leading-[inherit]"
                 :href="resourceUrl('download', currentFolder)"
-                >Download Folder</a
+                >{{ $msg("Download Folder") }}</a
             >
         </div>
         <div
             v-if="error"
             class="folder-error p-5 text-muted"
         >
-            Folder contents could not be loaded.
+            {{ $msg("Folder contents could not be loaded.") }}
             <button
                 type="button"
                 class="folder-button py-2.5 px-3 text-content bg-control border border-control-border rounded-md text-sm
                     cursor-pointer no-underline hover:brightness-110 leading-[inherit]"
                 @click="refresh()"
             >
-                Try again
+                {{ $msg("Try again") }}
             </button>
         </div>
         <FolderBrowser
@@ -59,7 +59,7 @@
                             class="folder-button primary py-2.5 px-3 text-on-primary bg-primary border rounded-md text-sm
                                 cursor-pointer no-underline border-primary hover:brightness-110 leading-[inherit]"
                             :href="resourceUrl('download', selected)"
-                            >Download</a
+                            >{{ $msg("Download") }}</a
                         >
                         <button
                             ref="closeButton"
@@ -68,7 +68,7 @@
                                 cursor-pointer no-underline hover:brightness-110 leading-[inherit]"
                             @click="selected = null"
                         >
-                            Close preview
+                            {{ $msg("Close preview") }}
                         </button>
                     </div>
                 </div>
@@ -98,7 +98,7 @@
                     :title="selected.name"
                 />
                 <div v-else-if="selected.type === 'note'" class="min-h-0 flex-1 overflow-auto p-5">
-                    <p v-if="loadingText" role="status" class="text-sm text-muted">Loading preview…</p>
+                    <p v-if="loadingText" role="status" class="text-sm text-muted">{{ $msg("Loading preview…") }}</p>
                     <MarkdownContent v-else :content="textContent" />
                 </div>
                 <pre
@@ -106,13 +106,13 @@
                         wrap-anywhere"
                     v-else-if="selected.mime_type?.startsWith('text/')"
                 >{{
-                    loadingText ? 'Loading preview...' : textContent
+                    loadingText ? $msg('Loading preview...') : textContent
                 }}</pre>
                 <p
                     v-else
                     class="folder-error p-5 text-muted"
                 >
-                    Preview is not available for this file type. Use Download to save it.
+                    {{ $msg("Preview is not available for this file type. Use Download to save it.") }}
                 </p>
             </div>
         </Transition>
@@ -194,7 +194,7 @@ const openItem = async (item: LibraryItem) => {
 
             if (selected.value?.id === item.id) textContent.value = text
         } catch (failure: any) {
-            if (selected.value?.id === item.id) previewError.value = 'Preview could not be loaded.'
+            if (selected.value?.id === item.id) previewError.value = localize("Preview could not be loaded.")
 
             if ([401, 403, 410].includes(failure.statusCode)) emit('accessError')
         } finally {

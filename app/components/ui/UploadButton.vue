@@ -26,7 +26,7 @@
                     name="solar:cloud-upload-bold"
                     class="block text-lg shrink-0 size-4.5"
                 />
-                {{ text }}
+                {{ $msg(text) }}
             </span>
 
             <Icon

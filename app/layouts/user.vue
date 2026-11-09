@@ -33,7 +33,7 @@ const pageTitle = computed(() => {
         '/inbox': 'Inbox',
         '/trash': 'Trash',
         '/quarantine': 'Quarantine',
-        '/activity': 'Activity history',
+        '/activity': localize("Activity history"),
         '/settings/preferences': 'Preferences',
         '/settings/personalization': 'Appearance'
     }
@@ -54,12 +54,12 @@ const pageTitle = computed(() => {
             id="mobile-navigation"
             ref="navigationDialog"
             class="navigation-dialog"
-            aria-label="Main navigation"
+            :aria-label='$msg("Main navigation")'
             @close="mobileMenuOpen = false"
             @click.self="closeNavigation"
         >
             <div class="navigation-sheet" @click="event => { if ((event.target as Element).closest('a')) closeNavigation() }">
-                <button type="button" class="navigation-close" aria-label="Close navigation" @click="closeNavigation">
+                <button type="button" class="navigation-close" :aria-label='$msg("Close navigation")' @click="closeNavigation">
                     <Icon name="solar:close-circle-linear" size="24" />
                 </button>
                 <Sidebar />

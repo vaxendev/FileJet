@@ -1,10 +1,10 @@
 <template>
     <div class="notification-center">
         <button ref="trigger" type="button" class="notification-trigger" :class="{ 'is-open': isOpen }"
-            :aria-label="unreadCount ? `Notifications, ${unreadCount} unread` : 'Notifications'"
+            :aria-label="unreadCount ? $msg('Notifications, {p0} unread', { p0: unreadCount }) : $msg('Notifications')"
             aria-haspopup="dialog" :aria-expanded="isOpen" :aria-controls="id" @click="toggle">
             <span class="notification-trigger-icon"><Icon :name="unreadCount ? 'solar:bell-bing-linear' : 'solar:bell-linear'" size="20" /></span>
-            <span class="notification-trigger-label">Notifications</span>
+            <span class="notification-trigger-label">{{ $msg("Notifications") }}</span>
             <span v-if="unreadCount" class="notification-count" aria-hidden="true">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
         </button>
 
@@ -12,20 +12,20 @@
             <section :id="id" ref="panel" popover="auto" role="dialog" aria-modal="false" :aria-labelledby="`${id}-heading`"
                 class="notification-panel" :style="position" @toggle="onToggle" @keydown.esc.prevent.stop="close(true)">
                 <header class="notification-heading">
-                    <div><h2 :id="`${id}-heading`">Notifications</h2><p>{{ unreadCount ? `${unreadCount} unread update${unreadCount === 1 ? '' : 's'}` : 'Your workspace activity' }}</p></div>
-                    <button ref="closeButton" type="button" class="notification-icon-button" aria-label="Close notifications" @click="close(true)"><Icon name="solar:close-circle-linear" size="20" /></button>
+                    <div><h2 :id="`${id}-heading`">{{ $msg("Notifications") }}</h2><p>{{ unreadCount ? $countMsg('unreadUpdates', unreadCount) : $msg('Your workspace activity') }}</p></div>
+                    <button ref="closeButton" type="button" class="notification-icon-button" :aria-label='$msg("Close notifications")' @click="close(true)"><Icon name="solar:close-circle-linear" size="20" /></button>
                 </header>
 
                 <div class="notification-controls">
-                    <div class="notification-tabs" role="group" aria-label="Notification filter">
-                        <button type="button" :aria-pressed="filter === 'all'" @click="filter = 'all'">All <span>{{ entries.length }}</span></button>
-                        <button type="button" :aria-pressed="filter === 'unread'" @click="filter = 'unread'">Unread <span>{{ unreadCount }}</span></button>
+                    <div class="notification-tabs" role="group" :aria-label='$msg("Notification filter")'>
+                        <button type="button" :aria-pressed="filter === 'all'" @click="filter = 'all'">{{ $msg("All") }} <span>{{ entries.length }}</span></button>
+                        <button type="button" :aria-pressed="filter === 'unread'" @click="filter = 'unread'">{{ $msg("Unread") }} <span>{{ unreadCount }}</span></button>
                     </div>
-                    <button type="button" class="notification-text-button" :disabled="!unreadCount" @click="markAllRead"><Icon name="solar:check-read-linear" size="16" /><span>Mark all read</span></button>
+                    <button type="button" class="notification-text-button" :disabled="!unreadCount" @click="markAllRead"><Icon name="solar:check-read-linear" size="16" /><span>{{ $msg("Mark all read") }}</span></button>
                 </div>
 
                 <div class="notification-feed">
-                    <ul v-if="visibleEntries.length" class="notification-list" aria-label="Workspace notifications">
+                    <ul v-if="visibleEntries.length" class="notification-list" :aria-label='$msg("Workspace notifications")'>
                         <li
                             v-for="entry in visibleEntries"
                             :key="entry.id"
@@ -34,32 +34,32 @@
                         >
                             <span class="notification-entry-icon" aria-hidden="true"><Icon :name="entryIcon(entry)" size="20" /></span>
                             <button type="button" class="notification-entry-content" @click="openEntry(entry)">
-                                <span class="notification-entry-title">{{ entry.title }}<i v-if="!entry.read" aria-label="Unread" /></span>
-                                <span class="notification-entry-message">{{ entry.message }}</span>
-                                <span class="notification-entry-meta"><time :datetime="new Date(entry.createdAt).toISOString()" :title="new Date(entry.createdAt).toLocaleString()">{{ formatNotificationTime(entry.createdAt, now) }}</time><Icon v-if="entry.href" name="solar:arrow-right-up-linear" size="13" aria-hidden="true" /></span>
+                                <span class="notification-entry-title">{{ localizedDescriptor(entry.titleI18n, entry.title) }}<i v-if="!entry.read" :aria-label='$msg("Unread")' /></span>
+                                <span class="notification-entry-message">{{ localizedDescriptor(entry.messageI18n, entry.message) }}</span>
+                                <span class="notification-entry-meta"><time :datetime="new Date(entry.createdAt).toISOString()" :title="new Date(entry.createdAt).toLocaleString(currentLocaleTag())">{{ formatNotificationTime(entry.createdAt, now) }}</time><Icon v-if="entry.href" name="solar:arrow-right-up-linear" size="13" aria-hidden="true" /></span>
                             </button>
                             <div class="notification-entry-actions">
                                 <button
                                     v-if="!entry.read"
                                     type="button"
                                     class="notification-icon-button"
-                                    :aria-label="`Mark ${entry.title} as read`"
+                                    :aria-label="$msg('Mark {p0} as read', { p0: entry.title })"
                                     @click="markRead(entry.id)"
                                 ><Icon name="solar:check-read-linear" size="16" /></button>
-                                <button type="button" class="notification-icon-button" :aria-label="`Dismiss ${entry.title}`" @click="dismiss(entry.id)"><Icon name="solar:close-circle-linear" size="16" /></button>
+                                <button type="button" class="notification-icon-button" :aria-label="$msg('Dismiss {p0}', { p0: entry.title })" @click="dismiss(entry.id)"><Icon name="solar:close-circle-linear" size="16" /></button>
                             </div>
                         </li>
                     </ul>
                     <div v-else class="notification-empty" role="status">
                         <span><Icon name="solar:bell-off-linear" size="28" /></span>
-                        <strong>{{ filter === 'unread' ? 'All caught up' : 'A little quieter here' }}</strong>
-                        <p>{{ filter === 'unread' ? 'You have no unread notifications.' : 'Uploads, file changes, and important updates will appear here.' }}</p>
+                        <strong>{{ filter === 'unread' ? $msg('All caught up') : $msg('A little quieter here') }}</strong>
+                        <p>{{ filter === 'unread' ? $msg('You have no unread notifications.') : $msg('Uploads, file changes, and important updates will appear here.') }}</p>
                     </div>
                 </div>
 
                 <footer class="notification-footer">
-                    <span><Icon name="solar:history-linear" size="14" />{{ storageAvailable ? 'Saved in this browser' : 'Saved for this session only' }}</span>
-                    <button type="button" class="notification-text-button" :disabled="!hasRead" @click="clearRead">Clear read</button>
+                    <span><Icon name="solar:history-linear" size="14" />{{ storageAvailable ? $msg('Saved in this browser') : $msg('Saved for this session only') }}</span>
+                    <button type="button" class="notification-text-button" :disabled="!hasRead" @click="clearRead">{{ $msg("Clear read") }}</button>
                 </footer>
             </section>
         </Teleport>

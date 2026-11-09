@@ -1,7 +1,7 @@
 <template>
     <div
         v-if="totalPages > 0"
-        aria-label="Pagination"
+        :aria-label='$msg("Pagination")'
         class="pagination h-14 shrink-0 flex items-center justify-center gap-1 bg-surface border border-divider
             border-t-0 rounded-bl-panel rounded-br-panel grid-pagination:bg-transparent grid-pagination:border-0
             grid-pagination:rounded-none grid-pagination:mt-3"
@@ -12,7 +12,7 @@
             class="page-button flex items-center justify-center bg-transparent text-label border border-divider
                 rounded-lg cursor-pointer text-sm font-medium leading-normal hover:enabled:bg-raised
                 hover:enabled:text-foreground disabled:opacity-35 disabled:cursor-not-allowed size-[2.2rem]"
-            aria-label="Previous page"
+            :aria-label='$msg("Previous page")'
             :disabled="modelValue === 1"
             @click="previousPage"
         >
@@ -40,7 +40,7 @@
                     is-active:hover:bg-primary is-active:hover:text-on-primary"
                 :class="{ active: modelValue === page }"
                 :aria-current="modelValue === page ? 'page' : undefined"
-                :aria-label="`Page ${page}`"
+                :aria-label="$msg('Page {p0}', { p0: page })"
                 @click="goToPage(Number(page))"
             >
                 {{ page }}
@@ -52,7 +52,7 @@
             class="page-button flex items-center justify-center bg-transparent text-label border border-divider
                 rounded-lg cursor-pointer text-sm font-medium leading-normal hover:enabled:bg-raised
                 hover:enabled:text-foreground disabled:opacity-35 disabled:cursor-not-allowed size-[2.2rem]"
-            aria-label="Next page"
+            :aria-label='$msg("Next page")'
             :disabled="modelValue === totalPages"
             @click="nextPage"
         >

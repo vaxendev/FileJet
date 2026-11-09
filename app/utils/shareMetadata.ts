@@ -1,3 +1,4 @@
+import { localize, localizeItemType } from './messages.ts'
 export interface SocialShareItem {
     type: 'file' | 'folder' | 'note'
     isPasswordProtected: boolean
@@ -35,8 +36,8 @@ export function createShareMetadata(input: {
     const url = new URL(`/shared/${encodeURIComponent(input.token)}`, input.origin).href
     const base = {
         url,
-        title: 'Shared with FileJet',
-        description: 'Open this link to view a file, folder, or note shared with FileJet.',
+        get title() { return localize("Shared with FileJet") },
+        get description() { return localize("Open this link to view a file, folder, or note shared with FileJet.") },
         image: undefined as string | undefined,
         imageType: undefined as ImageMime | undefined,
         imageAlt: undefined as string | undefined,
@@ -44,7 +45,7 @@ export function createShareMetadata(input: {
     }
 
     if (input.unavailable) {
-        return { ...base, title: 'Share unavailable · FileJet', description: 'This share link is invalid, expired, or no longer available.' }
+        return { ...base, get title() { return localize("Share unavailable · FileJet") }, get description() { return localize("This share link is invalid, expired, or no longer available.") } }
     }
     // Item names are public; protected image pixels and note contents stay behind the password.
     if (input.passwordRequired || input.share?.isPasswordProtected) {
@@ -54,8 +55,8 @@ export function createShareMetadata(input: {
         const kind = input.protectedType || share?.type || 'item'
         return {
             ...base,
-            title: name || 'Password-protected share · FileJet',
-            description: `🔒 Password-protected ${kind}. Enter the link password to access it.`
+            title: name || localize("Password-protected share · FileJet"),
+            get description() { return localize("🔒 Password-protected {p0}. Enter the link password to access it.", { p0: localizeItemType(kind) }) }
         }
     }
     if (!input.share) return base
@@ -69,14 +70,14 @@ export function createShareMetadata(input: {
     const size = type === 'folder' ? '' : readableSize(item.size)
     const metadata = {
         ...base,
-        title: name || `Shared ${type} · FileJet`,
-        description: [kind, size, 'Shared with FileJet'].filter(Boolean).join(' · ')
+        title: name || localize("Shared {p0} · FileJet", { p0: localizeItemType(type) }),
+        description: [localize(kind), size, localize("Shared with FileJet")].filter(Boolean).join(' · ')
     }
 
     if (type === 'file' && isSupportedImage(mime)) {
         metadata.image = new URL(`/api/shared/${encodeURIComponent(input.token)}/preview`, input.origin).href
         metadata.imageType = mime
-        metadata.imageAlt = name || 'Shared image'
+        metadata.imageAlt = name || localize("Shared image")
         metadata.card = 'summary_large_image'
     }
     return metadata

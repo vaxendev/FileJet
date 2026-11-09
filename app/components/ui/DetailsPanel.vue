@@ -8,7 +8,7 @@
                 @click="emit('download')"
             >
                 <Icon name="solar:download-bold" />
-                Download
+                {{ $msg("Download") }}
             </button>
 
             <button
@@ -18,7 +18,7 @@
                 @click="emit('rename')"
             >
                 <Icon name="solar:pen-bold" />
-                Rename
+                {{ $msg("Rename") }}
             </button>
 
             <button
@@ -29,7 +29,7 @@
             >
                 <Icon :name="isFavorite ? 'solar:star-bold' : 'solar:star-linear'" />
 
-                {{ isFavorite ? 'Remove Favorite' : 'Favorite' }}
+                {{ isFavorite ? $msg('Remove Favorite') : $msg('Favorite') }}
             </button>
 
             <button
@@ -41,7 +41,7 @@
                 @click="emit('copy')"
             >
                 <Icon name="solar:copy-bold" />
-                {{ isCopying ? 'Copying...' : 'Copy' }}
+                {{ isCopying ? $msg('Copying...') : $msg('Copy') }}
             </button>
 
             <button
@@ -51,7 +51,7 @@
                 @click="emit('delete')"
             >
                 <Icon name="solar:trash-bin-trash-bold" />
-                Delete
+                {{ $msg("Delete") }}
             </button>
         </div>
 
@@ -63,7 +63,7 @@
                 [&_.icon]:text-accent h-12 py-0 px-[0.9rem] flex items-center gap-[0.45rem] text-foreground border-b
                 border-b-divider text-[0.85rem] font-semibold">
                 <Icon name="solar:info-circle-bold" />
-                Information
+                {{ $msg("Information") }}
             </div>
 
             <slot name="info" />

@@ -81,7 +81,7 @@ export const useFolderActions = () => {
                 : Array.from(input as FileList | File[])
 
         if (files.length === 0)
-            throw new Error('This folder is empty. Use New Folder to create an empty folder.')
+            throw new Error(localize("This folder is empty. Use New Folder to create an empty folder."))
 
         const uploadId = Symbol()
 
@@ -91,9 +91,9 @@ export const useFolderActions = () => {
 
         try {
             if (!user.value) await fetchUser()
-            if (!user.value) throw new Error('You need to be logged in.')
+            if (!user.value) throw new Error(localize("You need to be logged in."))
             await uploadResumably(files, {
-                kind: 'folders', folderId: parentFolderId, scope: user.value.id, label: 'Folder',
+                kind: 'folders', folderId: parentFolderId, scope: user.value.id, get label() { return localize("Folder") },
                 onProgress: (loaded, total) => uploads.set(uploadId, { loaded, total })
             })
             await onSuccess?.()

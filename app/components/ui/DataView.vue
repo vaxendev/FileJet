@@ -35,7 +35,7 @@
                     border-highlight rounded-[inherit] pointer-events-none z-20"
             >
                 <span class="drop-message flex items-center gap-2 max-w-[calc(100%_-_2rem)] py-3 px-4 text-content bg-surface
-                    border border-divider rounded-md text-sm leading-[inherit] font-medium text-center"><Icon class="text-accent shrink-0" name="solar:cloud-upload-bold" />{{ dropText }}</span>
+                    border border-divider rounded-md text-sm leading-[inherit] font-medium text-center"><Icon class="text-accent shrink-0" name="solar:cloud-upload-bold" />{{ $msg(dropText) }}</span>
             </div>
         </Transition>
     </div>

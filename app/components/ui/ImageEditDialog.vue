@@ -74,19 +74,19 @@ const save = async () => {
     busy.value = true; errorMessage.value = ''; progress.value = 0
     try {
         const mime = editableImageType(props.name, props.mimeType)
-        if (!mime) throw new Error('Editing supports JPG, PNG and WebP images.')
+        if (!mime) throw new Error(localize("Editing supports JPG, PNG and WebP images."))
         const area = cropPixels(cropping.value ? crop.value : fullImageCrop(), canvas.value.width, canvas.value.height)
         const output = document.createElement('canvas')
         output.width = area.width; output.height = area.height
         output.getContext('2d')!.drawImage(canvas.value, area.x, area.y, area.width, area.height, 0, 0, area.width, area.height)
-        const blob = await new Promise<Blob>((resolve, reject) => output.toBlob(value => value ? resolve(value) : reject(new Error('Could not export this image.')), mime, 0.95))
-        if (blob.type !== mime) throw new Error('Your browser cannot save this image format.')
+        const blob = await new Promise<Blob>((resolve, reject) => output.toBlob(value => value ? resolve(value) : reject(new Error(localize("Could not export this image."))), mime, 0.95))
+        if (blob.type !== mime) throw new Error(localize("Your browser cannot save this image format."))
         await uploadResumably([new File([blob], props.name, { type: mime })], {
-            kind: 'files', scope: currentUser.value.id, label: 'Edited image', replaceFileId: props.fileId, expectedRevision: props.revision,
+            kind: 'files', scope: currentUser.value.id, get label() { return localize("Edited image") }, replaceFileId: props.fileId, expectedRevision: props.revision,
             onProgress: (loaded, total) => { progress.value = total ? Math.floor(loaded / total * 100) : 0 }
         })
         emit('saved')
-    } catch (error: any) { errorMessage.value = error.data?.message || error.message || 'Could not save image. Your edits are still here.' }
+    } catch (error: any) { errorMessage.value = resolveApiError(error, localize("Could not save image. Your edits are still here.")) }
     finally { busy.value = false }
 }
 onMounted(async () => {
@@ -95,13 +95,13 @@ onMounted(async () => {
     if (stage.value) observer.observe(stage.value)
     try {
         const response = await fetch(props.src, { credentials: 'same-origin', signal: controller.signal })
-        if (!response.ok) throw new Error('Could not load this image.')
+        if (!response.ok) throw new Error(localize("Could not load this image."))
         objectUrl = URL.createObjectURL(await response.blob())
         const image = new Image(); image.src = objectUrl
         await image.decode()
         if (controller.signal.aborted) return
         source.value = image; draw()
-    } catch (error: any) { if (!controller.signal.aborted) errorMessage.value = error.message || 'Could not load this image.' }
+    } catch (error: any) { if (!controller.signal.aborted) errorMessage.value = resolveApiError(error, localize("Could not load this image.")) }
     finally { loading.value = false }
 })
 onBeforeUnmount(() => { controller.abort(); observer?.disconnect(); if (objectUrl) URL.revokeObjectURL(objectUrl); dialog.value?.close() })
@@ -112,19 +112,19 @@ onBeforeUnmount(() => { controller.abort(); observer?.disconnect(); if (objectUr
         <dialog ref="dialog" class="image-edit-dialog" :aria-labelledby="headingId" @cancel.prevent="close"
             @pointerdown="outsidePressed = $event.target === $event.currentTarget"
             @pointerup="outsidePressed = outsidePressed && $event.target === $event.currentTarget" @click.self="outsidePressed && close()">
-            <header class="image-edit-header"><div class="min-w-0 flex-1"><h2 :id="headingId">Edit image</h2><p class="truncate">{{ name }}</p></div><button type="button" class="inbox-icon" :disabled="busy" aria-label="Close image editor" @click="close">×</button></header>
-            <div class="image-edit-tools" role="group" aria-label="Image editing tools">
-                <button type="button" class="inbox-button" :disabled="busy || loading" @click="rotate(-1)">↶ Rotate left</button>
-                <button type="button" class="inbox-button" :disabled="busy || loading" @click="rotate(1)">↷ Rotate right</button>
-                <button type="button" class="inbox-button" :aria-pressed="cropping" :disabled="busy || loading" @click="cropping = !cropping">Crop</button>
-                <button type="button" class="inbox-button" :disabled="busy || loading" @click="squareCrop">Square</button>
-                <button type="button" class="inbox-button" :disabled="busy || loading" @click="turns = 0; crop = fullImageCrop(); cropping = false; draw()">Reset</button>
+            <header class="image-edit-header"><div class="min-w-0 flex-1"><h2 :id="headingId">{{ $msg("Edit image") }}</h2><p class="truncate">{{ name }}</p></div><button type="button" class="inbox-icon" :disabled="busy" :aria-label='$msg("Close image editor")' @click="close">{{ $msg("×") }}</button></header>
+            <div class="image-edit-tools" role="group" :aria-label='$msg("Image editing tools")'>
+                <button type="button" class="inbox-button" :disabled="busy || loading" @click="rotate(-1)">{{ $msg("↶ Rotate left") }}</button>
+                <button type="button" class="inbox-button" :disabled="busy || loading" @click="rotate(1)">{{ $msg("↷ Rotate right") }}</button>
+                <button type="button" class="inbox-button" :aria-pressed="cropping" :disabled="busy || loading" @click="cropping = !cropping">{{ $msg("Crop") }}</button>
+                <button type="button" class="inbox-button" :disabled="busy || loading" @click="squareCrop">{{ $msg("Square") }}</button>
+                <button type="button" class="inbox-button" :disabled="busy || loading" @click="turns = 0; crop = fullImageCrop(); cropping = false; draw()">{{ $msg("Reset") }}</button>
             </div>
             <div ref="stage" class="image-edit-stage" :aria-busy="loading || busy">
-                <span v-if="loading" role="status">Loading image…</span>
+                <span v-if="loading" role="status">{{ $msg("Loading image…") }}</span>
                 <div v-show="!loading && source" class="image-edit-surface" :style="{ width: surfaceSize.width + 'px', height: surfaceSize.height + 'px' }"
                     @pointerdown="startCrop($event)" @pointermove="moveCrop" @pointerup="endCrop" @pointercancel="endCrop">
-                    <canvas ref="canvas" aria-label="Image edit preview" />
+                    <canvas ref="canvas" :aria-label='$msg("Image edit preview")' />
                     <div v-if="cropping" class="image-crop-selection" :style="{ left: crop.x * 100 + '%', top: crop.y * 100 + '%', width: crop.width * 100 + '%', height: crop.height * 100 + '%' }"
                         @pointerdown.stop="startCrop($event, 'move')">
                         <span v-for="corner in ['nw', 'ne', 'sw', 'se']" :key="corner" :class="['image-crop-handle', corner]" @pointerdown.stop="startCrop($event, corner)" />
@@ -132,10 +132,10 @@ onBeforeUnmount(() => { controller.abort(); observer?.disconnect(); if (objectUr
                 </div>
             </div>
             <footer class="image-edit-footer">
-                <p class="text-xs text-muted">{{ cropping ? 'Drag the selection or its corners to crop. ' : '' }}The original stays in version history.</p>
-                <p v-if="errorMessage" role="alert" class="text-sm text-danger">{{ errorMessage }}</p>
+                <p class="text-xs text-muted">{{ cropping ? $msg('Drag the selection or its corners to crop.') : '' }}{{ $msg("The original stays in version history.") }}</p>
+                <p v-if="errorMessage" role="alert" class="text-sm text-danger">{{ $msg(errorMessage || '') }}</p>
                 <progress v-if="busy" :value="progress" max="100" class="w-full" />
-                <div class="flex justify-end gap-2"><button type="button" class="inbox-button" :disabled="busy" @click="close">Cancel</button><button type="button" class="inbox-button bg-primary! text-on-primary!" :disabled="busy || loading || !changed" @click="save">{{ busy ? 'Saving…' : 'Save image' }}</button></div>
+                <div class="flex justify-end gap-2"><button type="button" class="inbox-button" :disabled="busy" @click="close">{{ $msg("Cancel") }}</button><button type="button" class="inbox-button bg-primary! text-on-primary!" :disabled="busy || loading || !changed" @click="save">{{ busy ? $msg('Saving…') : $msg('Save image') }}</button></div>
             </footer>
         </dialog>
     </Teleport>

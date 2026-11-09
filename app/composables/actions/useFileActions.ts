@@ -116,11 +116,11 @@ export const useFileActions = (folderId?: string) => {
         original_name: string
     }) => {
         if (!canCopyFile(file.mime_type, file.original_name)) {
-            throw new Error('Only text and image files can be copied to the clipboard.')
+            throw new Error(localize("Only text and image files can be copied to the clipboard."))
         }
 
         if (!import.meta.client || !window.isSecureContext || !navigator.clipboard) {
-            throw new Error('Clipboard access requires HTTPS or localhost.')
+            throw new Error(localize("Clipboard access requires HTTPS or localhost."))
         }
 
         const mimeType = file.mime_type!.toLowerCase()
@@ -129,7 +129,7 @@ export const useFileActions = (folderId?: string) => {
             mimeType.startsWith('image/') &&
             (typeof ClipboardItem === 'undefined' || !navigator.clipboard.write)
         ) {
-            throw new Error('Your browser does not support copying images to the clipboard.')
+            throw new Error(localize("Your browser does not support copying images to the clipboard."))
         }
 
         startLoading()
@@ -165,7 +165,7 @@ export const useFileActions = (folderId?: string) => {
                     await new Promise<void>((resolve, reject) => {
                         image.onload = () => resolve()
                         image.onerror = () =>
-                            reject(new Error('Image could not be loaded for copying.'))
+                            reject(new Error(localize("Image could not be loaded for copying.")))
                         image.src = imageUrl
                     })
 
@@ -175,14 +175,14 @@ export const useFileActions = (folderId?: string) => {
 
                     const context = canvas.getContext('2d')
 
-                    if (!context) throw new Error('Image could not be prepared for copying.')
+                    if (!context) throw new Error(localize("Image could not be prepared for copying."))
 
                     context.drawImage(image, 0, 0)
 
                     return await new Promise<Blob>((resolve, reject) => {
                         canvas.toBlob(png => {
                             if (png) resolve(png)
-                            else reject(new Error('Image could not be prepared for copying.'))
+                            else reject(new Error(localize("Image could not be prepared for copying.")))
                         }, 'image/png')
                     })
                 } finally {
@@ -205,7 +205,7 @@ export const useFileActions = (folderId?: string) => {
             await $fetch(url, { method: 'HEAD', retry: 0 })
         } catch (error: any) {
             if ((error?.statusCode ?? error?.status) === 404) {
-                throw new Error('File not found in storage. Please upload it again.')
+                throw new Error(localize("File not found in storage. Please upload it again."))
             }
 
             throw error

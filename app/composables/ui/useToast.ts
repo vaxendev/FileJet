@@ -74,7 +74,7 @@ export const useToast = () => {
         schedule(toast)
 
         if (import.meta.client && notificationOwner && options.notification !== false && (type === 'error' || options.notification)) {
-            const details = options.notification || { title: 'Something needs attention', category: 'activity' as const }
+            const details = options.notification || { get title() { return localize("Something needs attention") }, category: 'activity' as const }
             addNotification({ ...details, message, kind: type }, notificationOwner)
         }
 
@@ -102,7 +102,7 @@ export const useToast = () => {
         } catch (error: any) {
             toast.pending = false
             openToast(
-                error.data?.message || error.message || 'The action could not be completed.',
+                resolveApiError(error, localize("The action could not be completed.")),
                 'error'
             )
             schedule(toast)

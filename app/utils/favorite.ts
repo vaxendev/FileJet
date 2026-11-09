@@ -1,3 +1,4 @@
+import { currentLocaleTag } from './messages.ts'
 export const getItemIcon = (item: any) => {
     if (item.file_id) return 'solar:file-bold'
     if (item.folder_id) return 'solar:folder-bold'
@@ -35,5 +36,5 @@ export const getItemActions = (item: any) => {
 export const formatTime = (date: string | null) => {
     if (!date) return ''
 
-    return new Date(date).toLocaleDateString('tr-TR')
+    return new Date(date).toLocaleDateString(currentLocaleTag())
 }

@@ -22,9 +22,9 @@
                         class="preview-message flex flex-col items-center gap-3 max-w-96 text-center text-sm text-content"
                     >
                         <Icon name="solar:shield-check-linear" size="3rem" :class="scanState.status === 'infected' ? 'text-danger' : 'text-accent'" />
-                        <strong>{{ scanState.status === 'infected' ? 'Threat detected. This file is quarantined.' : scanState.status === 'scanning' ? 'Scanning this file…' : 'Scan incomplete. File access is blocked.' }}</strong>
+                        <strong>{{ scanState.status === 'infected' ? $msg('Threat detected. This file is quarantined.') : scanState.status === 'scanning' ? $msg('Scanning this file…') : $msg('Scan incomplete. File access is blocked.') }}</strong>
                         <p v-if="scanState.message" class="text-xs leading-5 text-muted">{{ scanState.message }}</p>
-                        <button type="button" class="inbox-button" @click="showVirusProtection">Virus protection</button>
+                        <button type="button" class="inbox-button" @click="showVirusProtection">{{ $msg("Virus protection") }}</button>
                     </div>
                     <div
                         v-else-if="previewError"
@@ -36,7 +36,7 @@
                             size="3rem"
                         />
                         <p class="m-0 text-content text-sm leading-[inherit]">{{ previewError }}</p>
-                        <span>Use the Download button to download this file.</span>
+                        <span>{{ $msg("Use the Download button to download this file.") }}</span>
                     </div>
                     <ImageViewer class="rounded-md"
                         v-else-if="isImage"
@@ -52,7 +52,7 @@
                     <iframe class="block min-h-0 object-contain rounded-md border-0 size-full"
                         v-else-if="isPdf"
                         :src="previewUrl"
-                        title="PDF preview"
+                        :title='$msg("PDF preview")'
                     />
                     <video class="block min-h-0 object-contain rounded-md border-0 bg-black size-full"
                         v-else-if="isVideo"
@@ -74,8 +74,8 @@
                             :name="getFileIcon(file.mime_type, file.original_name)"
                             size="3.75rem"
                         />
-                        <p class="m-0 text-content text-sm leading-[inherit]">Preview is not available for this file type.</p>
-                        <span>Use the Download button to download this file.</span>
+                        <p class="m-0 text-content text-sm leading-[inherit]">{{ $msg("Preview is not available for this file type.") }}</p>
+                        <span>{{ $msg("Use the Download button to download this file.") }}</span>
                     </div>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                         class="close-details shrink-0 grid place-items-center p-0 text-content bg-transparent border-0
                             cursor-pointer hover:bg-divider hover:text-foreground focus-visible:outline-2
                             focus-visible:outline-accent focus-visible:outline-offset-2 size-7"
-                        :title="`Back to ${returnPage.name}`"
+                        :title="$msg('Back to {p0}', { p0: returnPage.name })"
                         @click="goBack"
                     >
                         <svg
@@ -139,7 +139,7 @@
                             name="solar:download-linear"
                             size="1.25rem"
                         />
-                        {{ isDownloading ? 'Downloading...' : 'Download' }}
+                        {{ isDownloading ? $msg('Downloading...') : $msg('Download') }}
                     </button>
                     <button
                         type="button"
@@ -156,7 +156,7 @@
                         }"
                         :disabled="isUpdatingFavorite || isDeleting || isSavingRename"
                         :title="
-                            isFileFavorite(file.id) ? 'Remove from favorites' : 'Add to favorites'
+                            isFileFavorite(file.id) ? $msg('Remove from favorites') : $msg('Add to favorites')
                         "
                         @click="handleFavorite(file)"
                     >
@@ -176,7 +176,7 @@
                             disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-accent
                             focus-visible:outline-offset-2 max-phone:w-full max-phone:pl-2 max-phone:pr-2"
                         :disabled="isDeleting || isSavingRename"
-                        title="Rename"
+                        :title='$msg("Rename")'
                         @click="startRename"
                     >
                         <Icon
@@ -195,7 +195,7 @@
                             max-phone:pr-2"
                         :class="{ 'is-busy': isDeleting }"
                         :disabled="isDeleting || isSavingRename"
-                        title="Delete file"
+                        :title='$msg("Delete file")'
                         @click="handleDelete(file.id)"
                     >
                         <Icon
@@ -217,7 +217,7 @@
                         :class="{ active: activeTab === 'details' }"
                         @click="selectTab('details')"
                     >
-                        Details
+                        {{ $msg("Details") }}
                     </button>
                     <button class="detail-tab"
                         id="file-edit-tab"
@@ -227,7 +227,7 @@
                         :class="{ active: activeTab === 'edit' }"
                         @click="selectTab('edit')"
                     >
-                        Edit
+                        {{ $msg("Edit") }}
                     </button>
                     <button class="detail-tab"
                         id="file-share-tab"
@@ -237,7 +237,7 @@
                         :class="{ active: activeTab === 'share' }"
                         @click="selectTab('share')"
                     >
-                        Share
+                        {{ $msg("Share") }}
                     </button>
                 </div>
 
@@ -274,10 +274,9 @@
                         @submit.prevent="saveRename"
                     >
                         <div class="rename-field flex flex-col gap-2">
-                            <label class="text-foreground text-sm leading-[inherit] font-medium" for="file-rename-input">Filename</label>
+                            <label class="text-foreground text-sm leading-[inherit] font-medium" for="file-rename-input">{{ $msg("Filename") }}</label>
                             <p class="m-0 text-muted text-[0.8125rem] leading-normal">
-                                Update the filename. The existing extension is preserved
-                                automatically.
+                                {{ $msg("Update the filename. The existing extension is preserved automatically.") }}
                             </p>
                             <div class="rename-input-group flex items-stretch min-w-0 border border-control-border rounded-md
                                 overflow-hidden focus-within:border-accent">
@@ -298,7 +297,7 @@
                                 />
                                 <span class="rename-extension flex items-center shrink-0 max-w-[35%] overflow-hidden py-0 px-2.5 bg-input
                                     border-l border-l-control-border text-muted text-[0.8125rem] whitespace-nowrap">{{
-                                    originalExtension || 'No extension'
+                                    originalExtension || $msg('No extension')
                                 }}</span>
                             </div>
                             <p
@@ -321,7 +320,7 @@
                                 :disabled="isSavingRename"
                                 @click="cancelRename"
                             >
-                                Cancel
+                                {{ $msg("Cancel") }}
                             </button>
                             <button
                                 type="submit"
@@ -334,7 +333,7 @@
                                 :class="{ 'is-busy': isSavingRename }"
                                 :disabled="!canSaveRename || isDeleting"
                             >
-                                {{ isSavingRename ? 'Saving...' : 'Save' }}
+                                {{ isSavingRename ? $msg('Saving...') : $msg('Save') }}
                             </button>
                         </div>
                     </form>
@@ -355,7 +354,7 @@
                             @click="handleCopy"
                         >
                             <Icon name="solar:copy-linear" />
-                            {{ isCopying ? 'Copying...' : 'Copy content' }}
+                            {{ isCopying ? $msg('Copying...') : $msg('Copy content') }}
                         </button>
                     </div>
                 </div>
@@ -386,8 +385,8 @@
         v-else
         class="file-empty-state p-6 bg-surface border border-divider rounded-xl text-content"
     >
-        <h1 class="m-0 text-foreground text-xl leading-[inherit]">Unable to load file</h1>
-        <p class="text-sm leading-normal">The file could not be found or accessed.</p>
+        <h1 class="m-0 text-foreground text-xl leading-[inherit]">{{ $msg("Unable to load file") }}</h1>
+        <p class="text-sm leading-normal">{{ $msg("The file could not be found or accessed.") }}</p>
         <div class="edit-actions flex justify-end flex-wrap gap-2">
             <button
                 type="button"
@@ -398,7 +397,7 @@
                     max-phone:pr-2"
                 @click="goBack"
             >
-                Back to {{ returnPage.name }}
+                {{ $msg("Back to") }} {{ returnPage.name }}
             </button>
             <button
                 type="button"
@@ -409,7 +408,7 @@
                     disabled:cursor-not-allowed max-phone:pl-2 max-phone:pr-2"
                 @click="refresh()"
             >
-                Try again
+                {{ $msg("Try again") }}
             </button>
         </div>
     </div>
@@ -479,9 +478,9 @@ const imageSaved = async () => {
     imageEditorOpen.value = false
     try {
         await versionChanged()
-        openToast('Image saved. The original is available in version history.', 'success')
+        openToast(localize("Image saved. The original is available in version history."), 'success')
     } catch {
-        openToast('Image saved, but the preview could not be refreshed. Reload to see the new version.', 'error')
+        openToast(localize("Image saved, but the preview could not be refreshed. Reload to see the new version."), 'error')
     }
 }
 
@@ -654,7 +653,7 @@ const saveRename = async () => {
     const newName = renameTargetName.value
 
     if (!newName) {
-        renameError.value = 'Filename is required.'
+        renameError.value = localize("Filename is required.")
 
         return
     }
@@ -678,9 +677,9 @@ const saveRename = async () => {
         editingFileName.value = editableFileName.value
         isRenaming.value = false
         activeTab.value = 'details'
-        openToast('File renamed successfully.', 'success', { notification: { title: 'File renamed', category: 'library', href: '/files' } })
+        openToast(localize("File renamed successfully."), 'success', { notification: { get title() { return localize("File renamed") }, category: 'library', href: '/files' } })
     } catch (err: any) {
-        renameError.value = err?.data?.message || err?.message || 'File could not be renamed.'
+        renameError.value = resolveApiError(err, localize("File could not be renamed."))
         openToast(renameError.value, 'error')
     } finally {
         isSavingRename.value = false
@@ -698,9 +697,9 @@ const handleDownload = async (id: string) => {
 
     try {
         await downloadFile(id)
-        openToast('Download started.', 'success')
+        openToast(localize("Download started."), 'success')
     } catch (err: any) {
-        openToast(err?.data?.message || err?.message || 'File could not be downloaded.', 'error')
+        openToast(resolveApiError(err, localize("File could not be downloaded.")), 'error')
     } finally {
         isDownloading.value = false
     }
@@ -713,10 +712,10 @@ const handleCopy = async () => {
 
     try {
         await copyFile(file.value)
-        openToast('Copied to clipboard.', 'success')
+        openToast(localize("Copied to clipboard."), 'success')
     } catch (err: any) {
         openToast(
-            err?.data?.message || err?.message || 'File could not be copied to the clipboard.',
+            resolveApiError(err, localize("File could not be copied to the clipboard.")),
             'error'
         )
     } finally {
@@ -731,7 +730,7 @@ const handleDelete = async (id: string) => {
         await deleteFile(id)
         await goBack()
     } catch (err: any) {
-        openToast(err?.data?.message || err?.message || 'File could not be deleted.', 'error')
+        openToast(resolveApiError(err, localize("File could not be deleted.")), 'error')
     }
 }
 
@@ -745,15 +744,15 @@ const handleFavorite = async (item: FileData) => {
     try {
         if (isFileFavorite(item.id)) {
             await removeFavorite(item.id, 'file')
-            openToast('File removed from favorites.', 'success')
+            openToast(localize("File removed from favorites."), 'success')
         } else {
             await addFavorite(item.id, 'file')
-            openToast('File favorited successfully.', 'success')
+            openToast(localize("File favorited successfully."), 'success')
         }
 
         await fetchAll()
     } catch (err: any) {
-        openToast(err?.data?.message || err?.message || 'File could not be favorited.', 'error')
+        openToast(resolveApiError(err, localize("File could not be favorited.")), 'error')
     } finally {
         isUpdatingFavorite.value = false
     }
@@ -785,7 +784,7 @@ const mediaDuration = ref<number | null>(null)
 const handlePreviewError = () => {
     mediaDimensions.value = null
     mediaDuration.value = null
-    previewError.value = 'File preview could not be loaded.'
+    previewError.value = localize("File preview could not be loaded.")
 }
 
 const captureImageMetadata = (event?: Event) => {
@@ -816,7 +815,7 @@ onMounted(() => {
 const formatDateTime = (date: string) => {
     if (!Number.isFinite(new Date(date).getTime())) return ''
 
-    return `${formatFileTime(date)} ${new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`
+    return `${formatFileTime(date)} ${new Date(date).toLocaleTimeString(currentLocaleTag(), { hour: '2-digit', minute: '2-digit' })}`
 }
 
 const metadataRows = computed(() => {
@@ -843,9 +842,9 @@ const metadataRows = computed(() => {
                     : String(value)
         })
 
-    add('Full filename', displayFileName.value)
+    add(localize("Full filename"), displayFileName.value)
     add('Extension', fileExtension.value || 'None')
-    add('MIME type', item.mime_type)
+    add(localize("MIME type"), item.mime_type)
     add('Size', formatFileSize(item.size))
     add('Created', item.created_at ? formatDateTime(item.created_at) : null)
     add('Modified', item.updated_at ? formatDateTime(item.updated_at) : null)
@@ -857,14 +856,14 @@ const metadataRows = computed(() => {
                   item.folder_id)
             : 'None'
     )
-    add('Favorite status', isFileFavorite(item.id) ? 'Favorited' : 'Not favorited')
+    add(localize("Favorite status"), isFileFavorite(item.id) ? 'Favorited' : localize("Not favorited"))
     add(
-        'Sharing status',
-        !shareStatus.value.url ? 'Not shared' : shareStatus.value.isExpired ? 'Expired' : 'Active'
+        localize("Sharing status"),
+        !shareStatus.value.url ? localize("Not shared") : shareStatus.value.isExpired ? localize("Expired") : localize("Active")
     )
-    add('Password protection', shareStatus.value.hasPassword ? 'Enabled' : 'Disabled')
+    add(localize("Password protection"), shareStatus.value.hasPassword ? localize("Enabled") : localize("Disabled"))
     add(
-        'Link expiration',
+        localize("Link expiration"),
         shareStatus.value.expiresAt ? formatDateTime(shareStatus.value.expiresAt) : 'Never'
     )
 
@@ -876,13 +875,13 @@ const metadataRows = computed(() => {
                 ? `${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, '0')}`
                 : null
         )
-        add('FPS', technical.fps ? `${Number(technical.fps.toFixed(3))} fps` : null)
+        add('FPS', technical.fps ? localize("{p0} fps", { p0: Number(technical.fps.toFixed(3)) }) : null)
     }
 
     if (isImage.value) {
         add('Width', dimensions?.width)
         add('Height', dimensions?.height)
-        add('Image format', technical.format || fileExtension.value)
+        add(localize("Image format"), technical.format || fileExtension.value)
     }
 
     if (item.mime_type?.startsWith('audio/')) {

@@ -1,5 +1,5 @@
-const CACHE = 'filejet-offline-shell-v2'
-const ASSETS = ['/offline-notes.html', '/filejet-offline/store.js', '/filejet-offline/editor.js', '/filejet-offline/style.css']
+const CACHE = 'filejet-offline-shell-v3'
+const ASSETS = ['/offline-notes.html', '/filejet-offline/store.js', '/filejet-offline/editor.js', '/filejet-offline/style.css', '/filejet-offline/i18n.js', '/filejet-offline/locales/en.json', '/filejet-offline/locales/tr.json', '/filejet-offline/locales/de.json']
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())))
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('filejet-offline-shell-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())))
 self.addEventListener('fetch', event => {

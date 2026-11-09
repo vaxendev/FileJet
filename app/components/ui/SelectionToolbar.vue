@@ -8,7 +8,7 @@
                 ml-auto pt-2 pr-3 pb-2 pl-4 text-foreground bg-surface border border-control-border rounded-full
                 shadow-[0_6px_24px_#0003] dock-compact:flex-wrap dock-compact:justify-between dock-compact:gap-2
                 dock-compact:p-3 dock-compact:rounded-[18px]">
-                <span class="selection-count shrink-0 text-sm font-medium whitespace-nowrap">{{ items.length }} selected</span>
+                <span class="selection-count shrink-0 text-sm font-medium whitespace-nowrap">{{ items.length }} {{ $msg("selected") }}</span>
                 <div class="selection-buttons flex items-stretch overflow-hidden bg-control border border-control-border
                     rounded-full dock-compact:order-3 dock-compact:[flex:1_1_100%] dock-compact:flex-wrap
                     dock-compact:rounded-xl">
@@ -18,7 +18,7 @@
                         @click="$emit('clear')"
                     >
                         <Icon class="block text-lg shrink-0 size-4.5" name="solar:checklist-minimalistic-linear" />
-                        Deselect all
+                        {{ $msg("Deselect all") }}
                     </button>
                     <button class="selection-button text-content hover:enabled:text-foreground hover:enabled:bg-raised"
                         type="button"
@@ -26,7 +26,7 @@
                         @click="moveModalOpen = true"
                     >
                         <Icon class="block text-lg shrink-0 size-4.5" name="solar:folder-path-connect-linear" />
-                        Move
+                        {{ $msg("Move") }}
                     </button>
                     <button class="selection-button text-content hover:enabled:text-foreground hover:enabled:bg-raised"
                         type="button"
@@ -34,7 +34,7 @@
                         @click="download"
                     >
                         <Icon class="block text-lg shrink-0 size-4.5" name="solar:download-linear" />
-                        {{ isDownloading ? 'Preparing...' : 'Download' }}
+                        {{ isDownloading ? $msg('Preparing...') : $msg('Download') }}
                     </button>
                     <button
                         type="button"
@@ -44,7 +44,7 @@
                         @click="$emit('delete')"
                     >
                         <Icon class="block text-lg shrink-0 size-4.5" name="solar:trash-bin-trash-linear" />
-                        Delete
+                        {{ $msg("Delete") }}
                     </button>
                 </div>
                 <button
@@ -98,7 +98,7 @@ const download = async () => {
         await downloadItems([...props.items])
     } catch (error: any) {
         openToast(
-            error.data?.message || error.message || 'Could not download the selection.',
+            resolveApiError(error, localize("Could not download the selection.")),
             'error'
         )
     }

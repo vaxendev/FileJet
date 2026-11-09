@@ -8,31 +8,31 @@
                     <AccentColorPicker v-model="draft.accentColor" />
 
                     <section aria-labelledby="browser-heading" class="rounded-xl border border-divider bg-surface">
-                        <h2 id="browser-heading" class="border-b border-divider px-5 py-4 text-sm font-semibold text-foreground">File browser</h2>
+                        <h2 id="browser-heading" class="border-b border-divider px-5 py-4 text-sm font-semibold text-foreground">{{ $msg("File browser") }}</h2>
                         <div class="px-5">
                             <div class="settings-row">
-                                <label id="default-view-label" class="text-sm text-secondary">Default view</label>
+                                <label id="default-view-label" class="text-sm text-secondary">{{ $msg("Default view") }}</label>
                                 <ViewSwitcher v-model="draft.defaultView" aria-labelledby="default-view-label" />
                             </div>
                             <div class="settings-row">
-                                <label for="default-sort" class="text-sm text-secondary">Sort order</label>
+                                <label for="default-sort" class="text-sm text-secondary">{{ $msg("Sort order") }}</label>
                                 <select id="default-sort" v-model="draft.defaultSort" class="settings-select">
-                                    <option value="newest">Newest first</option>
-                                    <option value="oldest">Oldest first</option>
-                                    <option value="name-asc">Name A-Z</option>
-                                    <option value="name-desc">Name Z-A</option>
+                                    <option value="newest">{{ $msg("Newest first") }}</option>
+                                    <option value="oldest">{{ $msg("Oldest first") }}</option>
+                                    <option value="name-asc">{{ $msg("Name A-Z") }}</option>
+                                    <option value="name-desc">{{ $msg("Name Z-A") }}</option>
                                 </select>
                             </div>
                             <div class="settings-row border-b-0!">
                                 <div>
-                                    <label for="page-size-mode" class="text-sm text-secondary">Items per page</label>
+                                    <label for="page-size-mode" class="text-sm text-secondary">{{ $msg("Items per page") }}</label>
                                     <p v-if="draft.pageSize === 'auto'" class="mt-1 text-xs text-muted">12 in list view, 24 in grid view.</p>
                                 </div>
                                 <div>
                                     <div class="flex flex-wrap gap-2">
                                         <select id="page-size-mode" v-model="pageSizeMode" class="settings-select">
-                                            <option value="auto">Automatic</option>
-                                            <option value="custom">Custom</option>
+                                            <option value="auto">{{ $msg("Automatic") }}</option>
+                                            <option value="custom">{{ $msg("Custom") }}</option>
                                         </select>
                                         <input
                                             v-if="pageSizeMode === 'custom'"
@@ -42,34 +42,34 @@
                                             :max="Number.MAX_SAFE_INTEGER"
                                             step="1"
                                             required
-                                            aria-label="Custom items per page"
+                                            :aria-label='$msg("Custom items per page")'
                                             :aria-invalid="!pageSizeValid"
                                             :aria-describedby="!pageSizeValid ? 'page-size-error' : undefined"
                                             class="h-10 w-28 rounded-lg border border-control-border bg-control px-3 text-sm text-secondary
                                                 outline-none focus:border-accent"
                                         >
                                     </div>
-                                    <p v-if="!pageSizeValid" id="page-size-error" role="alert" class="mt-2 text-xs text-danger">Enter a positive whole number.</p>
+                                    <p v-if="!pageSizeValid" id="page-size-error" role="alert" class="mt-2 text-xs text-danger">{{ $msg("Enter a positive whole number.") }}</p>
                                 </div>
                             </div>
                         </div>
                     </section>
 
                     <footer class="flex flex-wrap items-center justify-between gap-3">
-                        <button type="button" class="h-10 cursor-pointer text-xs text-label hover:text-foreground" @click="reset">Reset preferences</button>
+                        <button type="button" class="h-10 cursor-pointer text-xs text-label hover:text-foreground" @click="reset">{{ $msg("Reset preferences") }}</button>
                         <div class="flex flex-wrap items-center gap-3">
-                            <span v-if="dirty" class="text-xs text-muted" aria-live="polite">Unsaved changes</span>
+                            <span v-if="dirty" class="text-xs text-muted" aria-live="polite">{{ $msg("Unsaved changes") }}</span>
                             <button
                                 type="button"
                                 :disabled="!dirty"
                                 class="settings-button border-control-border bg-control text-secondary hover:enabled:bg-raised"
                                 @click="cancel"
-                            >Cancel</button>
+                            >{{ $msg("Cancel") }}</button>
                             <button
                                 type="submit"
                                 :disabled="!dirty || !pageSizeValid"
                                 class="settings-button border-primary bg-primary text-on-primary hover:enabled:brightness-110"
-                            >Save preferences</button>
+                            >{{ $msg("Save preferences") }}</button>
                         </div>
                     </footer>
                 </fieldset>
@@ -82,7 +82,7 @@
 import { isValidPageSize, type FileJetPreferences } from '~/composables/usePreferences'
 
 definePageMeta({ middleware: 'auth', layout: 'user' })
-useHead({ title: 'Preferences · FileJet' })
+useHead({ get title() { return localize("Preferences · FileJet") } })
 
 const { openToast } = useToast()
 const { preferences, preferencesLoaded, savePreferences, getDefaultPreferences } = usePreferences()
@@ -109,15 +109,15 @@ const save = () => {
     const pageSize = draft.value.pageSize
 
     if (pageSize !== 'auto' && !isValidPageSize(pageSize)) {
-        openToast('Enter a positive whole number for items per page.', 'error')
+        openToast(localize("Enter a positive whole number for items per page."), 'error')
         return
     }
 
     try {
         savePreferences({ ...draft.value, pageSize })
-        openToast('Preferences saved.', 'success')
+        openToast(localize("Preferences saved."), 'success')
     } catch {
-        openToast('Could not save preferences. Check your browser storage settings.', 'error')
+        openToast(localize("Could not save preferences. Check your browser storage settings."), 'error')
     }
 }
 </script>

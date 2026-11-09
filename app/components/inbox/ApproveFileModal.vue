@@ -2,15 +2,15 @@
     <Teleport to="body">
         <dialog ref="dialog" aria-labelledby="approve-file-title" class="approve-dialog" @cancel.prevent="close" v-on="backdrop" @close="emit('close')">
             <form class="flex flex-col gap-4 p-6" @submit.prevent="save">
-                <h2 id="approve-file-title" class="text-lg font-semibold text-foreground">{{ uploads.length > 1 ? `Approve & save ${uploads.length} files` : 'Approve & save file' }}</h2>
-                <ul aria-label="Files to approve" class="text-sm leading-6 text-foreground"><li v-for="file in uploads.slice(0, 3)" :key="file.id" class="truncate">{{ file.name }}</li><li v-if="uploads.length > 3" class="text-muted">and {{ uploads.length - 3 }} more files</li></ul>
-                <label class="flex flex-col gap-2 text-sm text-label">Save to FileJet folder
-                    <select v-model="folderId" v-memo="[folderOptions, folderId, loadingFolders]" :disabled="loadingFolders || saving" class="inbox-input"><option value="">Files (root)</option><option v-for="folder in folderOptions" :key="folder.id" :value="folder.id">{{ folder.label }}</option></select>
+                <h2 id="approve-file-title" class="text-lg font-semibold text-foreground">{{ uploads.length > 1 ? $msg('Approve & save {p0} files', { p0: uploads.length }) : $msg('Approve & save file') }}</h2>
+                <ul :aria-label='$msg("Files to approve")' class="text-sm leading-6 text-foreground"><li v-for="file in uploads.slice(0, 3)" :key="file.id" class="truncate">{{ file.name }}</li><li v-if="uploads.length > 3" class="text-muted">{{ $msg("and") }} {{ uploads.length - 3 }} {{ $msg("more files") }}</li></ul>
+                <label class="flex flex-col gap-2 text-sm text-label">{{ $msg("Save to FileJet folder") }}
+                    <select v-model="folderId" v-memo="[folderOptions, folderId, loadingFolders]" :disabled="loadingFolders || saving" class="inbox-input"><option value="">{{ $msg("Files (root)") }}</option><option v-for="folder in folderOptions" :key="folder.id" :value="folder.id">{{ folder.label }}</option></select>
                 </label>
-                <p class="text-xs leading-5 text-muted">Choose a folder from your FileJet library, or Files (root). {{ uploads.length > 1 ? 'All selected files are saved to this destination together.' : 'The file is saved there after you approve it.' }}</p>
-                <p v-if="folderError" role="alert" class="text-sm text-danger">{{ folderError }} <button type="button" class="underline" @click="loadFolders">Try again</button></p>
-                <p v-if="errorMessage" role="alert" class="text-sm text-danger">{{ errorMessage }}</p>
-                <div class="flex justify-end gap-2"><button type="button" class="inbox-button" :disabled="saving" @click="close">Cancel</button><button type="submit" class="inbox-button inbox-primary" :disabled="saving || loadingFolders || !!folderError">{{ saving ? 'Saving…' : 'Approve & save' }}</button></div>
+                <p class="text-xs leading-5 text-muted">{{ $msg("Choose a folder from your FileJet library, or Files (root).") }} {{ uploads.length > 1 ? $msg('All selected files are saved to this destination together.') : $msg('The file is saved there after you approve it.') }}</p>
+                <p v-if="folderError" role="alert" class="text-sm text-danger">{{ folderError }} <button type="button" class="underline" @click="loadFolders">{{ $msg("Try again") }}</button></p>
+                <p v-if="errorMessage" role="alert" class="text-sm text-danger">{{ $msg(errorMessage || '') }}</p>
+                <div class="flex justify-end gap-2"><button type="button" class="inbox-button" :disabled="saving" @click="close">{{ $msg("Cancel") }}</button><button type="submit" class="inbox-button inbox-primary" :disabled="saving || loadingFolders || !!folderError">{{ saving ? $msg('Saving…') : $msg('Approve & save') }}</button></div>
             </form>
         </dialog>
     </Teleport>
@@ -41,7 +41,7 @@ const save = async () => {
         if (uploads.length === 1) await $fetch(`/api/inbox/${props.requestId}/uploads/${uploads[0]!.id}/approve`, { method: 'POST', body: { folderId: folderId.value || null } })
         else await $fetch(`/api/inbox/${props.requestId}/uploads/bulk-approve`, { method: 'POST', body: { folderId: folderId.value || null, uploadIds: uploads.map(file => file.id) } })
         emit('saved', uploads.length); emit('close')
-    } catch (error: any) { errorMessage.value = error.data?.message || 'Could not approve the selected files.' }
+    } catch (error: any) { errorMessage.value = resolveApiError(error, localize("Could not approve the selected files.")) }
     finally { saving.value = false }
 }
 </script>

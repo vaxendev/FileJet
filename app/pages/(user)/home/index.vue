@@ -12,9 +12,9 @@
 
                 <div class="stat-info flex flex-col gap-[0.2rem]">
                     <strong class="text-foreground text-[1.7rem] font-bold">{{ files.length }}</strong>
-                    <span class="text-muted text-[0.9rem]">Files</span>
+                    <span class="text-muted text-[0.9rem]">{{ $msg("Files") }}</span>
                 </div>
-                <p class="stat-description hidden">Uploaded files</p>
+                <p class="stat-description hidden">{{ $msg("Uploaded files") }}</p>
             </div>
 
             <div class="stat-card min-h-32 flex items-center gap-4 p-4 bg-surface border border-divider rounded-3xl">
@@ -28,9 +28,9 @@
 
                 <div class="stat-info flex flex-col gap-[0.2rem]">
                     <strong class="text-foreground text-[1.7rem] font-bold">{{ folders.length }}</strong>
-                    <span class="text-muted text-[0.9rem]">Folders</span>
+                    <span class="text-muted text-[0.9rem]">{{ $msg("Folders") }}</span>
                 </div>
-                <p class="stat-description hidden">Created folders</p>
+                <p class="stat-description hidden">{{ $msg("Created folders") }}</p>
             </div>
 
             <div class="stat-card min-h-32 flex items-center gap-4 p-4 bg-surface border border-divider rounded-3xl">
@@ -44,9 +44,9 @@
 
                 <div class="stat-info flex flex-col gap-[0.2rem]">
                     <strong class="text-foreground text-[1.7rem] font-bold">{{ notes.length }}</strong>
-                    <span class="text-muted text-[0.9rem]">Notes</span>
+                    <span class="text-muted text-[0.9rem]">{{ $msg("Notes") }}</span>
                 </div>
-                <p class="stat-description hidden">Saved notes</p>
+                <p class="stat-description hidden">{{ $msg("Saved notes") }}</p>
             </div>
         </section>
 
@@ -55,11 +55,11 @@
                 <div class="dashboard-card h-full flex flex-col min-h-0 bg-surface border border-divider rounded-3xl
                     overflow-hidden">
                     <div class="card-header flex items-center justify-between p-4 shrink-0">
-                        <h2 class="m-0 text-foreground text-lg font-semibold leading-tight">Recent Files</h2>
+                        <h2 class="m-0 text-foreground text-lg font-semibold leading-tight">{{ $msg("Recent Files") }}</h2>
 
                         <NuxtLink class="flex items-center gap-[0.3rem] text-accent no-underline text-sm font-medium leading-normal
                             hover:text-accent" to="/files">
-                            View all
+                            {{ $msg("View all") }}
                             <Icon name="solar:arrow-right-linear" />
                         </NuxtLink>
                     </div>
@@ -83,16 +83,16 @@
                                 />
                             </div>
 
-                            <strong class="text-[0.95rem] font-semibold text-foreground">No files yet</strong>
+                            <strong class="text-[0.95rem] font-semibold text-foreground">{{ $msg("No files yet") }}</strong>
 
-                            <span class="text-[0.825rem] text-muted"> Your recent files will appear here. </span>
+                            <span class="text-[0.825rem] text-muted"> {{ $msg("Your recent files will appear here.") }} </span>
 
                             <NuxtLink
                                 to="/files"
                                 class="empty-files-link mt-[0.35rem] flex items-center gap-1 text-accent text-[0.825rem] font-medium
                                     no-underline hover:text-accent"
                             >
-                                Open Files
+                                {{ $msg("Open Files") }}
                                 <Icon class="text-[0.825rem] text-muted" name="solar:arrow-right-linear" />
                             </NuxtLink>
                         </div>
@@ -163,13 +163,13 @@
                 <div class="dashboard-card storage-card bg-surface border border-divider rounded-3xl overflow-hidden flex-1 w-full self-stretch
                     min-h-0 flex flex-col">
                     <div class="card-header flex items-center justify-between p-4 mb-2 shrink-0">
-                        <h2 class="m-0 text-foreground text-lg font-semibold leading-tight" title="Includes items in Trash">Storage Usage</h2>
+                        <h2 class="m-0 text-foreground text-lg font-semibold leading-tight" :title='$msg("Includes items in Trash")'>{{ $msg("Storage Usage") }}</h2>
                     </div>
 
                     <div class="storage-content w-full flex-1 max-laptop:flex-none min-h-0 flex flex-col overflow-y-auto pt-0 pr-[1.4rem] pb-[1.4rem] pl-[1.4rem]" :aria-busy="storageStatus === 'pending'">
                         <template v-if="storageUsage && !storageError">
                             <div class="storage-top flex shrink-0 items-center justify-between gap-3 pr-[0.8rem] pl-[0.2rem] mb-[0.4rem]">
-                                <strong class="text-foreground text-[1.275rem]">{{ storagePercent.toFixed(2) }}%</strong>
+                                <strong class="text-foreground text-[1.275rem]">{{ storagePercent.toLocaleString(currentLocaleTag(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}%</strong>
                                 <span class="text-muted text-[0.85rem]">
                                     <b class="text-foreground font-semibold">{{ formatFileSize(storageUsage.storageUsed) }}</b> /
                                     {{ formatFileSize(storageUsage.storageLimit) }}
@@ -180,11 +180,11 @@
                                 min="0"
                                 max="100"
                                 :value="Math.min(100, storagePercent)"
-                                aria-label="Storage used"
-                            >{{ storagePercent.toFixed(2) }}%</meter>
+                                :aria-label='$msg("Storage used")'
+                            >{{ storagePercent.toLocaleString(currentLocaleTag(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}%</meter>
                             <div class="storage-types flex shrink-0 flex-col gap-[1.1rem] mt-12">
                                 <div v-for="type in storageTypes" :key="type.key" class="storage-item flex items-center justify-between gap-3 w-full text-muted text-[0.85rem]">
-                                    <div class="storage-name flex items-center gap-[0.55rem]" :title="type.key === 'documents' ? 'Document files and notes' : undefined">
+                                    <div class="storage-name flex items-center gap-[0.55rem]" :title="type.key === 'documents' ? $msg('Document files and notes') : undefined">
                                         <span class="storage-dot rounded-full shrink-0 size-[0.55rem]" :class="type.color"></span>
                                         {{ type.label }}
                                     </div>
@@ -193,16 +193,16 @@
                             </div>
                         </template>
                         <div v-else class="py-4" :role="storageError ? 'alert' : 'status'">
-                            <p class="m-0 text-sm text-muted">{{ storageError ? 'Storage usage could not be loaded.' : 'Loading storage usage...' }}</p>
+                            <p class="m-0 text-sm text-muted">{{ storageError ? $msg('Storage usage could not be loaded.') : $msg('Loading storage usage...') }}</p>
                             <button v-if="storageError" type="button" class="mt-3 min-h-10 cursor-pointer rounded-md border border-control-border bg-control px-3 text-sm text-content disabled:opacity-50"
-                                :disabled="storageStatus === 'pending'" @click="refreshStorage()">Try again</button>
+                                :disabled="storageStatus === 'pending'" @click="refreshStorage()">{{ $msg("Try again") }}</button>
                         </div>
                     </div>
                 </div>
                 <div class="dashboard-card quick-card bg-surface border border-divider rounded-3xl overflow-hidden flex-1 w-full self-stretch
                     min-h-0 flex flex-col pb-4">
                     <div class="card-header flex items-center justify-between p-4 shrink-0">
-                        <h2 class="m-0 text-foreground text-lg font-semibold leading-tight">Quick Actions</h2>
+                        <h2 class="m-0 text-foreground text-lg font-semibold leading-tight">{{ $msg("Quick Actions") }}</h2>
                     </div>
 
                     <div class="quick-actions-grid flex-1 max-laptop:flex-none min-h-0 overflow-y-auto grid grid-cols-2 content-start gap-3 py-0 px-4">
@@ -218,7 +218,7 @@
                                 <Icon name="solar:upload-linear" />
                             </div>
 
-                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">Upload File</span>
+                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">{{ $msg("Upload File") }}</span>
                         </button>
 
                         <button
@@ -233,7 +233,7 @@
                                 <Icon name="solar:add-linear" />
                             </div>
 
-                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">New Folder</span>
+                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">{{ $msg("New Folder") }}</span>
                         </button>
 
                         <button
@@ -247,7 +247,7 @@
                                 <Icon name="solar:notebook-linear" />
                             </div>
 
-                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">New Note</span>
+                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">{{ $msg("New Note") }}</span>
                         </button>
 
                         <button
@@ -264,7 +264,7 @@
                                 />
                             </div>
 
-                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">Shared Inbox</span>
+                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">{{ $msg("Shared Inbox") }}</span>
                         </button>
                     </div>
                 </div>
@@ -293,10 +293,10 @@ await fetchAll()
 const { data: storageUsage, error: storageError, status: storageStatus, refresh: refreshStorage } =
     await useFetch<StorageUsage>('/api/users/@me/storage', { key: `storage-usage:${user.value?.id ?? 'current'}` })
 const storageTypes = [
-    { key: 'images', label: 'Images', color: 'bg-[#5da9ff]' },
-    { key: 'documents', label: 'Documents', color: 'bg-accent' },
-    { key: 'videos', label: 'Videos', color: 'bg-[#55c2d4]' },
-    { key: 'others', label: 'Others', color: 'bg-[#6b6b75]' }
+    { key: 'images', get label() { return localize("Images") }, color: 'bg-[#5da9ff]' },
+    { key: 'documents', get label() { return localize("Documents") }, color: 'bg-accent' },
+    { key: 'videos', get label() { return localize("Videos") }, color: 'bg-[#55c2d4]' },
+    { key: 'others', get label() { return localize("Others") }, color: 'bg-[#6b6b75]' }
 ] as const
 
 if (error.value) {
@@ -351,9 +351,9 @@ const saveRename = async (file: FileItem) => {
         file.name = newName
         editingFileId.value = null
         await Promise.all([fetchAll(), refreshStorage()])
-        openToast(error.value || 'File renamed successfully.', error.value ? 'error' : 'success')
+        openToast(error.value || localize("File renamed successfully."), error.value ? 'error' : 'success')
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'File could not be renamed.', 'error')
+        openToast(resolveApiError(err, localize("File could not be renamed.")), 'error')
     } finally {
         isSavingRename.value = false
     }
@@ -366,10 +366,10 @@ const handleCopy = async (file: FileItem) => {
 
     try {
         await copyFile(file)
-        openToast('Copied to clipboard.', 'success')
+        openToast(localize("Copied to clipboard."), 'success')
     } catch (err: any) {
         openToast(
-            err.data?.message || err.message || 'File could not be copied to the clipboard.',
+            resolveApiError(err, localize("File could not be copied to the clipboard.")),
             'error'
         )
     } finally {
@@ -381,7 +381,7 @@ const handleDownload = async (fileId: string) => {
     try {
         await downloadFile(fileId)
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'File could not be downloaded.', 'error')
+        openToast(resolveApiError(err, localize("File could not be downloaded.")), 'error')
     }
 }
 
@@ -393,7 +393,7 @@ const handleDelete = async (file: FileItem) => {
         files.value = files.value.filter(item => item.id !== file.id)
         await refreshStorage()
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'File could not be deleted.', 'error')
+        openToast(resolveApiError(err, localize("File could not be deleted.")), 'error')
     }
 }
 
@@ -415,11 +415,11 @@ const handleFavorite = async (file: FileItem) => {
         await fetchAll()
         openToast(
             error.value ||
-                (wasFavorite ? 'File removed from favorites.' : 'File favorited successfully.'),
+                (wasFavorite ? localize("File removed from favorites.") : localize("File favorited successfully.")),
             error.value ? 'error' : 'success'
         )
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'File could not be favorited.', 'error')
+        openToast(resolveApiError(err, localize("File could not be favorited.")), 'error')
     } finally {
         isSavingFavorite.value = false
     }

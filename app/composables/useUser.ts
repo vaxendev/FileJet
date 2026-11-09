@@ -107,7 +107,7 @@ export const useUser = () => {
             const data = await requestFetch<UserData>('/api/users/@me')
             user.value = data
         } catch (err: any) {
-            error.value = err.data?.message || err.message || 'Kullanıcı bilgileri alınamadı.'
+            error.value = resolveApiError(err, localize("Kullanıcı bilgileri alınamadı."))
         }
     }
 
@@ -124,7 +124,7 @@ export const useUser = () => {
         } catch (err: any) {
             if (requestIds.value.files !== requestId) return
 
-            error.value = err.data?.message || err.message || 'Dosyalar alınamadı.'
+            error.value = resolveApiError(err, localize("Dosyalar alınamadı."))
         }
     }
 
@@ -141,7 +141,7 @@ export const useUser = () => {
         } catch (err: any) {
             if (requestIds.value.folders !== requestId) return
 
-            error.value = err.data?.message || err.message || 'Klasörler alınamadı.'
+            error.value = resolveApiError(err, localize("Klasörler alınamadı."))
         }
     }
 
@@ -158,7 +158,7 @@ export const useUser = () => {
         } catch (err: any) {
             if (requestIds.value.notes !== requestId) return
 
-            error.value = err.data?.message || err.message || 'Notlar alınamadı.'
+            error.value = resolveApiError(err, localize("Notlar alınamadı."))
         }
     }
 
@@ -175,7 +175,7 @@ export const useUser = () => {
         } catch (err: any) {
             if (requestIds.value.favorites !== requestId) return
 
-            error.value = err.data?.message || err.message || 'Favoriler alınamadı.'
+            error.value = resolveApiError(err, localize("Favoriler alınamadı."))
         }
     }
 
@@ -192,7 +192,7 @@ export const useUser = () => {
         } catch (err: any) {
             if (requestIds.value.trash !== requestId) return
 
-            error.value = err.data?.message || err.message || 'Trash items could not be loaded.'
+            error.value = resolveApiError(err, localize("Trash items could not be loaded."))
         }
     }
 

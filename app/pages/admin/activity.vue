@@ -2,7 +2,7 @@
 import { activityActions } from '~~/shared/types/activity'
 import { adminActionLabels, type AdminHistoryPage } from '~~/shared/types/adminActivity'
 definePageMeta({layout:'admin',middleware:['auth','admin']})
-useHead({title:'Activity history · FileJet Admin'})
+useHead({get title() { return localize("Activity history · FileJet Admin") }})
 const route=useRoute()
 const source=ref<'user'|'admin'>(route.query.source==='admin'?'admin':'user'), userId=ref(typeof route.query.userId==='string'?route.query.userId:'')
 const account=ref(''), actor=ref(''), search=ref(''), action=ref(''), type=ref(''), from=ref(''), to=ref('')
@@ -16,7 +16,7 @@ const load=async(more=false)=>{
         if(current!==generation)return
         if(more&&data.value?.source===result.source)result.items=[...data.value.items,...result.items] as typeof result.items
         data.value=result
-    }catch(err:any){if(current===generation)error.value=err.data?.message||'Could not load administration history.'}
+    }catch(err:any){if(current===generation)error.value=resolveApiError(err, localize("Could not load administration history."))}
     finally{if(current===generation)loading.value=false}
 }
 const changed=()=>{++generation;clearTimeout(timer);data.value=null;loading.value=true;timer=setTimeout(()=>load(),300)}
@@ -28,18 +28,18 @@ onMounted(()=>load())
 onBeforeUnmount(()=>{++generation;clearTimeout(timer)})
 </script>
 <template>
-    <div class="space-y-5"><div class="flex flex-wrap items-start justify-between gap-3"><div><h1 class="text-2xl font-semibold text-foreground">Activity history</h1><p class="mt-2 text-sm text-muted">Browse account activity and changes made through administration.</p></div><button type="button" class="admin-history-button" :disabled="loading" @click="load()"><Icon name="solar:refresh-linear" />Refresh</button></div>
-        <div class="flex flex-wrap gap-2"><button type="button" class="admin-history-button" :class="{'bg-accent/15! text-accent!':source==='user'}" :aria-pressed="source==='user'" @click="source='user'">User activity</button><button type="button" class="admin-history-button" :class="{'bg-accent/15! text-accent!':source==='admin'}" :aria-pressed="source==='admin'" @click="source='admin'">Admin actions</button></div>
+    <div class="space-y-5"><div class="flex flex-wrap items-start justify-between gap-3"><div><h1 class="text-2xl font-semibold text-foreground">{{ $msg("Activity history") }}</h1><p class="mt-2 text-sm text-muted">{{ $msg("Browse account activity and changes made through administration.") }}</p></div><button type="button" class="admin-history-button" :disabled="loading" @click="load()"><Icon name="solar:refresh-linear" />{{ $msg("Refresh") }}</button></div>
+        <div class="flex flex-wrap gap-2"><button type="button" class="admin-history-button" :class="{'bg-accent/15! text-accent!':source==='user'}" :aria-pressed="source==='user'" @click="source='user'">{{ $msg("User activity") }}</button><button type="button" class="admin-history-button" :class="{'bg-accent/15! text-accent!':source==='admin'}" :aria-pressed="source==='admin'" @click="source='admin'">{{ $msg("Admin actions") }}</button></div>
         <div class="grid grid-cols-3 gap-3 rounded-2xl border border-divider bg-surface p-4 max-[1000px]:grid-cols-2 max-mobile:grid-cols-1">
-            <label class="admin-history-label">{{ source==='user'?'Item name':'Search names' }}<input v-model="search" aria-label="Search history" type="search" maxlength="120" placeholder="Search…" class="admin-history-input" /></label>
-            <label class="admin-history-label">Account<input v-model="account" aria-label="Account username" type="search" maxlength="100" placeholder="Username" class="admin-history-input" /></label>
-            <label v-if="source==='admin'" class="admin-history-label">Administrator<input v-model="actor" aria-label="Administrator username" type="search" maxlength="100" placeholder="Who made the change" class="admin-history-input" /></label>
-            <label v-else class="admin-history-label">Type<select v-model="type" aria-label="Item type" class="admin-history-input"><option value="">All types</option><option v-for="kind in ['file','folder','note','inbox','batch']" :key="kind" :value="kind">{{ kind }}</option></select></label>
-            <label class="admin-history-label">Action<select v-model="action" aria-label="History action" class="admin-history-input"><option value="">All actions</option><option v-for="(label,key) in source==='user'?activityActions:adminActionLabels" :key="key" :value="key">{{ label }}</option></select></label>
-            <label class="admin-history-label">From<input v-model="from" aria-label="History from" type="date" class="admin-history-input" /></label><label class="admin-history-label">To<input v-model="to" aria-label="History to" type="date" class="admin-history-input" /></label>
-            <div class="col-span-full flex flex-wrap items-center gap-2"><span v-if="userId" class="break-all text-xs text-muted">Account ID: {{ userId }}</span><button type="button" class="admin-history-button ml-auto" @click="clear">Clear filters</button></div>
+            <label class="admin-history-label">{{ source==='user'?$msg('Item name'):$msg('Search names') }}<input v-model="search" :aria-label='$msg("Search history")' type="search" maxlength="120" :placeholder='$msg("Search…")' class="admin-history-input" /></label>
+            <label class="admin-history-label">{{ $msg("Account") }}<input v-model="account" :aria-label='$msg("Account username")' type="search" maxlength="100" :placeholder='$msg("Username")' class="admin-history-input" /></label>
+            <label v-if="source==='admin'" class="admin-history-label">{{ $msg("Administrator") }}<input v-model="actor" :aria-label='$msg("Administrator username")' type="search" maxlength="100" :placeholder='$msg("Who made the change")' class="admin-history-input" /></label>
+            <label v-else class="admin-history-label">{{ $msg("Type") }}<select v-model="type" :aria-label='$msg("Item type")' class="admin-history-input"><option value="">{{ $msg("All types") }}</option><option v-for="kind in ['file','folder','note','inbox','batch']" :key="kind" :value="kind">{{ kind }}</option></select></label>
+            <label class="admin-history-label">{{ $msg("Action") }}<select v-model="action" :aria-label='$msg("History action")' class="admin-history-input"><option value="">{{ $msg("All actions") }}</option><option v-for="(label,key) in source==='user'?activityActions:adminActionLabels" :key="key" :value="key">{{ $msg(label) }}</option></select></label>
+            <label class="admin-history-label">{{ $msg("From") }}<input v-model="from" :aria-label='$msg("History from")' type="date" class="admin-history-input" /></label><label class="admin-history-label">{{ $msg("To") }}<input v-model="to" :aria-label='$msg("History to")' type="date" class="admin-history-input" /></label>
+            <div class="col-span-full flex flex-wrap items-center gap-2"><span v-if="userId" class="break-all text-xs text-muted">{{ $msg("Account ID:") }} {{ userId }}</span><button type="button" class="admin-history-button ml-auto" @click="clear">{{ $msg("Clear filters") }}</button></div>
         </div>
-        <section class="rounded-2xl border border-divider bg-surface p-5 max-mobile:p-4"><p class="mb-4 mt-0 text-xs leading-5 text-muted">{{ source==='user'?'Recorded file, folder and note changes across accounts. File and note contents are not shown.':'Successful account changes include the administrator and before/after role and quota. Records remain after account deletion.' }}</p><p v-if="error" role="alert" class="mb-4 text-sm text-danger">{{ error }}</p><p v-if="loading&&!data" role="status" class="py-5 text-sm text-muted">Loading history…</p><AdminActivityList v-else :user-items="data?.source==='user'?data.items:[]" :admin-items="data?.source==='admin'?data.items:[]" /><button v-if="data?.nextCursor" type="button" class="admin-history-button mx-auto mt-5 flex" :disabled="loading" @click="load(true)">Load more</button></section>
+        <section class="rounded-2xl border border-divider bg-surface p-5 max-mobile:p-4"><p class="mb-4 mt-0 text-xs leading-5 text-muted">{{ source==='user'?$msg('Recorded file, folder and note changes across accounts. File and note contents are not shown.'):$msg('Successful account changes include the administrator and before/after role and quota. Records remain after account deletion.') }}</p><p v-if="error" role="alert" class="mb-4 text-sm text-danger">{{ $msg(error || '') }}</p><p v-if="loading&&!data" role="status" class="py-5 text-sm text-muted">{{ $msg("Loading history…") }}</p><AdminActivityList v-else :user-items="data?.source==='user'?data.items:[]" :admin-items="data?.source==='admin'?data.items:[]" /><button v-if="data?.nextCursor" type="button" class="admin-history-button mx-auto mt-5 flex" :disabled="loading" @click="load(true)">{{ $msg("Load more") }}</button></section>
     </div>
 </template>
 <style scoped>

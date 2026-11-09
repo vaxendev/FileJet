@@ -1,3 +1,4 @@
+import { localize } from './messages.ts'
 export async function getDroppedFolderFiles(dataTransfer: DataTransfer): Promise<File[]> {
     const items = Array.from(dataTransfer.items).filter(item => item.kind === 'file')
     const entries = items.map(item => item.webkitGetAsEntry?.())
@@ -9,7 +10,7 @@ export async function getDroppedFolderFiles(dataTransfer: DataTransfer): Promise
         if (files.length && files.every(file => file.webkitRelativePath?.includes('/')))
             return files
 
-        throw new Error('Drop folders here. Use the Files page to upload individual files.')
+        throw new Error(localize("Drop folders here. Use the Files page to upload individual files."))
     }
 
     return readFolderEntries(entries as FileSystemEntry[])
@@ -89,7 +90,7 @@ export async function getDroppedUploadItems(dataTransfer: DataTransfer): Promise
         } else if (file) {
             addFile(file)
         } else {
-            throw new Error('Could not read a dropped item. Please try selecting it with Upload.')
+            throw new Error(localize("Could not read a dropped item. Please try selecting it with Upload."))
         }
     }
 

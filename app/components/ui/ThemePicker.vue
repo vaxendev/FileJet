@@ -1,7 +1,7 @@
 <template>
     <fieldset class="theme-picker">
-        <legend class="text-sm font-semibold text-foreground">Theme</legend>
-        <p class="mt-1 text-xs leading-5 text-muted">Choose your workspace appearance.</p>
+        <legend class="text-sm font-semibold text-foreground">{{ $msg("Theme") }}</legend>
+        <p class="mt-1 text-xs leading-5 text-muted">{{ $msg("Choose your workspace appearance.") }}</p>
         <div class="mt-4 grid grid-cols-3 gap-2">
             <label v-for="option in themeModes" :key="option.value" class="theme-choice">
                 <input v-model="model" type="radio" :name="id" :value="option.value" class="peer sr-only">
@@ -15,7 +15,7 @@
                 </span>
             </label>
         </div>
-        <p class="mt-3 text-xs leading-5 text-muted">{{ model === 'system' ? 'Switches automatically with your device settings.' : model === 'light' ? 'A bright workspace with soft borders and clear text.' : 'A calm, dark workspace for any time of day.' }}</p>
+        <p class="mt-3 text-xs leading-5 text-muted">{{ model === 'system' ? $msg('Switches automatically with your device settings.') : model === 'light' ? $msg('A bright workspace with soft borders and clear text.') : $msg('A calm, dark workspace for any time of day.') }}</p>
     </fieldset>
 </template>
 

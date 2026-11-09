@@ -24,14 +24,14 @@
 
                             <div class="header-text min-w-0">
                                 <h2 class="m-0 text-foreground text-[1.1rem] font-semibold" id="note-modal-title">
-                                    {{ isEditing ? 'Edit note' : 'Create a note' }}
+                                    {{ isEditing ? $msg('Edit note') : $msg('Create a note') }}
                                 </h2>
 
                                 <p class="mt-1 mr-0 mb-0 ml-0 text-muted text-sm leading-normal">
                                     {{
                                         isEditing
-                                            ? 'Make changes to your note.'
-                                            : 'Capture your ideas and thoughts.'
+                                            ? $msg('Make changes to your note.')
+                                            : $msg('Capture your ideas and thoughts.')
                                     }}
                                 </p>
                             </div>
@@ -53,7 +53,7 @@
                         <div class="note-modal-body flex flex-col gap-4 py-4 px-0">
                             <div class="form-field flex flex-col gap-2">
                                 <div class="fielad-header flex items-center justify-between gap-2 text-sm leading-normal">
-                                    <label for="note-form-title"> Title </label>
+                                    <label for="note-form-title"> {{ $msg("Title") }} </label>
 
                                     <span class="text-muted text-xs leading-[inherit]">{{ title.length }} / 32</span>
                                 </div>
@@ -65,7 +65,7 @@
                                     v-model="title"
                                     type="text"
                                     maxlength="32"
-                                    placeholder="Enter your title..."
+                                    :placeholder='$msg("Enter your title...")'
                                     autocomplete="off"
                                     required
                                     :disabled="isLoading"
@@ -74,14 +74,14 @@
 
                             <div class="form-field flex flex-col gap-2">
                                 <MarkdownEditor id="note-form-content" v-model="content" :disabled="isLoading" />
-                                <span class="text-muted text-xs">{{ content.length }} characters</span>
+                                <span class="text-muted text-xs">{{ content.length }} {{ $msg("characters") }}</span>
                             </div>
                         </div>
 
                         <div class="note-modal-footer flex items-center gap-3 justify-between max-phone:flex-wrap">
                             <div class="footer-info flex items-center gap-3 text-muted text-xs leading-[inherit]">
                                 <Icon name="solar:document-text-linear" />
-                                <span>Plain text note</span>
+                                <span>{{ $msg("Plain text note") }}</span>
                             </div>
 
                             <div class="footer-actions flex items-center gap-3 max-phone:ml-auto">
@@ -94,7 +94,7 @@
                                     :disabled="isLoading"
                                     @click="closeModal"
                                 >
-                                    Cancel
+                                    {{ $msg("Cancel") }}
                                 </button>
 
                                 <button
@@ -116,10 +116,10 @@
                                     />
                                     {{
                                         isLoading
-                                            ? 'Saving...'
+                                            ? $msg('Saving...')
                                             : isEditing
-                                              ? 'Save changes'
-                                              : 'Create note'
+                                              ? $msg('Save changes')
+                                              : $msg('Create note')
                                     }}
                                 </button>
                             </div>
@@ -236,13 +236,13 @@ const saveNote = async () => {
     })
 
     if (!result.success) {
-        openToast(result.error.issues[0]?.message ?? 'Invalid note.', 'error', { notification: false })
+        openToast(result.error.issues[0]?.message ?? localize("Invalid note."), 'error', { notification: false })
 
         return
     }
 
     if (isEditing.value && !props.note?.id) {
-        openToast('No note selected.', 'error', { notification: false })
+        openToast(localize("No note selected."), 'error', { notification: false })
 
         return
     }
@@ -255,14 +255,14 @@ const saveNote = async () => {
         }
 
         openToast(
-            isEditing.value ? 'Note updated successfully.' : 'Note created successfully.',
-            'success', { notification: { title: isEditing.value ? 'Note updated' : 'Note created', category: 'library', href: '/notes' } }
+            isEditing.value ? localize("Note updated successfully.") : localize("Note created successfully."),
+            'success', { notification: { title: isEditing.value ? localize("Note updated") : localize("Note created"), category: 'library', href: '/notes' } }
         )
 
         emit('saved')
         closeModal()
     } catch (err: any) {
-        openToast(err?.data?.message || err?.message || 'Failed to save note.', 'error')
+        openToast(resolveApiError(err, localize("Failed to save note.")), 'error')
     }
 }
 </script>

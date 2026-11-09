@@ -2,6 +2,9 @@
   "name": "fileJetV2",
   "type": "module",
   "private": true,
+  "imports": {
+    "#shared/*": "./shared/*"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -9,7 +12,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "contract:emit": "prisma contract emit",
-    "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "test": "node --import ./tests/localization-setup.mjs --test --test-isolation=none tests/*.test.mjs",
     "typecheck": "nuxt typecheck",
     "storage:recover": "node maintenance/recover-uploads.mjs",
     "admin:promote": "node maintenance/promote-admin.mjs",
@@ -19,7 +22,12 @@
     "test:activity": "node tests/activity.integration.mjs",
     "test:note-versions": "node tests/note-versions.integration.mjs",
     "test:admin-activity": "node tests/admin-activity.integration.mjs",
-    "test:db": "node --env-file=.env --test --test-isolation=none tests/postgres-integrity.test.mjs"
+    "test:db": "node --env-file=.env --test --test-isolation=none tests/postgres-integrity.test.mjs",
+    "locales:build": "node maintenance/build-locales.mjs",
+    "prebuild": "npm run locales:build",
+    "predev": "npm run locales:build",
+    "pregenerate": "npm run locales:build",
+    "pretypecheck": "npm run locales:build"
   },
   "dependencies": {
     "@nuxt/icon": "^2.5.1",
@@ -40,6 +48,7 @@
   },
   "devDependencies": {
     "@iconify-json/solar": "^1.2.13",
+    "@nuxtjs/i18n": "^10.6.0",
     "@prisma/cli-engine": "^0.6.2",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.6.4",

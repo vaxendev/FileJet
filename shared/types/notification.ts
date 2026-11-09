@@ -1,3 +1,4 @@
+import type { MessageDescriptor } from '../utils/locale'
 export type NotificationKind = 'success' | 'error' | 'warning'
 export type NotificationCategory = 'activity' | 'upload' | 'library' | 'sharing' | 'account' | 'storage'
 
@@ -11,6 +12,8 @@ export interface NotificationInput {
 }
 
 export interface ActivityNotification {
+    titleI18n?: MessageDescriptor
+    messageI18n?: MessageDescriptor
     id: string
     title: string
     message: string

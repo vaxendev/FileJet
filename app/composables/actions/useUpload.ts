@@ -37,7 +37,7 @@ export const useUpload = (url: string, label: string) => {
             const endpoint = new URL(url, window.location.origin)
             const total = Array.from(files).reduce((sum, file) => sum + file.size, 0)
             uploads.set(id, { loaded: 0, total, transferred: false })
-            if (!currentUser.value) throw new Error('You need to be logged in.')
+            if (!currentUser.value) throw new Error(localize("You need to be logged in."))
             await uploadResumably(Array.from(files), {
                 kind: endpoint.pathname === '/api/notes/upload' ? 'notes' : endpoint.pathname === '/api/folders' ? 'folders' : 'files',
                 folderId: options?.folderId ?? endpoint.searchParams.get('folderId'), scope: currentUser.value.id, label,

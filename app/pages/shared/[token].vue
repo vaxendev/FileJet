@@ -1,6 +1,7 @@
 <template>
     <div class="shared-page public-share-page w-full h-dvh min-h-0 p-3 flex flex-col bg-canvas text-foreground
         overflow-hidden max-mobile:p-[0.6rem]">
+        <div class="flex shrink-0 justify-end pb-2"><LanguageSelector /></div>
         <div
             v-if="passwordRequired"
             class="shared-error flex-1 basis-0 min-w-0 min-h-0 flex items-center justify-center p-4 short-screen:p-0
@@ -16,7 +17,7 @@
                     name="solar:lock-keyhole-linear"
                     size="2.75rem"
                 />
-                <h1 class="m-0 text-foreground text-[clamp(1.2rem,_3vw,_1.5rem)] font-semibold leading-[1.35] wrap-anywhere">Password Protected</h1>
+                <h1 class="m-0 text-foreground text-[clamp(1.2rem,_3vw,_1.5rem)] font-semibold leading-[1.35] wrap-anywhere">{{ $msg("Password Protected") }}</h1>
                 <p
                     v-if="lockedFileName"
                     class="locked-filename max-w-84 m-0 text-content text-[0.85rem] leading-[1.7] w-full wrap-anywhere
@@ -28,20 +29,20 @@
                 <p class="max-w-84 m-0 text-muted text-[0.85rem] leading-[1.7]">
                     {{
                         passwordChallenge.itemType === 'folder'
-                            ? 'This folder is protected by a password.'
+                            ? $msg('This folder is protected by a password.')
                             : passwordChallenge.itemType === 'note'
-                              ? 'This note is protected by a password.'
-                              : 'This file is protected by a password.'
+                              ? $msg('This note is protected by a password.')
+                              : $msg('This file is protected by a password.')
                     }}
                 </p>
-                <label class="w-full text-left text-content text-sm leading-[inherit]" for="public-share-password">Password</label>
+                <label class="w-full text-left text-content text-sm leading-[inherit]" for="public-share-password">{{ $msg("Password") }}</label>
                 <div class="unlock-password-field relative w-full">
                     <input class="w-full h-11 py-0 px-3 text-foreground bg-input border border-control-border rounded-md text-sm
                         outline-none pr-11 focus:border-accent leading-[inherit]"
                         id="public-share-password"
                         v-model="sharePassword"
                         :type="showPassword ? 'text' : 'password'"
-                        placeholder="Enter password"
+                        :placeholder='$msg("Enter password")'
                         autocomplete="current-password"
                         required
                         maxlength="128"
@@ -54,7 +55,7 @@
                             text-muted bg-transparent cursor-pointer hover:text-foreground focus-visible:outline-2
                             focus-visible:outline-accent focus-visible:-outline-offset-2 disabled:opacity-65
                             disabled:cursor-wait size-11"
-                        :title="showPassword ? 'Hide password' : 'Show password'"
+                        :title="showPassword ? $msg('Hide password') : $msg('Show password')"
                         :disabled="unlocking"
                         @click="showPassword = !showPassword"
                     >
@@ -69,7 +70,7 @@
                     id="unlock-error"
                     class="unlock-error max-w-84 m-0 text-danger text-[0.85rem] leading-[1.7]"
                 >
-                    {{ unlockError }}
+                    {{ $msg(unlockError || '') }}
                 </p>
                 <button
                     type="submit"
@@ -78,12 +79,12 @@
                 >
                     {{
                         unlocking
-                            ? 'Unlocking...'
+                            ? $msg('Unlocking...')
                             : passwordChallenge.itemType === 'folder'
-                              ? 'Unlock Folder'
+                              ? $msg('Unlock Folder')
                               : passwordChallenge.itemType === 'note'
-                                ? 'Unlock Note'
-                                : 'Unlock File'
+                                ? $msg('Unlock Note')
+                                : $msg('Unlock File')
                     }}
                 </button>
             </form>
@@ -108,25 +109,25 @@
                 </div>
 
                 <span class="shared-error-code py-[0.35rem] px-3 text-accent bg-accent/12 border border-accent/25 rounded-md
-                    text-xs leading-[inherit] font-semibold tracking-[0.08em]">{{ error.statusCode || 'Error' }}</span>
+                    text-xs leading-[inherit] font-semibold tracking-[0.08em]">{{ error.statusCode || $msg('Error') }}</span>
 
                 <h1 class="m-0 text-foreground text-[clamp(1.2rem,_3vw,_1.5rem)] font-semibold leading-[1.35] wrap-anywhere">
                     {{
                         error.statusCode === 410
-                            ? 'Link Unavailable'
+                            ? $msg('Link Unavailable')
                             : error.statusCode === 403 || error.statusCode === 401
-                              ? 'Access Denied'
+                              ? $msg('Access Denied')
                               : error.statusCode === 404
-                                ? 'Shared item not found'
-                                : 'Unable to load shared item'
+                                ? $msg('Shared item not found')
+                                : $msg('Unable to load shared item')
                     }}
                 </h1>
 
                 <p class="max-w-84 m-0 text-muted text-[0.85rem] leading-[1.7]">
                     {{
                         error.statusCode === 404 || error.statusCode === 410
-                            ? 'This link may be invalid or no longer available. Ask the sender for a new link.'
-                            : 'Something went wrong while opening this link. Please try again in a moment.'
+                            ? $msg('This link may be invalid or no longer available. Ask the sender for a new link.')
+                            : $msg('Something went wrong while opening this link. Please try again in a moment.')
                     }}
                 </p>
             </div>
@@ -168,7 +169,7 @@
                             bg-control border border-control-border rounded-md cursor-pointer transition-colors duration-200
                             hover:text-foreground hover:bg-divider focus-visible:outline-2 focus-visible:outline-accent
                             focus-visible:outline-offset-2 size-[2.6rem]"
-                        :title="isImageFullscreen ? 'Exit fullscreen' : 'View fullscreen'"
+                        :title="isImageFullscreen ? $msg('Exit fullscreen') : $msg('View fullscreen')"
                         @click="toggleImageFullscreen"
                     >
                         <Icon class=""
@@ -187,7 +188,7 @@
                         v-if="textPreviewError"
                         class="error-message p-4 text-danger text-[0.9rem] min-h-0 overflow-auto wrap-anywhere"
                     >
-                        Text preview could not be loaded.
+                        {{ $msg("Text preview could not be loaded.") }}
                     </div>
 
                     <pre
@@ -240,14 +241,14 @@
                         border border-accent/25 rounded-md text-xs font-medium leading-[1.4] short-screen:col-start-2">
                         <span class="status-dot flex-none bg-accent rounded-full shadow-[0_0_0_3px_#8b7cff1a] size-[0.4rem]" />
                         {{
-                            downloadedToken === token ? 'Download started' : 'Starting download...'
+                            downloadedToken === token ? $msg('Download started') : $msg('Starting download...')
                         }}
                     </div>
 
                     <p class="shrink-0 max-w-112 m-0 text-muted text-[0.85rem] leading-[1.6] short-screen:col-start-2
                         short-screen:text-[0.8rem] short-screen:leading-normal">
-                        Your file will download automatically.<br class="" />
-                        If it hasn't started, use the button below.
+                        {{ $msg("Your file will download automatically.") }}<br class="" />
+                        {{ $msg("If it hasn't started, use the button below.") }}
                     </p>
 
                     <button
@@ -261,7 +262,7 @@
                             size="1.2rem"
                         />
 
-                        Download File
+                        {{ $msg("Download File") }}
                     </button>
                 </div>
             </div>
@@ -276,7 +277,7 @@
                     <a
                         class="download-btn m-0 no-underline"
                         :href="downloadUrl"
-                        >Download Note</a
+                        >{{ $msg("Download Note") }}</a
                     >
                 </div>
                 <MarkdownContent :content="sharedItem.item.content" />
@@ -393,15 +394,15 @@ const unlockShare = async () => {
         await refresh()
 
         if (error.value?.statusCode === 401)
-            unlockError.value = 'Access could not be verified. Please try again.'
+            unlockError.value = localize("Access could not be verified. Please try again.")
     } catch (err: any) {
         const status = err?.statusCode || err?.status || err?.response?.status
         unlockError.value =
             status === 401
-                ? 'Incorrect password. Please try again.'
+                ? localize("Incorrect password. Please try again.")
                 : status === 429
-                  ? 'Too many attempts. Please try again later.'
-                  : err?.data?.message || 'Unable to unlock this file. Please try again.'
+                  ? localize("Too many attempts. Please try again later.")
+                  : resolveApiError(err, localize("Unable to unlock this file. Please try again."))
 
         if (status === 410 || status === 404 || status === 409) await refresh()
     } finally {

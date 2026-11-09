@@ -21,7 +21,7 @@
         @delete="remove"
         @share-changed="note.share = $event"
     >
-        <template #mobile-actions><button type="button" :disabled="busy" @click="showHistory"><Icon name="solar:history-linear" /> Version history</button></template>
+        <template #mobile-actions><button type="button" :disabled="busy" @click="showHistory"><Icon name="solar:history-linear" /> {{ $msg("Version history") }}</button></template>
         <template #extra>
             <NoteVersionHistory ref="historyPanel" :note-id="note.id" :revision="note.revision" :title="note.title" :content="note.content" :disabled="dirty || busy" :locked="busy" @changed="versionRestored" @restoring="restoring = $event" />
             <OfflineNoteButton :note="note" :disabled="dirty || busy" />
@@ -31,13 +31,13 @@
             class="note-reader flex-1 min-w-0 min-h-0 flex flex-col justify-start gap-4 p-5 overflow-auto
                 overscroll-contain text-left max-phone:p-3"
         >
-            <div class="reader-heading w-full min-w-0 m-0 flex items-baseline justify-between flex-wrap gap-2">
-                <h2 class="m-0 text-foreground text-xl font-semibold leading-[1.4] wrap-anywhere">{{ note.title }}</h2>
+            <div class="reader-heading w-full min-w-0 shrink-0 m-0 flex items-baseline justify-between flex-wrap gap-2 border-b border-divider pb-4">
+                <h2 class="m-0 text-foreground text-lg font-semibold leading-normal tracking-tight wrap-anywhere">{{ note.title }}</h2>
                 <span
                     v-if="dirty"
                     class="unsaved-state text-muted text-[0.8125rem]"
                 >
-                    Unsaved changes kept in Edit
+                    {{ $msg("Unsaved changes kept in Edit") }}
                 </span>
             </div>
 
@@ -55,8 +55,8 @@
                     name="solar:notebook-linear"
                     size="2rem"
                 />
-                <strong class="text-content text-sm leading-[inherit]">This note is empty</strong>
-                <p class="m-0 text-[0.8125rem] leading-[1.6]">Choose Edit to add content.</p>
+                <strong class="text-content text-sm leading-[inherit]">{{ $msg("This note is empty") }}</strong>
+                <p class="m-0 text-[0.8125rem] leading-[1.6]">{{ $msg("Choose Edit to add content.") }}</p>
             </div>
         </article>
 
@@ -66,7 +66,7 @@
             @submit.prevent="save"
         >
             <div class="editor-heading flex items-center justify-between gap-3 flex-wrap">
-                <label class="text-foreground text-sm leading-[inherit] font-medium" for="note-title">Note title</label>
+                <label class="text-foreground text-sm leading-[inherit] font-medium" for="note-title">{{ $msg("Note title") }}</label>
                 <span
                     class="autosave-status text-muted text-[0.8125rem]" role="status" aria-live="polite"
                 >
@@ -91,7 +91,7 @@
                 v-if="saveError"
                 class="editor-error text-danger m-0"
             >
-                {{ saveError }} <button type="button" class="ml-2 underline cursor-pointer" :disabled="isSaving" @click="flush()">Retry save</button>
+                {{ $msg(saveError || '') }} <button type="button" class="ml-2 underline cursor-pointer" :disabled="isSaving" @click="flush()">{{ $msg("Retry save") }}</button>
             </p>
             <div class="editor-actions flex items-center justify-end gap-3 flex-wrap">
                 <button class="text-content bg-control border border-control-border rounded-md py-2.5 px-3 min-w-0 cursor-pointer
@@ -100,7 +100,7 @@
                     :disabled="busy"
                     @click="cancel"
                 >
-                    {{ dirty ? 'Discard unsaved' : 'Done' }}
+                    {{ dirty ? $msg('Discard unsaved') : $msg('Done') }}
                 </button>
                 <button
                     type="submit"
@@ -108,7 +108,7 @@
                         border-primary hover:enabled:bg-primary/85 disabled:opacity-60 disabled:cursor-not-allowed"
                     :disabled="busy || !dirty"
                 >
-                    {{ isSaving ? 'Saving...' : 'Save' }}
+                    {{ isSaving ? $msg('Saving...') : $msg('Save') }}
                 </button>
             </div>
         </form>
@@ -118,7 +118,7 @@
                 class="note-edit-title flex flex-col gap-3"
                 @submit.prevent="save"
             >
-                <label class="text-foreground text-sm leading-[inherit] font-medium" for="note-edit-title">Note title</label>
+                <label class="text-foreground text-sm leading-[inherit] font-medium" for="note-edit-title">{{ $msg("Note title") }}</label>
                 <input class="text-content bg-control border border-control-border rounded-md py-2.5 px-3 min-w-0
                     focus:outline-none focus:border-accent"
                     id="note-edit-title"
@@ -127,12 +127,12 @@
                     required
                     :disabled="isDeleting"
                 />
-                <p class="text-muted text-[0.8125rem]" role="status" aria-live="polite">{{ saveStatus }} · Changes save automatically.</p>
+                <p class="text-muted text-[0.8125rem]" role="status" aria-live="polite">{{ saveStatus }} {{ $msg("· Changes save automatically.") }}</p>
                 <p
                     v-if="saveError"
                     class="editor-error text-danger text-[0.8125rem] m-0"
                 >
-                    {{ saveError }}
+                    {{ $msg(saveError || '') }}
                 </p>
                 <div class="editor-actions flex items-center justify-end gap-3 flex-wrap">
                     <button class="text-content bg-control border border-control-border rounded-md py-2.5 px-3 min-w-0 cursor-pointer
@@ -141,7 +141,7 @@
                         :disabled="isDeleting"
                         @click="cancel"
                     >
-                        {{ dirty ? 'Discard unsaved' : 'Done' }}
+                        {{ dirty ? $msg('Discard unsaved') : $msg('Done') }}
                     </button>
                     <button
                         type="submit"
@@ -149,7 +149,7 @@
                             border-primary hover:enabled:bg-primary/85 disabled:opacity-60 disabled:cursor-not-allowed"
                         :disabled="busy || !dirty"
                     >
-                        {{ isSaving ? 'Saving...' : 'Save' }}
+                        {{ isSaving ? $msg('Saving...') : $msg('Save') }}
                     </button>
                 </div>
             </form>
@@ -159,16 +159,16 @@
         v-else
         class="detail-error p-5 text-content"
     >
-        <h1>Unable to load note</h1>
-        <p>The note could not be found or accessed.</p>
+        <h1>{{ $msg("Unable to load note") }}</h1>
+        <p>{{ $msg("The note could not be found or accessed.") }}</p>
         <button class="text-content bg-control border border-control-border rounded-md py-2.5 px-3 min-w-0 cursor-pointer
             hover:enabled:bg-divider disabled:opacity-60 disabled:cursor-not-allowed"
             type="button"
             @click="refresh()"
         >
-            Try again
+            {{ $msg("Try again") }}
         </button>
-        <NuxtLink class="text-accent ml-3" :to="returnPage.path">Back to {{ returnPage.name }}</NuxtLink>
+        <NuxtLink class="text-accent ml-3" :to="returnPage.path">{{ $msg("Back to") }} {{ returnPage.name }}</NuxtLink>
     </div>
 </template>
 
@@ -211,7 +211,7 @@ const { draftTitle, draftContent, dirty, isSaving, saveError, saveStatus, flush,
     write: async value => (await updateNote(id, value)).note,
     validate: value => {
         const result = noteSchema.safeParse(value)
-        return result.success ? null : result.error.issues[0]?.message ?? 'Invalid note.'
+        return result.success ? null : result.error.issues[0]?.message ?? localize("Invalid note.")
     },
     saved: value => {
         const listed = notes.value.find(item => item.id === id)
@@ -254,7 +254,7 @@ const save = async () => {
     if (!note.value || !isEditing.value || busy.value || !dirty.value) return
     if (await flush()) {
         activeTab.value = 'details'
-        openToast('Note saved successfully.', 'success')
+        openToast(localize("Note saved successfully."), 'success')
     }
 }
 
@@ -275,9 +275,9 @@ const toggleFavorite = async () => {
         else await addFavorite(id, 'note')
 
         await fetchFavorites()
-        openToast('Favorite updated.', 'success')
+        openToast(localize("Favorite updated."), 'success')
     } catch (error: any) {
-        openToast(error.data?.message || error.message || 'Could not update favorite.', 'error')
+        openToast(resolveApiError(error, localize("Could not update favorite.")), 'error')
     } finally {
         isFavoriting.value = false
     }
@@ -292,7 +292,7 @@ const remove = async () => {
         cancel()
         await goBack()
     } catch (error: any) {
-        openToast(error.data?.message || error.message || 'Could not delete note.', 'error')
+        openToast(resolveApiError(error, localize("Could not delete note.")), 'error')
     }
 }
 
@@ -304,25 +304,25 @@ const metadataRows = computed(() => {
     const sharing = item.share
 
     return [
-        { label: 'Note title', value: item.title },
-        { label: 'Size', value: formatFileSize(item.size) },
-        { label: 'Character count', value: Array.from(item.content).length },
+        { get label() { return localize("Note title") }, value: item.title },
+        { get label() { return localize("Size") }, value: formatFileSize(item.size) },
+        { get label() { return localize("Character count") }, value: Array.from(item.content).length },
         {
-            label: 'Word count',
+            get label() { return localize("Word count") },
             value: item.content.trim() ? item.content.trim().split(/\s+/u).length : 0
         },
-        { label: 'Created date', value: item.created_at ? formatFileTime(item.created_at) : null },
-        { label: 'Modified date', value: item.updated_at ? formatFileTime(item.updated_at) : null },
-        { label: 'Folder', value: item.folder?.name ?? 'None' },
-        { label: 'Favorite status', value: isFavorite.value ? 'Favorited' : 'Not favorited' },
+        { get label() { return localize("Created date") }, value: item.created_at ? formatFileTime(item.created_at) : null },
+        { get label() { return localize("Modified date") }, value: item.updated_at ? formatFileTime(item.updated_at) : null },
+        { get label() { return localize("Folder") }, value: item.folder?.name ?? 'None' },
+        { get label() { return localize("Favorite status") }, value: isFavorite.value ? 'Favorited' : localize("Not favorited") },
         {
-            label: 'Share status',
-            value: !sharing.url ? 'Not shared' : sharing.isExpired ? 'Expired' : 'Active'
+            get label() { return localize("Share status") },
+            value: !sharing.url ? localize("Not shared") : sharing.isExpired ? localize("Expired") : localize("Active")
         },
-        { label: 'Password protection', value: sharing.hasPassword ? 'Enabled' : 'Disabled' },
+        { get label() { return localize("Password protection") }, value: sharing.hasPassword ? localize("Enabled") : localize("Disabled") },
         {
-            label: 'Link expiration',
-            value: sharing.expiresAt ? new Date(sharing.expiresAt).toLocaleString('en-US') : 'Never'
+            get label() { return localize("Link expiration") },
+            value: sharing.expiresAt ? new Date(sharing.expiresAt).toLocaleString(currentLocaleTag()) : 'Never'
         }
     ]
 })

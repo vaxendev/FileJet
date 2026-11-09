@@ -105,18 +105,18 @@ onBeforeUnmount(() => { observer?.disconnect(); pointers.clear() })
             :style="{ transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})` }"
             @load="loaded" @error="emit('error', $event)" />
         <div v-if="editable || previous || next" class="image-viewer-tools" @pointerdown.stop @pointerup.stop @click.stop>
-            <button v-if="editable" type="button" class="image-tool-button" @click="emit('edit')">Edit image</button>
+            <button v-if="editable" type="button" class="image-tool-button" @click="emit('edit')">{{ $msg("Edit image") }}</button>
             <span v-if="position" class="image-gallery-position">{{ position }}</span>
         </div>
         <div v-if="previous || next" class="image-gallery-buttons" @pointerdown.stop @pointerup.stop @click.stop>
-            <button type="button" class="image-tool-button" aria-label="Previous image" :disabled="!previous" @click="emit('navigate', -1)">‹</button>
-            <button type="button" class="image-tool-button" aria-label="Next image" :disabled="!next" @click="emit('navigate', 1)">›</button>
+            <button type="button" class="image-tool-button" :aria-label='$msg("Previous image")' :disabled="!previous" @click="emit('navigate', -1)">‹</button>
+            <button type="button" class="image-tool-button" :aria-label='$msg("Next image")' :disabled="!next" @click="emit('navigate', 1)">›</button>
         </div>
-        <div v-if="interactive" class="image-zoom-controls" role="group" aria-label="Image zoom"
+        <div v-if="interactive" class="image-zoom-controls" role="group" :aria-label='$msg("Image zoom")'
             @pointerdown.stop @pointerup.stop @pointercancel.stop @click.stop>
-            <button type="button" aria-label="Zoom out" :disabled="transform.scale <= 1" @click="changeZoom(-0.5)">−</button>
-            <button type="button" class="image-zoom-reset" aria-label="Fit image to screen" @click="reset">{{ Math.round(transform.scale * 100) }}%</button>
-            <button type="button" aria-label="Zoom in" :disabled="transform.scale >= 5" @click="changeZoom(0.5)">+</button>
+            <button type="button" :aria-label='$msg("Zoom out")' :disabled="transform.scale <= 1" @click="changeZoom(-0.5)">−</button>
+            <button type="button" class="image-zoom-reset" :aria-label='$msg("Fit image to screen")' @click="reset">{{ Math.round(transform.scale * 100) }}%</button>
+            <button type="button" :aria-label='$msg("Zoom in")' :disabled="transform.scale >= 5" @click="changeZoom(0.5)">+</button>
         </div>
     </div>
 </template>

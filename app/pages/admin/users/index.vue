@@ -2,14 +2,14 @@
     <div class="space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-                <p class="mb-2 text-xs font-medium text-accent">Account management</p>
-                <h1 class="text-2xl font-semibold tracking-tight text-foreground">Users</h1>
-                <p class="mt-1 text-sm text-muted">Manage accounts, passwords, roles and storage limits.</p>
+                <p class="mb-2 text-xs font-medium text-accent">{{ $msg("Account management") }}</p>
+                <h1 class="text-2xl font-semibold tracking-tight text-foreground">{{ $msg("Users") }}</h1>
+                <p class="mt-1 text-sm text-muted">{{ $msg("Manage accounts, passwords, roles and storage limits.") }}</p>
             </div>
-            <div class="flex gap-2"><button class="admin-button" :disabled="pending || saving" @click="refreshUsers()">Refresh</button><NuxtLink to="/admin/users/new" class="admin-button bg-primary! text-on-primary! no-underline">Add user</NuxtLink></div>
+            <div class="flex gap-2"><button class="admin-button" :disabled="pending || saving" @click="refreshUsers()">{{ $msg("Refresh") }}</button><NuxtLink to="/admin/users/new" class="admin-button bg-primary! text-on-primary! no-underline">{{ $msg("Add user") }}</NuxtLink></div>
         </div>
 
-        <p v-if="error" role="alert" class="rounded-xl border border-danger-border bg-danger-surface p-4 text-sm text-danger">Could not load administration data. Try Refresh.</p>
+        <p v-if="error" role="alert" class="rounded-xl border border-danger-border bg-danger-surface p-4 text-sm text-danger">{{ $msg("Could not load administration data. Try Refresh.") }}</p>
         <Teleport to="body">
             <dialog ref="editDialog" aria-labelledby="edit-user-title" aria-describedby="edit-user-description"
                 class="m-auto w-[min(36rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-control-border bg-surface p-0 text-foreground shadow-2xl backdrop:bg-black/65"
@@ -17,41 +17,41 @@
                 <form v-if="selected" class="space-y-5 p-5 max-phone:p-4" :aria-busy="saving" @submit.prevent="saveUser">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <h2 id="edit-user-title" class="text-lg font-semibold wrap-anywhere">Edit {{ selected.username }}</h2>
-                            <p id="edit-user-description" class="mt-1 text-xs leading-5 text-muted">Currently using {{ formatFileSize(selected.storageUsed) }}. Update this account below.</p>
+                            <h2 id="edit-user-title" class="text-lg font-semibold wrap-anywhere">{{ $msg("Edit") }} {{ selected.username }}</h2>
+                            <p id="edit-user-description" class="mt-1 text-xs leading-5 text-muted">{{ $msg("Currently using") }} {{ formatFileSize(selected.storageUsed) }}. Update this account below.</p>
                         </div>
-                        <button type="button" class="admin-button shrink-0 px-2!" aria-label="Close user editor" :disabled="saving" @click="closeEditor"><Icon name="solar:close-circle-linear" size="22" /></button>
+                        <button type="button" class="admin-button shrink-0 px-2!" :aria-label='$msg("Close user editor")' :disabled="saving" @click="closeEditor"><Icon name="solar:close-circle-linear" size="22" /></button>
                     </div>
                     <div class="grid grid-cols-2 gap-4 max-mobile:grid-cols-1">
-                        <label class="space-y-2 text-sm text-content"><span class="block">Username</span><input ref="usernameInput" v-model="draftUsername" type="text" required minlength="3" maxlength="50" autocomplete="off" class="admin-input" :disabled="saving" /></label>
-                        <label class="space-y-2 text-sm text-content"><span class="block">Email <span class="text-xs text-muted">(optional)</span></span><input v-model="draftEmail" type="email" maxlength="255" autocomplete="off" class="admin-input" :disabled="saving" /></label>
+                        <label class="space-y-2 text-sm text-content"><span class="block">{{ $msg("Username") }}</span><input ref="usernameInput" v-model="draftUsername" type="text" required minlength="3" maxlength="50" autocomplete="off" class="admin-input" :disabled="saving" /></label>
+                        <label class="space-y-2 text-sm text-content"><span class="block">{{ $msg("Email") }} <span class="text-xs text-muted">{{ $msg("(optional)") }}</span></span><input v-model="draftEmail" type="email" maxlength="255" autocomplete="off" class="admin-input" :disabled="saving" /></label>
                     </div>
                     <div class="grid grid-cols-2 gap-4 max-mobile:grid-cols-1">
                         <label class="space-y-2 text-sm text-content">
-                            <span class="block">Role</span>
+                            <span class="block">{{ $msg("Role") }}</span>
                             <select v-model="draftRole" class="admin-input" :disabled="saving || selected.id === currentUser?.id">
-                                <option value="USER">User</option><option value="ADMIN">Administrator</option>
+                                <option value="USER">{{ $msg("User") }}</option><option value="ADMIN">{{ $msg("Administrator") }}</option>
                             </select>
-                            <span v-if="selected.id === currentUser?.id" class="block text-xs text-muted">Your own administrator role cannot be removed.</span>
+                            <span v-if="selected.id === currentUser?.id" class="block text-xs text-muted">{{ $msg("Your own administrator role cannot be removed.") }}</span>
                         </label>
                         <label class="space-y-2 text-sm text-content">
-                            <span class="block">Storage limit (MiB)</span>
+                            <span class="block">{{ $msg("Storage limit (MiB)") }}</span>
                             <input v-model="draftQuota" type="number" min="0" step="any" required class="admin-input" :disabled="saving" />
-                            <span class="block text-xs text-muted">1,024 MiB = 1 GiB. The limit must cover current usage.</span>
+                            <span class="block text-xs text-muted">{{ $msg("1,024 MiB = 1 GiB. The limit must cover current usage.") }}</span>
                         </label>
                     </div>
                     <fieldset class="space-y-3 border-t border-divider pt-4" :disabled="saving">
-                        <legend class="pr-2 text-sm font-medium text-foreground">Change password</legend>
-                        <p class="text-xs leading-5 text-muted">Leave both fields blank to keep the current password. You can set a new password without the user's current password.</p>
+                        <legend class="pr-2 text-sm font-medium text-foreground">{{ $msg("Change password") }}</legend>
+                        <p class="text-xs leading-5 text-muted">{{ $msg("Leave both fields blank to keep the current password. You can set a new password without the user's current password.") }}</p>
                         <div class="grid grid-cols-2 gap-4 max-mobile:grid-cols-1">
-                            <label class="space-y-2 text-sm text-content"><span class="block">New password</span><input v-model="draftPassword" type="password" minlength="8" maxlength="100" autocomplete="new-password" class="admin-input" /><span class="block text-xs text-muted">At least 8 characters.</span></label>
-                            <label class="space-y-2 text-sm text-content"><span class="block">Confirm new password</span><input v-model="draftConfirmPassword" type="password" :required="Boolean(draftPassword)" maxlength="100" autocomplete="new-password" class="admin-input" /></label>
+                            <label class="space-y-2 text-sm text-content"><span class="block">{{ $msg("New password") }}</span><input v-model="draftPassword" type="password" minlength="8" maxlength="100" autocomplete="new-password" class="admin-input" /><span class="block text-xs text-muted">{{ $msg("At least 8 characters.") }}</span></label>
+                            <label class="space-y-2 text-sm text-content"><span class="block">{{ $msg("Confirm new password") }}</span><input v-model="draftConfirmPassword" type="password" :required="Boolean(draftPassword)" maxlength="100" autocomplete="new-password" class="admin-input" /></label>
                         </div>
                     </fieldset>
-                    <p v-if="saveError" role="alert" class="text-sm text-danger">{{ saveError }}</p>
+                    <p v-if="saveError" role="alert" class="text-sm text-danger">{{ $msg(saveError || '') }}</p>
                     <div class="flex flex-wrap justify-end gap-2 border-t border-divider pt-4">
-                        <button type="button" class="admin-button" :disabled="saving" @click="closeEditor">Cancel</button>
-                        <button type="submit" class="admin-button bg-primary! text-on-primary!" :disabled="saving">{{ saving ? 'Saving...' : 'Save changes' }}</button>
+                        <button type="button" class="admin-button" :disabled="saving" @click="closeEditor">{{ $msg("Cancel") }}</button>
+                        <button type="submit" class="admin-button bg-primary! text-on-primary!" :disabled="saving">{{ saving ? $msg('Saving...') : $msg('Save changes') }}</button>
                     </div>
                 </form>
             </dialog>
@@ -59,33 +59,33 @@
 
         <section class="overflow-hidden rounded-xl border border-divider bg-surface">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-divider p-4">
-                <h2 class="text-sm font-semibold text-foreground">Users <span class="text-muted">({{ data?.total ?? 0 }})</span></h2>
+                <h2 class="text-sm font-semibold text-foreground">{{ $msg("Users") }} <span class="text-muted">({{ data?.total ?? 0 }})</span></h2>
                 <form class="flex min-w-0 flex-wrap gap-2" @submit.prevent="applySearch">
-                    <input v-model="searchDraft" aria-label="Search users" maxlength="100" placeholder="Username or email" type="search" class="admin-input w-60! max-mobile:w-full!" />
-                    <button type="submit" class="admin-button" :disabled="saving">Search</button>
+                    <input v-model="searchDraft" :aria-label='$msg("Search users")' maxlength="100" :placeholder='$msg("Username or email")' type="search" class="admin-input w-60! max-mobile:w-full!" />
+                    <button type="submit" class="admin-button" :disabled="saving">{{ $msg("Search") }}</button>
                 </form>
             </div>
-            <p v-if="pending" role="status" class="p-5 text-sm text-muted">Loading users...</p>
+            <p v-if="pending" role="status" class="p-5 text-sm text-muted">{{ $msg("Loading users...") }}</p>
             <div v-else class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead class="text-xs text-muted"><tr>
-                        <th class="p-4 font-medium">Account</th><th class="p-4 font-medium">Role</th>
-                        <th class="p-4 font-medium">Storage</th><th class="p-4 font-medium"><span class="sr-only">Actions</span></th>
+                        <th class="p-4 font-medium">{{ $msg("Account") }}</th><th class="p-4 font-medium">{{ $msg("Role") }}</th>
+                        <th class="p-4 font-medium">{{ $msg("Storage") }}</th><th class="p-4 font-medium"><span class="sr-only">{{ $msg("Actions") }}</span></th>
                     </tr></thead>
                     <tbody>
                         <tr v-for="user in data?.users" :key="user.id" class="border-t border-divider">
-                            <td class="p-4"><p class="font-medium text-foreground wrap-anywhere"><NuxtLink :to="`/admin/users/${user.id}`" class="text-foreground no-underline hover:text-accent">{{ user.username }}</NuxtLink> <span v-if="user.id === currentUser?.id" class="text-xs text-muted">(you)</span></p><p class="mt-1 text-xs text-muted wrap-anywhere">{{ user.email || 'No email' }}</p></td>
-                            <td class="p-4"><span class="rounded-md bg-control px-2 py-1 text-xs text-content">{{ user.role === 'ADMIN' ? 'Admin' : 'User' }}</span></td>
+                            <td class="p-4"><p class="font-medium text-foreground wrap-anywhere"><NuxtLink :to="`/admin/users/${user.id}`" class="text-foreground no-underline hover:text-accent">{{ user.username }}</NuxtLink> <span v-if="user.id === currentUser?.id" class="text-xs text-muted">{{ $msg("(you)") }}</span></p><p class="mt-1 text-xs text-muted wrap-anywhere">{{ user.email || $msg('No email') }}</p></td>
+                            <td class="p-4"><span class="rounded-md bg-control px-2 py-1 text-xs text-content">{{ user.role === 'ADMIN' ? $msg('Admin') : $msg('User') }}</span></td>
                             <td class="p-4 text-xs text-content whitespace-nowrap">{{ formatFileSize(user.storageUsed) }} / {{ formatFileSize(user.storageLimit) }}</td>
-                            <td class="p-4 text-right"><div class="flex justify-end gap-2"><NuxtLink :to="`/admin/users/${user.id}`" class="admin-button no-underline" :aria-label="`Details for ${user.username}`">Details</NuxtLink><button class="admin-button" :aria-label="`Edit ${user.username}`" :disabled="saving" @click="editUser(user)">Edit</button></div></td>
+                            <td class="p-4 text-right"><div class="flex justify-end gap-2"><NuxtLink :to="`/admin/users/${user.id}`" class="admin-button no-underline" :aria-label="$msg('Details for {p0}', { p0: user.username })">{{ $msg("Details") }}</NuxtLink><button class="admin-button" :aria-label="$msg('Edit {p0}', { p0: user.username })" :disabled="saving" @click="editUser(user)">{{ $msg("Edit") }}</button></div></td>
                         </tr>
-                        <tr v-if="!data?.users.length"><td colspan="4" class="p-6 text-center text-muted">No users found.</td></tr>
+                        <tr v-if="!data?.users.length"><td colspan="4" class="p-6 text-center text-muted">{{ $msg("No users found.") }}</td></tr>
                     </tbody>
                 </table>
             </div>
             <div class="flex items-center justify-between gap-2 border-t border-divider p-4 text-xs text-muted">
-                <span>Page {{ page }} of {{ totalPages }}</span>
-                <div class="flex gap-2"><button class="admin-button" :disabled="page <= 1 || pending || saving" @click="page--">Previous</button><button class="admin-button" :disabled="page >= totalPages || pending || saving" @click="page++">Next</button></div>
+                <span>{{ $msg("Page") }} {{ page }} {{ $msg("of") }} {{ totalPages }}</span>
+                <div class="flex gap-2"><button class="admin-button" :disabled="page <= 1 || pending || saving" @click="page--">{{ $msg("Previous") }}</button><button class="admin-button" :disabled="page >= totalPages || pending || saving" @click="page++">{{ $msg("Next") }}</button></div>
             </div>
         </section>
     </div>
@@ -98,7 +98,7 @@ import { modalBackdrop } from '~/utils/modalBackdrop'
 import { adminUserUpdateSchema } from '~~/shared/schemas/admin'
 
 definePageMeta({ layout: 'admin', middleware: ['auth', 'admin'] })
-useHead({ title: 'Users · FileJet Admin' })
+useHead({ get title() { return localize("Users · FileJet Admin") } })
 const currentUser = useAuthUser()
 const { openToast } = useToast()
 const page = ref(1)
@@ -156,16 +156,16 @@ const saveUser = async () => {
         ...(draftPassword.value || draftConfirmPassword.value ? { newPassword: draftPassword.value, confirmPassword: draftConfirmPassword.value } : {})
     }
     const validation = adminUserUpdateSchema.safeParse(body)
-    if (!validation.success) { saveError.value = validation.error.issues[0]?.message ?? 'Invalid user settings.'; return }
+    if (!validation.success) { saveError.value = validation.error.issues[0]?.message ?? localize("Invalid user settings."); return }
     saving.value = true
     try {
         const result = await $fetch(`/api/admin/users/${selected.value.id}`, { method: 'PATCH', body })
         if (currentUser.value?.id === result.user.id) currentUser.value = { ...currentUser.value, ...result.user }
         saving.value = false
         closeEditor()
-        openToast('User settings saved.', 'success')
+        openToast(localize("User settings saved."), 'success')
         await refreshUsers()
-    } catch (error: any) { saveError.value = error?.data?.message || 'Could not save user settings.' }
+    } catch (error: any) { saveError.value = resolveApiError(error, localize("Could not save user settings.")) }
     finally { saving.value = false }
 }
 </script>

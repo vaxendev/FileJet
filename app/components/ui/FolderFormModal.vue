@@ -14,13 +14,13 @@
                         leading-[inherit] size-11"><Icon name="solar:folder-bold" /></div>
                     <div class="modal-heading flex-1 min-w-0">
                         <h2 class="m-0 text-[1.1rem]" :id="`${id}-title`">
-                            {{ isEditing ? 'Rename folder' : 'New folder' }}
+                            {{ isEditing ? $msg('Rename folder') : $msg('New folder') }}
                         </h2>
                         <p class="mt-[0.35rem] mr-0 mb-0 ml-0 text-heading-muted text-[0.8rem] leading-normal" :id="`${id}-description`">
                             {{
                                 isEditing
-                                    ? 'Choose a new name for your folder.'
-                                    : 'Keep your files organized in one place.'
+                                    ? $msg('Choose a new name for your folder.')
+                                    : $msg('Keep your files organized in one place.')
                             }}
                         </p>
                     </div>
@@ -37,7 +37,7 @@
                     </button>
                 </div>
                 <div class="form-field flex flex-col gap-2 my-6 mx-0">
-                    <label class="text-sm leading-[inherit] font-medium" :for="`${id}-name`">Folder name</label>
+                    <label class="text-sm leading-[inherit] font-medium" :for="`${id}-name`">{{ $msg("Folder name") }}</label>
                     <input class="w-full min-h-11 py-[0.6rem] px-3 text-foreground bg-canvas border border-control-border rounded-md
                         text-sm focus:outline-none focus:valid-field:border-accent is-invalid:border-danger
                         leading-[inherit]"
@@ -46,7 +46,7 @@
                         v-model="name"
                         :class="{ invalid: Boolean(message) }"
                         type="text"
-                        placeholder="Untitled folder"
+                        :placeholder='$msg("Untitled folder")'
                         autocomplete="off"
                         maxlength="255"
                         required
@@ -72,7 +72,7 @@
                         :disabled="isLoading"
                         @click="close"
                     >
-                        Cancel
+                        {{ $msg("Cancel") }}
                     </button>
                     <button
                         type="submit"
@@ -83,7 +83,7 @@
                         :disabled="!canSubmit"
                     >
                         <Icon :name="isEditing ? 'solar:pen-bold' : 'solar:add-circle-bold'" />
-                        {{ isLoading ? 'Saving...' : isEditing ? 'Save changes' : 'Create folder' }}
+                        {{ isLoading ? $msg('Saving...') : isEditing ? $msg('Save changes') : $msg('Create folder') }}
                     </button>
                 </div>
             </form>
@@ -118,8 +118,8 @@ const validation = computed(() => folderNameSchema.safeParse(name.value))
 
 const message = computed(
     () =>
-        saveError.value ||
-        (name.value && !validation.value.success ? validation.value.error.issues[0]?.message : '')
+        localize(saveError.value ||
+        (name.value && !validation.value.success ? validation.value.error.issues[0]?.message : ''))
 )
 
 const canSubmit = computed(
@@ -166,13 +166,13 @@ const save = async () => {
         else await createFolder(validation.value.data, props.parentFolderId)
 
         openToast(
-            isEditing.value ? 'Folder renamed successfully.' : 'Folder created successfully.',
-            'success', { notification: { title: isEditing.value ? 'Folder renamed' : 'Folder created', category: 'library', href: '/folders' } }
+            isEditing.value ? localize("Folder renamed successfully.") : localize("Folder created successfully."),
+            'success', { notification: { title: isEditing.value ? localize("Folder renamed") : localize("Folder created"), category: 'library', href: '/folders' } }
         )
         emit('saved')
         emit('close')
     } catch (error: any) {
-        saveError.value = error.data?.message || error.message || 'Could not save folder.'
+        saveError.value = resolveApiError(error, localize("Could not save folder."))
     }
 }
 </script>

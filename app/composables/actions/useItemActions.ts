@@ -45,7 +45,7 @@ export const useItemActions = () => {
             }
         } catch (error: any) {
             if (error.data instanceof Blob) {
-                let message = 'Could not download the selected items.'
+                let message = localize("Could not download the selected items.")
 
                 try {
                     const body = JSON.parse(await error.data.text())

@@ -7,7 +7,7 @@ export const useInboxFolders = () => {
     const loadFolders = async () => {
         loadingFolders.value = true; folderError.value = ''
         try { folders.value = (await $fetch('/api/folders')).folders }
-        catch { folderError.value = 'Could not load folders.' }
+        catch { folderError.value = localize("Could not load folders.") }
         finally { loadingFolders.value = false }
     }
     return { folders, folderOptions, loadingFolders, folderError, loadFolders }

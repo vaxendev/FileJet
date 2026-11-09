@@ -1,12 +1,12 @@
 <template>
     <div class="admin-shell flex h-dvh min-h-0 bg-canvas text-foreground">
-        <aside class="hidden w-64 shrink-0 border-r border-divider bg-surface min-[1101px]:block" aria-label="Administration sidebar">
+        <aside class="hidden w-64 shrink-0 border-r border-divider bg-surface min-[1101px]:block" :aria-label='$msg("Administration sidebar")'>
             <AdminNavigation />
         </aside>
 
-        <dialog ref="navigationDialog" aria-label="Administration menu" class="admin-navigation-dialog" @click.self="closeNavigation" @close="mobileMenuOpen = false">
+        <dialog ref="navigationDialog" :aria-label='$msg("Administration menu")' class="admin-navigation-dialog" @click.self="closeNavigation" @close="mobileMenuOpen = false">
             <div class="relative h-full" @click="onNavigationClick">
-                <button type="button" aria-label="Close administration menu" class="admin-header-button absolute right-3 top-3" @click="closeNavigation">
+                <button type="button" :aria-label='$msg("Close administration menu")' class="admin-header-button absolute right-3 top-3" @click="closeNavigation">
                     <Icon name="solar:close-circle-linear" size="20" aria-hidden="true" />
                 </button>
                 <AdminNavigation />
@@ -16,17 +16,18 @@
         <div class="flex min-h-0 min-w-0 flex-1 flex-col">
             <header class="flex min-h-20 shrink-0 items-center justify-between gap-3 border-b border-divider bg-surface/60 px-8 max-mobile:min-h-17 max-mobile:px-4">
                 <div class="flex min-w-0 items-center gap-3">
-                    <button type="button" class="admin-header-button min-[1101px]:hidden" aria-label="Open administration menu" :aria-expanded="mobileMenuOpen" @click="openNavigation">
+                    <button type="button" class="admin-header-button min-[1101px]:hidden" :aria-label='$msg("Open administration menu")' :aria-expanded="mobileMenuOpen" @click="openNavigation">
                         <Icon name="solar:hamburger-menu-linear" size="21" aria-hidden="true" />
                     </button>
                     <div class="min-w-0">
-                        <p class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted">Administration</p>
-                        <p class="mt-0.5 truncate text-sm font-medium text-foreground">{{ pageTitle }}</p>
+                        <p class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted">{{ $msg("Administration") }}</p>
+                        <p class="mt-0.5 truncate text-sm font-medium text-foreground">{{ $msg(pageTitle) }}</p>
                     </div>
                 </div>
                 <div class="flex shrink-0 items-center gap-3">
-                    <span class="rounded-md border border-accent/20 bg-accent/8 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-accent max-mobile:hidden">Admin console</span>
-                    <button type="button" class="admin-header-button" :disabled="!preferencesLoaded" :aria-label="resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'" @click="toggleTheme">
+                    <LanguageSelector />
+                    <span class="rounded-md border border-accent/20 bg-accent/8 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-accent max-mobile:hidden">{{ $msg("Admin console") }}</span>
+                    <button type="button" class="admin-header-button" :disabled="!preferencesLoaded" :aria-label="resolvedTheme === 'dark' ? $msg('Switch to light theme') : $msg('Switch to dark theme')" @click="toggleTheme">
                         <Icon :name="resolvedTheme === 'dark' ? 'solar:sun-2-linear' : 'solar:moon-linear'" size="20" aria-hidden="true" />
                     </button>
                 </div>
@@ -43,7 +44,7 @@ import { useMediaQuery } from '@vueuse/core'
 import AdminNavigation from '~/components/admin/AdminNavigation.vue'
 
 const route = useRoute()
-const pageTitle = computed(() => route.path.startsWith('/admin/users') ? 'Users' : route.path.startsWith('/admin/activity') ? 'Activity history' : 'Overview')
+const pageTitle = computed(() => route.path.startsWith('/admin/users') ? 'Users' : route.path.startsWith('/admin/activity') ? localize("Activity history") : 'Overview')
 const { resolvedTheme, setTheme } = useTheme()
 const { preferencesLoaded } = usePreferences()
 const toggleTheme = () => setTheme(resolvedTheme.value === 'dark' ? 'light' : 'dark')

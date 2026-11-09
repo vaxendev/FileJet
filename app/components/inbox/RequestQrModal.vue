@@ -2,12 +2,12 @@
     <Teleport to="body">
         <dialog ref="dialog" aria-labelledby="request-qr-title" class="request-qr-dialog" @close="emit('close')" v-on="backdrop">
             <div class="flex flex-col items-center gap-4 p-6 text-center">
-                <div class="flex w-full items-center justify-between gap-3"><h2 id="request-qr-title" class="text-base font-semibold">Scan to send files</h2><button class="inbox-icon" type="button" aria-label="Close QR code" @click="emit('close')"><Icon name="solar:close-circle-linear" size="23" /></button></div>
+                <div class="flex w-full items-center justify-between gap-3"><h2 id="request-qr-title" class="text-base font-semibold">{{ $msg("Scan to send files") }}</h2><button class="inbox-icon" type="button" :aria-label='$msg("Close QR code")' @click="emit('close')"><Icon name="solar:close-circle-linear" size="23" /></button></div>
                 <p class="max-w-full truncate text-sm text-muted">{{ item?.title }}</p>
-                <img v-if="image" :src="image" alt="QR code to upload files to this request" width="240" height="240" class="size-60 max-w-full rounded-lg bg-white">
-                <p v-else role="status" class="text-sm text-muted">{{ errorMessage || 'Generating QR code…' }}</p>
-                <a v-if="image" :href="image" download="filejet-request-qr.png" class="inbox-button">Download QR code</a>
-                <p class="text-xs leading-5 text-muted">Anyone with this code can send files while the request is open.</p>
+                <img v-if="image" :src="image" :alt='$msg("QR code to upload files to this request")' width="240" height="240" class="size-60 max-w-full rounded-lg bg-white">
+                <p v-else role="status" class="text-sm text-muted">{{ errorMessage || $msg('Generating QR code…') }}</p>
+                <a v-if="image" :href="image" download="filejet-request-qr.png" class="inbox-button">{{ $msg("Download QR code") }}</a>
+                <p class="text-xs leading-5 text-muted">{{ $msg("Anyone with this code can send files while the request is open.") }}</p>
             </div>
         </dialog>
     </Teleport>
@@ -29,7 +29,7 @@ watch(() => props.item, async item => {
     try {
         const result = await QRCode.toDataURL(item.url, { width: 480, margin: 4, errorCorrectionLevel: 'M', color: { dark: '#111827', light: '#ffffff' } })
         if (props.item === item) image.value = result
-    } catch { errorMessage.value = 'Could not generate QR code. Copy the request link instead.' }
+    } catch { errorMessage.value = localize("Could not generate QR code. Copy the request link instead.") }
 }, { flush: 'post' })
 </script>
 <style scoped>

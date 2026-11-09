@@ -142,6 +142,12 @@ Saved versions count toward storage, including while the file is in Trash. Resto
 - Existing share links are unavailable while their items are in Trash. Restoring an item preserves its link, password, and expiration settings.
 - Permanent deletion also removes the item's share records. A link explicitly removed from Shared is not recreated by Undo.
 
+### Languages
+
+FileJet supports English, Turkish and German across the workspace, administration, public links and offline notes. New visitors start in English. Use the language selector to switch immediately; the site-wide `filejet-locale` cookie remembers the choice in this browser for one year, including across sign-in and sign-out. URLs stay unchanged.
+
+Translations live in `i18n/locales/{en,tr,de}.json`. Run `npm run locales:build` after editing them to refresh the shared message metadata and offline dictionaries; development, production builds and type checking also run this step. User filenames, folders, notes and tags are never translated.
+
 ### Accounts and preferences
 
 - Username/password login with signed, HttpOnly session cookies.

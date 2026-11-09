@@ -1,9 +1,10 @@
+import { localize } from './messages.ts'
 import { getAccentColor, type AccentColor } from './appearance'
 
 export const themeModes = [
-    { value: 'light', label: 'Light', description: 'Bright and clear', icon: 'solar:sun-2-linear' },
-    { value: 'dark', label: 'Dark', description: 'Easy on the eyes', icon: 'solar:moon-linear' },
-    { value: 'system', label: 'System', description: 'Follow your device', icon: 'solar:monitor-linear' }
+    { value: 'light', get label() { return localize("Light") }, get description() { return localize("Bright and clear") }, icon: 'solar:sun-2-linear' },
+    { value: 'dark', get label() { return localize("Dark") }, get description() { return localize("Easy on the eyes") }, icon: 'solar:moon-linear' },
+    { value: 'system', get label() { return localize("System") }, get description() { return localize("Follow your device") }, icon: 'solar:monitor-linear' }
 ] as const
 
 export type ThemeMode = typeof themeModes[number]['value']

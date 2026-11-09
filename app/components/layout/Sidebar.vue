@@ -1,12 +1,12 @@
 <template>
     <aside class="sidebar-area w-64 h-full min-h-0 overflow-hidden p-4 bg-surface border border-divider rounded-xl
         shrink-0 flex flex-col gap-5">
-        <NuxtLink to="/home" aria-label="FileJet home" class="logo-area flex w-40 h-12 items-center gap-1 overflow-hidden no-underline">
+        <NuxtLink to="/home" :aria-label='$msg("FileJet home")' class="logo-area flex w-40 h-12 items-center gap-1 overflow-hidden no-underline">
             <BrandMark />
             <span class="text-xl font-bold tracking-tight text-foreground">FileJet</span>
         </NuxtLink>
 
-        <nav aria-label="Main navigation" class="sidebar-navigation min-h-0 flex-1 overflow-y-auto overscroll-contain flex flex-col gap-5">
+        <nav :aria-label='$msg("Main navigation")' class="sidebar-navigation min-h-0 flex-1 overflow-y-auto overscroll-contain flex flex-col gap-5">
             <div v-for="section in navigation" :key="section.label" class="menu-section flex flex-col gap-1">
                 <span class="menu-title mx-3 mb-1 text-xs font-medium leading-normal text-muted">{{ section.label }}</span>
                 <NuxtLink
@@ -41,28 +41,28 @@ const isActive = (path: string) => route.path === path || (path === '/inbox' && 
 const currentUser = useAuthUser()
 const navigation = computed(() => [
     {
-        label: 'MAIN MENU',
+        get label() { return localize("MAIN MENU") },
         items: [
-            { label: 'Home', to: '/home', icon: 'solar:home-2-linear', activeIcon: 'solar:home-2-bold' },
-            { label: 'Files', to: '/files', icon: 'solar:document-linear', activeIcon: 'solar:document-bold' },
-            { label: 'Folders', to: '/folders', icon: 'solar:folder-linear', activeIcon: 'solar:folder-bold' },
-            { label: 'Notes', to: '/notes', icon: 'solar:notebook-linear', activeIcon: 'solar:notebook-bold' }
+            { get label() { return localize("Home") }, to: '/home', icon: 'solar:home-2-linear', activeIcon: 'solar:home-2-bold' },
+            { get label() { return localize("Files") }, to: '/files', icon: 'solar:document-linear', activeIcon: 'solar:document-bold' },
+            { get label() { return localize("Folders") }, to: '/folders', icon: 'solar:folder-linear', activeIcon: 'solar:folder-bold' },
+            { get label() { return localize("Notes") }, to: '/notes', icon: 'solar:notebook-linear', activeIcon: 'solar:notebook-bold' }
         ]
     },
     {
-        label: 'OTHERS',
+        get label() { return localize("OTHERS") },
         items: [
-            { label: 'Favorites', to: '/favorites', icon: 'solar:star-outline', activeIcon: 'solar:star-bold' },
-            { label: 'Shared', to: '/shared', icon: 'solar:share-circle-linear', activeIcon: 'solar:share-circle-bold' },
-            { label: 'Inbox', to: '/inbox', icon: 'solar:inbox-in-linear', activeIcon: 'solar:inbox-in-bold' },
-            { label: 'Quarantine', to: '/quarantine', icon: 'solar:shield-warning-linear', activeIcon: 'solar:shield-warning-bold' },
-            { label: 'Activity', to: '/activity', icon: 'solar:history-linear', activeIcon: 'solar:history-bold' },
-            { label: 'Trash', to: '/trash', icon: 'material-symbols:delete-outline-rounded', activeIcon: 'material-symbols:delete-rounded' }
+            { get label() { return localize("Favorites") }, to: '/favorites', icon: 'solar:star-outline', activeIcon: 'solar:star-bold' },
+            { get label() { return localize("Shared") }, to: '/shared', icon: 'solar:share-circle-linear', activeIcon: 'solar:share-circle-bold' },
+            { get label() { return localize("Inbox") }, to: '/inbox', icon: 'solar:inbox-in-linear', activeIcon: 'solar:inbox-in-bold' },
+            { get label() { return localize("Quarantine") }, to: '/quarantine', icon: 'solar:shield-warning-linear', activeIcon: 'solar:shield-warning-bold' },
+            { get label() { return localize("Activity") }, to: '/activity', icon: 'solar:history-linear', activeIcon: 'solar:history-bold' },
+            { get label() { return localize("Trash") }, to: '/trash', icon: 'material-symbols:delete-outline-rounded', activeIcon: 'material-symbols:delete-rounded' }
         ]
     },
     ...(currentUser.value?.role === 'ADMIN' ? [{
-        label: 'ADMINISTRATION',
-        items: [{ label: 'Admin', to: '/admin', icon: 'solar:shield-user-linear', activeIcon: 'solar:shield-user-bold' }]
+        get label() { return localize("ADMINISTRATION") },
+        items: [{ get label() { return localize("Admin") }, to: '/admin', icon: 'solar:shield-user-linear', activeIcon: 'solar:shield-user-bold' }]
     }] : [])
 ])
 </script>

@@ -66,7 +66,7 @@ export const usePreferences = () => {
 
     const savePreferences = (value: FileJetPreferences) => {
         if (!import.meta.client || !currentUser.value) {
-            throw new Error('Please sign in to save your preferences.')
+            throw new Error(localize("Please sign in to save your preferences."))
         }
 
         const updated = normalizePreferences(value)

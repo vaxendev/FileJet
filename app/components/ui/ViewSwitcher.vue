@@ -25,8 +25,8 @@
 
 <script setup lang="ts">
 const views = [
-    { value: 'grid', label: 'Grid view', icon: 'solar:widget-4-linear' },
-    { value: 'list', label: 'List view', icon: 'solar:list-linear' }
+    { value: 'grid', get label() { return localize("Grid view") }, icon: 'solar:widget-4-linear' },
+    { value: 'list', get label() { return localize("List view") }, icon: 'solar:list-linear' }
 ] as const
 
 defineProps<{

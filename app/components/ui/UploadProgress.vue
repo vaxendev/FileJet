@@ -8,7 +8,7 @@
             >
                 <div class="upload-status-heading flex items-center gap-2 mb-2 text-content text-sm font-medium leading-normal">
                     <Icon class="text-accent shrink-0" name="solar:cloud-upload-bold" />
-                    <span>{{ processing ? 'Processing...' : label }}</span>
+                    <span>{{ processing ? $msg('Processing...') : label }}</span>
                     <span
                         v-if="value !== null"
                         class="upload-percentage ml-auto text-muted text-xs leading-[inherit]"
@@ -35,7 +35,7 @@ const props = withDefaults(
         processing?: boolean
         label?: string
     }>(),
-    { processing: false, label: 'Uploading files...' }
+    { processing: false, get label() { return localize("Uploading files...") } }
 )
 
 const value = computed(() =>

@@ -5,13 +5,13 @@
                 <SearchBox
                     v-model="searchQuery"
                     class="files-search max-w-lg grow basis-72 max-tablet:basis-full max-tablet:max-w-none"
-                    placeholder="Search files..."
+                    :placeholder='$msg("Search files...")'
                 />
 
                 <div class="flex min-w-0 flex-wrap items-center gap-2 max-tablet:w-full max-tablet:justify-between">
                     <ViewSwitcher v-model="viewMode" />
                     <UploadButton
-                        text="Upload"
+                        :text="$msg('Upload')"
                         mode="file"
                         @files="handleFiles"
                     />
@@ -34,11 +34,11 @@
         <DataView
             :view-mode="viewMode"
             :is-loading="isInitialLoading"
-            drop-text="Drop files to upload"
+            :drop-text="$msg('Drop files to upload')"
             @drop="handleDrop"
         >
             <template #loading>
-                <div class="loading-state text-label text-[0.85rem]">Loading files...</div>
+                <div class="loading-state text-label text-[0.85rem]">{{ $msg("Loading files...") }}</div>
             </template>
             <template
                 v-if="!isInitialLoading && filteredFiles.length === 0"
@@ -52,16 +52,16 @@
                     />
                     <strong class="text-foreground text-sm font-semibold leading-normal">{{
                         error
-                            ? 'Unable to load files'
+                            ? $msg('Unable to load files')
                             : files.length
-                              ? 'No matching files'
-                              : 'No files yet'
+                              ? $msg('No matching files')
+                              : $msg('No files yet')
                     }}</strong>
                     <span class="empty-state-description text-muted text-sm font-normal leading-normal">{{
                         error ||
                         (files.length
-                            ? 'Try a different search or filter.'
-                            : 'Upload your first file to get started.')
+                            ? $msg('Try a different search or filter.')
+                            : $msg('Upload your first file to get started.'))
                     }}</span>
                 </div>
             </template>
@@ -86,7 +86,7 @@
 
                                 <th class="w-[42%] file-table-heading">
                                     <div class="flex items-center gap-[0.3rem]">
-                                        Name
+                                        {{ $msg("Name") }}
                                         <Icon
                                             name="solar:sort-vertical-linear"
                                             class="text-base leading-[inherit]"
@@ -94,10 +94,10 @@
                                     </div>
                                 </th>
 
-                                <th class="file-table-heading">Type</th>
-                                <th class="file-table-heading">Size</th>
-                                <th class="file-table-heading">Modified</th>
-                                <th class="file-table-heading">Actions</th>
+                                <th class="file-table-heading">{{ $msg("Type") }}</th>
+                                <th class="file-table-heading">{{ $msg("Size") }}</th>
+                                <th class="file-table-heading">{{ $msg("Modified") }}</th>
+                                <th class="file-table-heading">{{ $msg("Actions") }}</th>
                             </tr>
                         </thead>
 
@@ -189,9 +189,9 @@
                                 <ItemTags :tags="file.tags" />
                                 </td>
 
-                                <td data-label="Type" class="item-meta-cell h-[4.2rem] file-table-cell">{{ getFileType(file.original_name) }}</td>
-                                <td data-label="Size" class="item-meta-cell h-[4.2rem] file-table-cell">{{ formatFileSize(file.size) }}</td>
-                                <td data-label="Modified" class="item-meta-cell h-[4.2rem] file-table-cell">{{ formatFileTime(file.updated_at) }}</td>
+                                <td :data-label='$msg("Type")' class="item-meta-cell h-[4.2rem] file-table-cell">{{ getFileType(file.original_name) }}</td>
+                                <td :data-label='$msg("Size")' class="item-meta-cell h-[4.2rem] file-table-cell">{{ formatFileSize(file.size) }}</td>
+                                <td :data-label='$msg("Modified")' class="item-meta-cell h-[4.2rem] file-table-cell">{{ formatFileTime(file.updated_at) }}</td>
 
                                 <td class="item-actions-cell h-[4.2rem] file-table-cell" @click.stop>
                                     <ItemMenu
@@ -440,7 +440,7 @@ const { sortedItems: sortedFiles } = useSort(
 
 const handleFiles = async (files: FileList) => {
     if (!files.length) {
-        openToast('Please select a file', 'error', { notification: false })
+        openToast(localize("Please select a file"), 'error', { notification: false })
 
         return
     }
@@ -452,9 +452,9 @@ const handleFiles = async (files: FileList) => {
             if (error.value) throw new Error(error.value)
         })
 
-        openToast('File uploaded successfully.', 'success', { notification: { title: 'Upload complete', category: 'upload', href: '/files' } })
+        openToast(localize("File uploaded successfully."), 'success', { notification: { get title() { return localize("Upload complete") }, category: 'upload', href: '/files' } })
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'File upload failed.', 'error')
+        openToast(resolveApiError(err, localize("File upload failed.")), 'error')
     }
 }
 
@@ -477,9 +477,9 @@ const saveRename = async (file: any) => {
 
         editingFileId.value = null
 
-        openToast('File renamed successfully', 'success', { notification: { title: 'File renamed', category: 'library', href: '/files' } })
+        openToast(localize("File renamed successfully"), 'success', { notification: { get title() { return localize("File renamed") }, category: 'library', href: '/files' } })
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'File could not be renamed.', 'error')
+        openToast(resolveApiError(err, localize("File could not be renamed.")), 'error')
     }
 }
 
@@ -487,13 +487,13 @@ const handleCopy = async (fileId: string) => {
     try {
         const file = files.value.find(file => file.id === fileId)
 
-        if (!file) throw new Error('File not found.')
+        if (!file) throw new Error(localize("File not found."))
 
         await copyFile(file)
-        openToast('Copied to clipboard.', 'success')
+        openToast(localize("Copied to clipboard."), 'success')
     } catch (err: any) {
         openToast(
-            err.data?.message || err.message || 'File could not be copied to the clipboard.',
+            resolveApiError(err, localize("File could not be copied to the clipboard.")),
             'error'
         )
     }
@@ -503,7 +503,7 @@ const handleDownload = async (fileId: string) => {
     try {
         await downloadFile(fileId)
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'File could not be downloaded.', 'error')
+        openToast(resolveApiError(err, localize("File could not be downloaded.")), 'error')
     }
 }
 
@@ -513,7 +513,7 @@ const handleDelete = async (fileId: any) => {
     try {
         await deleteFile(fileId)
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'File could not be deleted.', 'error')
+        openToast(resolveApiError(err, localize("File could not be deleted.")), 'error')
     }
 }
 
@@ -529,7 +529,7 @@ const handleFavorite = async (file: any) => {
             await removeFavorite(file.id, 'file')
             await fetchAll()
 
-            openToast('File removed from favorites.', 'success')
+            openToast(localize("File removed from favorites."), 'success')
 
             return
         }
@@ -537,9 +537,9 @@ const handleFavorite = async (file: any) => {
         await addFavorite(file.id, 'file')
         await fetchAll()
 
-        openToast('File favorited successfully.', 'success')
+        openToast(localize("File favorited successfully."), 'success')
     } catch (err: any) {
-        openToast(err.data?.message || err.message || 'File could not be favorited', 'error')
+        openToast(resolveApiError(err, localize("File could not be favorited")), 'error')
     }
 }
 
@@ -583,11 +583,11 @@ const handleDeleteSelected = async () => {
         files.value = files.value.filter(file => !deletedIds.has(file.id))
 
         if (result.failedIds.length) {
-            openToast(`${result.failedIds.length} items could not be moved to Trash.`, 'error')
+            openToast(localize("{p0} items could not be moved to Trash.", { p0: result.failedIds.length }), 'error')
         }
     } catch (err: any) {
         openToast(
-            err.data?.message || err.message || 'Selected files could not be deleted.',
+            resolveApiError(err, localize("Selected files could not be deleted.")),
             'error'
         )
     } finally {

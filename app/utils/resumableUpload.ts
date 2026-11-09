@@ -1,3 +1,4 @@
+import { localize } from './messages.ts'
 import { reactive } from 'vue'
 import { UPLOAD_CHUNK_SIZE, UPLOAD_LIFETIME, parseUploadManifest, type UploadKind, type UploadManifest, type UploadSessionView } from '~~/shared/utils/resumableUpload'
 import { parseSender } from '~~/shared/utils/sender'
@@ -34,7 +35,7 @@ export async function discardUnfinishedUploads(scope: string) {
         const record = stored(key)
         if (!record) continue
         const response = await fetch(`/api/uploads/${record.id}`, { method: 'DELETE', credentials: 'same-origin', headers: { 'Upload-Key': record.key } })
-        if (!response.ok && ![404, 410].includes(response.status)) throw new Error('Could not discard the unfinished upload. Please try again.')
+        if (!response.ok && ![404, 410].includes(response.status)) throw new Error(localize("Could not discard the unfinished upload. Please try again."))
         save(key, null)
     }
 }
@@ -78,13 +79,13 @@ export async function uploadResumably(files: File[], options: UploadOptions): Pr
                 const response = await fetch(url, { ...init, credentials: 'same-origin', headers: { Accept: 'application/json', 'Upload-Key': record!.key, ...init.headers }, signal: AbortSignal.any([AbortSignal.timeout(url.endsWith('/complete') ? 330000 : 90000), ...(options.signal ? [options.signal] : [])]) })
                 const body = await response.json()
                 if (response.ok) return body as T
-                const error = Object.assign(new Error(body.message || body.statusMessage || 'Could not upload files.'), { status: response.status, retryAfter: Number(response.headers.get('Retry-After') || 0) })
+                const error = Object.assign(new Error(localize(body.message || body.statusMessage || localize("Could not upload files."))), { status: response.status, retryAfter: Number(response.headers.get('Retry-After') || 0) })
                 throw error
             } catch (error) {
                 options.signal?.throwIfAborted()
                 const status = (error as { status?: number }).status
                 if (status && ![408, 429, 500, 502, 503, 504].includes(status)) throw error
-                if (attempt >= 4) throw new Error('Connection interrupted. Select the same files and destination to resume your upload within 24 hours.')
+                if (attempt >= 4) throw new Error(localize("Connection interrupted. Select the same files and destination to resume your upload within 24 hours."))
                 update('waiting', job.progress * total / 100)
                 await delay(Math.max(1000 * 2 ** attempt, Math.min(60, (error as { retryAfter?: number }).retryAfter || 0) * 1000), options.signal)
             }

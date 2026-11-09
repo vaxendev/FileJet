@@ -1,5 +1,6 @@
 import type { NotificationInput, NotificationHistory } from '~~/shared/types/notification'
 import { normalizeNotificationHistory, NOTIFICATION_LIMIT, safeNotificationHref } from '~/utils/notifications'
+import { describeMessage } from '~~/shared/utils/messageDescriptor'
 
 export const useNotifications = () => {
     const currentUser = useAuthUser()
@@ -58,6 +59,8 @@ export const useNotifications = () => {
             id,
             title: input.title.trim().slice(0, 80),
             message: input.message.slice(0, 500),
+            titleI18n: describeMessage(input.title),
+            messageI18n: describeMessage(input.message),
             kind: input.kind ?? 'success',
             category: input.category ?? 'activity',
             href: safeNotificationHref(input.href),
