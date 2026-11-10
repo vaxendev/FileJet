@@ -1548,5 +1548,7 @@
   "c_notes": "No notes | One note | {count} notes",
   "c_folders": "No folders | One folder | {count} folders",
   "m241715e7": " (copy)",
-  "c_folderContents": "Folder · No items inside | Folder · 1 item inside | Folder · {count} items inside"
+  "c_folderContents": "Folder · No items inside | Folder · 1 item inside | Folder · {count} items inside",
+  "m871f67c3": "Contents",
+  "c_folderItems": "No items | One item | {count} items"
 }

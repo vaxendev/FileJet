@@ -216,7 +216,7 @@
         flex: 1 0 auto;
     }
 
-    .is-detail-page .folder-browser .contents-controls > .upload-control {
+    .is-detail-page .folder-browser .contents-actions {
         display: none;
     }
 

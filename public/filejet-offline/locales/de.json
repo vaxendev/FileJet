@@ -1548,5 +1548,7 @@
   "c_notes": "Keine Notizen | Eine Notiz | {count} Notizen",
   "c_folders": "Keine Ordner | Ein Ordner | {count} Ordner",
   "m241715e7": " (Kopie)",
-  "c_folderContents": "Ordner · Keine Elemente enthalten | Ordner · 1 Element enthalten | Ordner · {count} Elemente enthalten"
+  "c_folderContents": "Ordner · Keine Elemente enthalten | Ordner · 1 Element enthalten | Ordner · {count} Elemente enthalten",
+  "m871f67c3": "Inhalt",
+  "c_folderItems": "Keine Elemente | Ein Element | {count} Elemente"
 }

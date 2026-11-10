@@ -3,16 +3,28 @@
         class="folder-browser group/folder-browser flex-1 min-h-0 min-w-0 flex flex-col gap-3 p-5 max-phone:p-3"
         :class="{ 'is-read-only': readOnly }"
     >
-        <div class="contents-toolbar flex items-center flex-wrap gap-2 justify-between">
-            <SearchBox class="[flex:1_1_12rem] min-w-0"
-                v-model="search"
-                :placeholder='$msg("Search this folder...")'
-            />
-            <div class="contents-controls flex items-center flex-wrap gap-2">
-                <TagFilter v-if="!readOnly" v-model="activeTag" :items="items" />
-                <SortDropdown v-model="sort" />
-                <ViewSwitcher v-model="view" />
-                <slot name="controls" />
+        <div class="contents-toolbar flex shrink-0 flex-col gap-3">
+            <div class="contents-heading-row flex min-w-0 flex-wrap items-center justify-between gap-3">
+                <div class="flex min-w-0 items-center gap-2.5">
+                    <h2 class="m-0 text-sm font-semibold text-foreground">{{ $msg('Contents') }}</h2>
+                    <span class="rounded-md bg-control px-2 py-1 text-xs text-muted">{{ $countMsg('folderItems', items.length) }}</span>
+                </div>
+                <div v-if="$slots.controls" class="contents-actions ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+                    <slot name="controls" />
+                </div>
+            </div>
+            <div class="contents-toolbar-top border-b border-divider pb-3">
+                <SearchBox class="contents-search min-w-0"
+                    v-model="search"
+                    :placeholder='$msg("Search this folder...")'
+                />
+                <div v-if="!readOnly" class="contents-controls flex min-w-0 items-center">
+                    <TagFilter v-model="activeTag" :items="items" />
+                </div>
+                <div class="contents-display-controls flex items-center gap-2">
+                    <SortDropdown v-model="sort" />
+                    <ViewSwitcher v-model="view" />
+                </div>
             </div>
         </div>
         <DataView
@@ -317,3 +329,38 @@ watch(
 )
 watch(activeTag, () => { selected.value = []; currentPage.value = 1 })
 </script>
+
+<style scoped>
+.folder-browser { container-type: inline-size; }
+.contents-heading-row { min-height: 2.5rem; }
+.contents-toolbar-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: .75rem;
+}
+.is-read-only .contents-toolbar-top { grid-template-columns: minmax(0, 1fr) auto; }
+.contents-display-controls { justify-self: end; }
+.contents-search {
+    flex: none;
+    width: 100%;
+    max-width: none;
+    height: 2.75rem;
+    border-radius: .75rem;
+    background: var(--color-canvas);
+}
+@container (max-width: 44rem) {
+    .contents-heading-row { min-height: 1.5rem; }
+    .contents-toolbar-top { grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
+    .contents-search { grid-column: 1 / -1; }
+    .is-read-only .contents-display-controls { grid-column: 1 / -1; }
+}
+@container (max-width: 25rem) {
+    .contents-display-controls :deep(.sort-trigger) { padding-inline: .5rem; font-size: .75rem; }
+    .contents-display-controls :deep(.view-switcher) { width: 5.5rem; }
+}
+.contents-actions :deep(button) { height: 2.5rem; min-height: 2.5rem; border-radius: .625rem; }
+@media (pointer: coarse) {
+    .contents-actions :deep(button) { height: 2.75rem; min-height: 2.75rem; }
+}
+</style>

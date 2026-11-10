@@ -1550,7 +1550,9 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "c_notes": "No notes | One note | {count} notes",
     "c_folders": "No folders | One folder | {count} folders",
     "m241715e7": " (copy)",
-    "c_folderContents": "Folder · No items inside | Folder · 1 item inside | Folder · {count} items inside"
+    "c_folderContents": "Folder · No items inside | Folder · 1 item inside | Folder · {count} items inside",
+    "m871f67c3": "Contents",
+    "c_folderItems": "No items | One item | {count} items"
   },
   "tr": {
     "m34dc962f": "Daha önce:",
@@ -3102,7 +3104,9 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "c_notes": "Not yok | Bir not | {count} not",
     "c_folders": "Klasör yok | Bir klasör | {count} klasör",
     "m241715e7": " (kopya)",
-    "c_folderContents": "Klasör · İçinde öğe yok | Klasör · İçinde 1 öğe var | Klasör · İçinde {count} öğe var"
+    "c_folderContents": "Klasör · İçinde öğe yok | Klasör · İçinde 1 öğe var | Klasör · İçinde {count} öğe var",
+    "m871f67c3": "İçerik",
+    "c_folderItems": "Öğe yok | Bir öğe | {count} öğe"
   },
   "de": {
     "m4af72ffa": "pro Datei",
@@ -4654,6 +4658,8 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "c_notes": "Keine Notizen | Eine Notiz | {count} Notizen",
     "c_folders": "Keine Ordner | Ein Ordner | {count} Ordner",
     "m241715e7": " (Kopie)",
-    "c_folderContents": "Ordner · Keine Elemente enthalten | Ordner · 1 Element enthalten | Ordner · {count} Elemente enthalten"
+    "c_folderContents": "Ordner · Keine Elemente enthalten | Ordner · 1 Element enthalten | Ordner · {count} Elemente enthalten",
+    "m871f67c3": "Inhalt",
+    "c_folderItems": "Keine Elemente | Ein Element | {count} Elemente"
   }
 }

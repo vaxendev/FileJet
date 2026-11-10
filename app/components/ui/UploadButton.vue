@@ -14,10 +14,13 @@
         <button
             type="button"
             class="w-max min-w-32 h-10 max-mobile:h-11 pointer-coarse:h-11 flex items-center justify-between gap-3
-                bg-primary text-on-primary py-0 px-3 text-sm font-medium border-0 rounded-lg whitespace-nowrap
+                py-0 px-3 text-sm font-medium rounded-lg whitespace-nowrap
                 shrink-0 cursor-pointer transition-colors duration-200 leading-normal disabled:opacity-50
                 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-accent
-                focus-visible:outline-offset-3 hover:enabled:bg-primary/85"
+                focus-visible:outline-offset-3"
+            :class="variant === 'secondary'
+                ? 'border border-control-border bg-control text-content hover:enabled:bg-raised hover:enabled:border-hover-border'
+                : 'border-0 bg-primary text-on-primary hover:enabled:bg-primary/85'"
             :disabled="disabled"
             @click="openPicker"
         >
@@ -30,6 +33,7 @@
             </span>
 
             <Icon
+                v-if="variant === 'primary'"
                 name="solar:alt-arrow-down-linear"
                 class="block text-lg shrink-0 size-4.5"
             />
@@ -44,10 +48,12 @@ const props = withDefaults(
         mode?: 'file' | 'folder'
         accept?: string
         disabled?: boolean
+        variant?: 'primary' | 'secondary'
     }>(),
     {
         text: 'Upload',
-        mode: 'file'
+        mode: 'file',
+        variant: 'primary'
     }
 )
 

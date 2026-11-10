@@ -49,15 +49,21 @@
                 @moved="refreshContents"
             >
                 <template #controls>
+                    <button type="button" class="inbox-button inbox-primary" :disabled="busy || pending" @click="openFolderForm">
+                        <Icon name="solar:add-folder-bold" size="18" />
+                        {{ $msg('New folder') }}
+                    </button>
                     <UploadButton
                         :text="$msg('Upload Files')"
                         mode="file"
+                        variant="secondary"
                         :disabled="busy || pending"
                         @files="uploadFilesHere"
                     />
                     <UploadButton
                         :text="$msg('Upload Folder')"
                         mode="folder"
+                        variant="secondary"
                         :disabled="busy || pending"
                         @folder="uploadFolderHere"
                     />
@@ -84,7 +90,16 @@
                 :label='$msg("Uploading files and folders...")'
             />
         </div>
+        <FolderFormModal
+            :open="folderFormOpen"
+            :parent-folder-id="id"
+            @close="folderFormOpen = false"
+            @saved="handleFolderCreated"
+        />
         <template #mobile-actions>
+            <button type="button" :disabled="busy || pending" @click="openFolderForm">
+                <Icon name="solar:add-folder-bold" /> {{ $msg('New folder') }}
+            </button>
             <UploadButton :text="$msg('Upload Files')" mode="file" :disabled="busy || pending" @files="uploadFilesHere" />
             <UploadButton :text="$msg('Upload Folder')" mode="folder" :disabled="busy || pending" @folder="uploadFolderHere" />
         </template>
@@ -193,6 +208,7 @@ const { openToast } = useToast()
 await fetchFavorites()
 
 const activeTab = ref<'details' | 'edit' | 'share'>(route.query.tab === 'edit' ? 'edit' : 'details')
+const folderFormOpen = ref(false)
 const draftName = ref(folder.value?.name ?? '')
 const nameInput = ref<HTMLInputElement | null>(null)
 const isSaving = ref(false)
@@ -236,6 +252,19 @@ const refreshContents = async () => {
         throw new Error(
             localize("The folder was updated, but its contents could not be refreshed. Try again.")
         )
+}
+
+const openFolderForm = () => {
+    if (!folder.value || busy.value || pending.value) return
+    folderFormOpen.value = true
+}
+
+const handleFolderCreated = async () => {
+    try {
+        await refreshContents()
+    } catch (error: unknown) {
+        openToast(resolveApiError(error), 'error')
+    }
 }
 
 const cancelRename = () => {

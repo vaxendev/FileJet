@@ -1548,5 +1548,7 @@
   "c_notes": "Not yok | Bir not | {count} not",
   "c_folders": "Klasör yok | Bir klasör | {count} klasör",
   "m241715e7": " (kopya)",
-  "c_folderContents": "Klasör · İçinde öğe yok | Klasör · İçinde 1 öğe var | Klasör · İçinde {count} öğe var"
+  "c_folderContents": "Klasör · İçinde öğe yok | Klasör · İçinde 1 öğe var | Klasör · İçinde {count} öğe var",
+  "m871f67c3": "İçerik",
+  "c_folderItems": "Öğe yok | Bir öğe | {count} öğe"
 }

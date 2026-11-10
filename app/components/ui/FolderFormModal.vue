@@ -167,7 +167,7 @@ const save = async () => {
 
         openToast(
             isEditing.value ? localize("Folder renamed successfully.") : localize("Folder created successfully."),
-            'success', { notification: { title: isEditing.value ? localize("Folder renamed") : localize("Folder created"), category: 'library', href: '/folders' } }
+            'success', { notification: { title: isEditing.value ? localize("Folder renamed") : localize("Folder created"), category: 'library', href: props.parentFolderId ? `/folders/${encodeURIComponent(props.parentFolderId)}` : '/folders' } }
         )
         emit('saved')
         emit('close')
