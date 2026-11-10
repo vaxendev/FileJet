@@ -1,10 +1,10 @@
 <template>
     <div class="min-w-0">
         <button ref="trigger" type="button" role="combobox" aria-haspopup="listbox" :aria-label="label" :aria-expanded="open" :aria-controls="menuId" :disabled="disabled" class="inbox-input flex cursor-pointer items-center justify-between gap-2 text-left disabled:cursor-not-allowed disabled:opacity-50" @click="toggle" @keydown="triggerKey">
-            <span class="min-w-0 truncate" :title="selectedLabel">{{ selectedLabel }}</span><Icon name="solar:alt-arrow-down-linear" class="shrink-0 transition-transform duration-150" :class="{ 'rotate-180': open }" />
+            <slot name="selection" :label="selectedLabel"><span class="min-w-0 truncate" :title="selectedLabel">{{ selectedLabel }}</span></slot><Icon name="solar:alt-arrow-down-linear" class="shrink-0 transition-transform duration-150" :class="{ 'rotate-180': open }" />
         </button>
         <div :id="menuId" ref="menu" popover="auto" role="listbox" :aria-label="label" class="form-select-menu m-0 rounded-xl border border-control-border bg-surface-hover p-0.75 text-sm shadow-[0_0.6rem_2rem_rgba(0,_0,_0,_0.35)]" :style="position" @toggle="toggled" @keydown="menuKey">
-            <button v-for="(option, index) in options" :key="option.value" type="button" role="option" :aria-selected="model === option.value" tabindex="-1" class="w-full shrink-0 cursor-pointer rounded-lg bg-transparent px-3 py-2 text-left text-sm font-medium leading-normal text-label hover:bg-raised hover:text-foreground focus:bg-raised focus:text-foreground focus:outline-none is-active:bg-raised is-active:text-foreground" :class="{ active: model === option.value }" @focus="active = index" @click="select(option.value)">{{ option.label }}</button>
+            <button v-for="(option, index) in options" :key="option.value" type="button" role="option" :aria-selected="model === option.value" tabindex="-1" class="w-full shrink-0 cursor-pointer rounded-lg bg-transparent px-3 py-2 text-left text-sm font-medium leading-normal text-label hover:bg-raised hover:text-foreground focus:bg-raised focus:text-foreground focus:outline-none is-active:bg-raised is-active:text-foreground" :class="{ active: model === option.value }" @focus="active = index" @click="select(option.value)"><slot name="option" :option="option" :selected="model === option.value">{{ option.label }}</slot></button>
         </div>
     </div>
 </template>

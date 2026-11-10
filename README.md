@@ -144,7 +144,7 @@ Saved versions count toward storage, including while the file is in Trash. Resto
 
 ### Languages
 
-FileJet supports English, Turkish and German across the workspace, administration, public links and offline notes. New visitors start in English. Use the language selector to switch immediately; the site-wide `filejet-locale` cookie remembers the choice in this browser for one year, including across sign-in and sign-out. URLs stay unchanged.
+FileJet supports English, Turkish and German across the workspace, administration, public links and offline notes. New visitors start in English. Change the language in **Account & preferences → Language** to apply it immediately; the site-wide `filejet-locale` cookie remembers the choice in this browser for one year, including across sign-in and sign-out. URLs stay unchanged.
 
 Translations live in `i18n/locales/{en,tr,de}.json`. Run `npm run locales:build` after editing them to refresh the shared message metadata and offline dictionaries; development, production builds and type checking also run this step. User filenames, folders, notes and tags are never translated.
 

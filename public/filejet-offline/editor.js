@@ -3,8 +3,7 @@ import * as store from './store.js'
 const $ = id => document.getElementById(id)
 await ready
 let owner = null, selected = null, dirty = false, timer, busy = false, saving = Promise.resolve(), pendingSync
-let latestStatus = ''
-const status = message => { latestStatus = message; $('status').textContent = message }
+const status = message => { $('status').textContent = message }
 const report = error => status(t(error.message || '') || t("Could not access device storage."))
 function fill(record) {
     selected = record.id; $('title').value = record.title; $('content').value = record.content
@@ -104,5 +103,3 @@ try {
     store.registerOffline().catch(report)
     if (owner && navigator.onLine) sync().catch(report)
 } catch(error) { report(error) }
-
-addEventListener('filejet-language-change', () => { render().catch(report); if (latestStatus) $('status').textContent = t(latestStatus) })

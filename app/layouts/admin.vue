@@ -25,7 +25,6 @@
                     </div>
                 </div>
                 <div class="flex shrink-0 items-center gap-3">
-                    <LanguageSelector />
                     <span class="rounded-md border border-accent/20 bg-accent/8 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-accent max-mobile:hidden">{{ $msg("Admin console") }}</span>
                     <button type="button" class="admin-header-button" :disabled="!preferencesLoaded" :aria-label="resolvedTheme === 'dark' ? $msg('Switch to light theme') : $msg('Switch to dark theme')" @click="toggleTheme">
                         <Icon :name="resolvedTheme === 'dark' ? 'solar:sun-2-linear' : 'solar:moon-linear'" size="20" aria-hidden="true" />

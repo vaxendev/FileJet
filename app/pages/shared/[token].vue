@@ -1,7 +1,6 @@
 <template>
     <div class="shared-page public-share-page w-full h-dvh min-h-0 p-3 flex flex-col bg-canvas text-foreground
         overflow-hidden max-mobile:p-[0.6rem]">
-        <div class="flex shrink-0 justify-end pb-2"><LanguageSelector /></div>
         <div
             v-if="passwordRequired"
             class="shared-error flex-1 basis-0 min-w-0 min-h-0 flex items-center justify-center p-4 short-screen:p-0

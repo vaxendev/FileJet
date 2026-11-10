@@ -3,6 +3,14 @@
         <div class="mx-auto w-full max-w-300 p-6 max-mobile:p-3">
             <AccountSettings @state-change="accountState = $event" />
 
+            <section aria-labelledby="language-heading" class="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-divider bg-surface px-5 py-4">
+                <div>
+                    <h2 id="language-heading" class="text-sm font-semibold text-foreground">{{ $msg('Language') }}</h2>
+                    <p class="mt-1 text-xs text-muted">{{ $msg('Saved in this browser') }}</p>
+                </div>
+                <LanguageSelector />
+            </section>
+
             <form @submit.prevent="save">
                 <fieldset :disabled="!preferencesLoaded" class="min-w-0 space-y-5">
                     <AccentColorPicker v-model="draft.accentColor" />

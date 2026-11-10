@@ -53,7 +53,6 @@
                 <Icon :name="resolvedTheme === 'dark' ? 'solar:sun-2-linear' : 'solar:moon-linear'" size="20" />
             </button>
 
-            <LanguageSelector />
             <NotificationCenter />
 
             <div class="header-account hidden max-laptop:block">

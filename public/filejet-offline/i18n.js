@@ -1,6 +1,6 @@
 const languages = ['en', 'tr', 'de']
 const normalize = value => languages.includes(value) ? value : 'en'
-export let language = normalize(document.cookie.split('; ').find(value => value.startsWith('filejet-locale='))?.split('=')[1])
+export const language = normalize(document.cookie.split('; ').find(value => value.startsWith('filejet-locale='))?.split('=')[1])
 let dictionaries = {}
 export const languageTag = () => ({ en: 'en-US', tr: 'tr-TR', de: 'de-DE' })[language]
 export const messageKey = source => {
@@ -29,14 +29,6 @@ export function translatePage() {
     document.documentElement.lang = language
     for (const element of document.querySelectorAll('[data-i18n]')) element.textContent = t(element.dataset.i18n)
     for (const element of document.querySelectorAll('[data-i18n-aria-label]')) element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel))
-    const selector = document.getElementById('language')
-    if (selector) selector.value = language
-}
-export function setLanguage(value) {
-    language = normalize(value)
-    document.cookie = `filejet-locale=${language}; Path=/; Max-Age=31536000; SameSite=Lax`
-    translatePage()
-    window.dispatchEvent(new Event('filejet-language-change'))
 }
 export const ready = Promise.all(languages.map(async code => {
     try {
@@ -46,5 +38,4 @@ export const ready = Promise.all(languages.map(async code => {
     } catch { /* The original English copy is usable if cached dictionaries are unavailable. */ }
 })).then(() => {
     translatePage()
-    document.getElementById('language')?.addEventListener('change', event => setLanguage(event.target.value))
 })

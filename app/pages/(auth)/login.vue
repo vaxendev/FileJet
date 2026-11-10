@@ -2,7 +2,6 @@
     <div class="login-page w-full min-h-dvh p-4 bg-canvas flex justify-center items-center">
         <div class="login-card w-full max-w-152 p-8 max-mobile:p-5 bg-surface border border-control-border rounded-3xl
             flex flex-col">
-            <div class="mb-5 flex justify-end"><LanguageSelector /></div>
             <h2 class="[font-family:Arial,_Helvetica,_sans-serif] text-[1.8rem] text-foreground mt-0 mr-0 mb-14 ml-0">{{ $msg("Login") }}</h2>
 
             <div class="form-group flex flex-col mt-0 mr-0 mb-8 ml-0 gap-[0.3rem]">

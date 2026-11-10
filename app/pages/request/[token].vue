@@ -1,7 +1,6 @@
 <template>
     <main :style="inboxAccent" class="flex min-h-dvh items-center justify-center bg-canvas p-4 text-foreground">
         <section class="w-full max-w-xl rounded-2xl border border-divider bg-surface p-6 sm:p-8">
-            <div class="mb-4 flex justify-end"><LanguageSelector /></div>
             <div class="mb-7 flex items-center gap-2"><BrandMark accent-color="indigo" class="size-9" /><span class="text-lg font-bold">FileJet</span><span class="ml-auto rounded-md bg-accent/10 px-2 py-1 text-xs text-accent">{{ $msg("File request") }}</span></div>
             <p v-if="pending" role="status" class="py-10 text-center text-sm text-muted">{{ $msg("Loading file request…") }}</p>
             <div v-else-if="error || !request" class="py-8 text-center"><Icon name="solar:link-broken-linear" size="40" class="text-muted" /><h1 class="mt-4 text-xl font-semibold">{{ $msg("File request unavailable") }}</h1><p class="mt-3 text-sm leading-6 text-muted">{{ $msg(requestErrorMessage || '') }}</p><button v-if="!error?.statusCode || error.statusCode >= 500" class="inbox-button mt-5" @click="refresh()">{{ $msg("Try again") }}</button></div>
