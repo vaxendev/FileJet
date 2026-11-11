@@ -50,6 +50,18 @@ The application is self-hosted. PostgreSQL stores users and item metadata, while
 - Responsive toolbars, type filters that wrap on mobile, and touch-friendly controls.
 - Dashboard Files, Folders, and Notes summary cards stack vertically on mobile, with a title, large count, top-right icon, and description.
 
+### Team spaces
+
+Open **Team spaces** in the sidebar to create a private workspace for shared files and nested folders. The owner adds existing FileJet users by username and manages membership.
+
+- **Viewer** can browse folders, preview supported files, and download.
+- **Uploader** can also upload files and create folders.
+- **Editor** can also rename and remove files and folders.
+
+Shared files use the owner's storage quota. Removed content goes to the owner's Trash. A team upload supports up to six files, 25 MB each and 50 MB in total.
+
+Apply migration `202611100001_team_spaces` before restarting an existing instance. Run `npm run test:teams` against a running FileJet instance with PostgreSQL and ClamAV. Set `FILEJET_TEST_URL` to the app origin if it differs from `http://127.0.0.1:3022`.
+
 ### Sharing
 
 - Public links for files, folders, and notes at `/shared/<token>`.

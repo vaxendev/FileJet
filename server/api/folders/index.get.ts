@@ -13,7 +13,8 @@ export default defineEventHandler(async event => {
         const folders = await prisma.folders.findMany({
             where: {
                 user_id: session.userId,
-                parent_folder_id: null
+                parent_folder_id: null,
+                team_space: { is: null }
             },
             orderBy: {
                 created_at: 'desc'

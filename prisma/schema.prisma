@@ -12,6 +12,36 @@ enum UserRole {
   ADMIN
 }
 
+enum TeamRole {
+  VIEWER
+  UPLOADER
+  EDITOR
+}
+
+model team_spaces {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String @db.VarChar(120)
+  description String @default("") @db.VarChar(500)
+  owner_id String @db.Uuid
+  root_folder_id String @unique @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  owner users @relation("OwnedTeams", fields: [owner_id], references: [id], onDelete: Cascade)
+  root folders @relation(fields: [root_folder_id], references: [id], onDelete: Cascade)
+  members team_members[]
+  @@index([owner_id, created_at])
+}
+
+model team_members {
+  team_id String @db.Uuid
+  user_id String @db.Uuid
+  role TeamRole @default(VIEWER)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  team team_spaces @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  user users @relation("TeamMemberships", fields: [user_id], references: [id], onDelete: Cascade)
+  @@id([team_id, user_id])
+  @@index([user_id, team_id])
+}
+
 // Kept after account deletion so filesystem cleanup survives crashes and retries.
 model user_deletion_jobs {
   user_id String @id @db.Uuid
@@ -20,6 +50,8 @@ model user_deletion_jobs {
 }
 
 model users {
+  owned_teams team_spaces[] @relation("OwnedTeams")
+  team_memberships team_members[] @relation("TeamMemberships")
   role          UserRole  @default(USER)
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username      String    @unique @db.VarChar(50)
@@ -186,6 +218,7 @@ model upload_sessions {
 }
 
 model folders {
+  team_space team_spaces?
   tags String[] @default([]) @db.VarChar(32)
   // Partial unique indexes for root/child names are maintained in migration SQL.
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

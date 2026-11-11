@@ -1,0 +1,113 @@
+<script setup lang="ts">
+import type { TeamSummary } from '~~/shared/types/team'
+definePageMeta({ middleware: 'auth', layout: 'user' })
+useHead(() => ({ title: `${localize('Team spaces')} · FileJet` }))
+const user = useAuthUser(),
+    search = ref(''),
+    modal = ref(false),
+    busy = ref(false),
+    formError = ref('')
+const { openToast } = useToast()
+const { data, pending, error, refresh } = await useFetch<{ teams: TeamSummary[] }>('/api/teams', {
+    key: `teams:${user.value?.id}`
+})
+const teams = computed(() =>
+    (data.value?.teams ?? []).filter(team =>
+        [team.name, team.description, team.ownerName].some(text =>
+            text.toLocaleLowerCase().includes(search.value.toLocaleLowerCase())
+        )
+    )
+)
+const openCreate = () => {
+    formError.value = ''
+    modal.value = true
+}
+const create = async (body: { name: string; description: string }) => {
+    if (busy.value) return
+    busy.value = true
+    formError.value = ''
+    try {
+        const result = await $fetch<{ id: string }>('/api/teams', { method: 'POST', body })
+        modal.value = false
+        openToast(localize('Team space created.'), 'success')
+        await navigateTo(`/teams/${result.id}`)
+    } catch (failure) {
+        formError.value = resolveApiError(failure, localize('Could not create team space.'))
+    } finally {
+        busy.value = false
+    }
+}
+</script>
+<template>
+    <div class="min-h-0 flex-1 overflow-y-auto">
+        <div class="mx-auto flex w-full max-w-350 flex-col gap-5 p-5 max-mobile:p-3">
+            <section
+                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-divider bg-surface p-6 max-mobile:p-4"
+            >
+                <div>
+                    <p class="mt-2 text-sm text-muted">
+                        {{ $msg('Shared folders, files and permissions in one place.') }}
+                    </p>
+                </div>
+                <button type="button" class="inbox-button inbox-primary" @click="openCreate">
+                    <Icon name="solar:users-group-rounded-linear" size="20" />{{ $msg('Create team space') }}
+                </button>
+            </section>
+            <SearchBox
+                v-model="search"
+                class="w-full! max-w-none!"
+                :placeholder="$msg('Search team spaces...')"
+            />
+            <div v-if="error" role="alert" class="rounded-xl border border-divider bg-surface p-8 text-center">
+                <p class="text-sm text-danger">
+                    {{ resolveApiError(error, $msg('Could not load team spaces.')) }}
+                </p>
+                <button class="inbox-button mt-4" @click="refresh()">{{ $msg('Try again') }}</button>
+            </div>
+            <p v-else-if="pending" role="status" class="p-10 text-center text-sm text-muted">
+                {{ $msg('Loading...') }}
+            </p>
+            <div
+                v-else-if="!teams.length"
+                class="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-divider p-8 text-center"
+            >
+                <Icon name="solar:users-group-rounded-linear" size="40" class="text-accent" />
+                <h2 class="font-semibold text-foreground">
+                    {{ search ? $msg('No matching team spaces') : $msg('Create your first team space') }}
+                </h2>
+                <p class="max-w-100 text-sm leading-6 text-muted">
+                    {{ $msg('Create a space or ask its owner to add your username.') }}
+                </p>
+            </div>
+            <div v-else class="grid grid-cols-3 gap-4 max-laptop:grid-cols-2 max-tablet:grid-cols-1">
+                <NuxtLink
+                    v-for="team in teams"
+                    :key="team.id"
+                    :to="`/teams/${team.id}`"
+                    class="flex min-w-0 flex-col gap-4 rounded-2xl border border-divider bg-surface p-5 no-underline transition-colors hover:border-accent/50 hover:bg-surface-hover"
+                >
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="grid size-11 place-items-center rounded-xl bg-accent/10 text-accent"
+                            ><Icon name="solar:users-group-rounded-linear" size="25" /></span
+                        ><span class="rounded-md bg-control px-2 py-1 text-xs text-muted">{{
+                            teamRoleLabel(team.role)
+                        }}</span>
+                    </div>
+                    <div>
+                        <h2 class="truncate font-semibold text-foreground">{{ team.name }}</h2>
+                        <p class="mt-2 line-clamp-2 text-sm leading-6 text-muted">
+                            {{ team.description || $msg('Shared folders for your team.') }}
+                        </p>
+                    </div>
+                    <footer
+                        class="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-xs text-muted"
+                    >
+                        <span>{{ $countMsg('teamMembers', team.memberCount) }}</span
+                        ><span>{{ $msg('Owner') }}: {{ team.ownerName }}</span>
+                    </footer>
+                </NuxtLink>
+            </div>
+        </div>
+        <TeamFormModal :open="modal" :busy="busy" :error="formError" @close="modal = false" @save="create" />
+    </div>
+</template>

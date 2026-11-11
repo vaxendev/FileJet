@@ -1,0 +1,162 @@
+import 'dotenv/config'
+import assert from 'node:assert/strict'
+import { createHmac, randomUUID } from 'node:crypto'
+import { rm } from 'node:fs/promises'
+import { resolve, sep } from 'node:path'
+import pg from 'pg'
+
+const base = process.env.FILEJET_TEST_URL || 'http://127.0.0.1:3022'
+const db = new pg.Client({ connectionString: process.env.DATABASE_URL })
+const [owner, viewer, uploader, editor, outsider] = Array.from({ length: 5 }, randomUUID)
+const users = [owner, viewer, uploader, editor, outsider]
+const username = id => 'qa_teams_' + id
+const bytes = Buffer.from('FileJet team integration fixture')
+const storage = resolve('storage')
+
+function cookie(userId) {
+    const payload = Buffer.from(JSON.stringify({ userId, expiresAt: Date.now() + 3600000 })).toString('base64url')
+    const signature = createHmac('sha256', process.env.AUTH_SECRET).update(payload).digest('base64url')
+    return 'filejet_session=' + payload + '.' + signature
+}
+
+async function api(path, { auth = owner, method = 'GET', status = 200, body, headers = {} } = {}) {
+    const multipart = body instanceof FormData
+    const response = await fetch(base + path, {
+        method,
+        headers: {
+            ...(auth ? { Cookie: cookie(auth) } : {}),
+            ...(body && !multipart ? { 'Content-Type': 'application/json' } : {}),
+            ...headers,
+        },
+        body: multipart ? body : body && JSON.stringify(body),
+        signal: AbortSignal.timeout(45000),
+    })
+    const data = Buffer.from(await response.arrayBuffer())
+    assert.equal(response.status, status, method + ' ' + path + ': ' + data.toString().slice(0, 350))
+    return { data, headers: response.headers, json: () => JSON.parse(data) }
+}
+
+function fileForm(name, content = bytes) {
+    const form = new FormData()
+    form.append('files', new Blob([content], { type: 'text/plain' }), name)
+    return form
+}
+
+await db.connect()
+try {
+    for (const id of users) {
+        await db.query(
+            'INSERT INTO users(id,username,password_hash,storage_limit,storage_used) VALUES($1,$2,$3,1048576,0)',
+            [id, username(id), 'unused-fixture-password'],
+        )
+    }
+    const privateFolder = randomUUID()
+    await db.query('INSERT INTO folders(id,user_id,name) VALUES($1,$2,$3)', [privateFolder, owner, 'Personal folder'])
+    const teams = '/api/teams'
+    const teamBody = { name: 'Shared project', description: 'Team permission fixture' }
+    await api(teams, { auth: null, status: 401 })
+    await api(teams, { method: 'POST', auth: null, body: teamBody, status: 401 })
+    await api(teams, { method: 'POST', body: teamBody, headers: { Origin: 'https://foreign.example' }, status: 403 })
+    const { id } = (await api(teams, { method: 'POST', body: teamBody, status: 201 })).json()
+    const team = teams + '/' + id
+    const root = (await api(team)).json().folderId
+    const otherTeam = (await api(teams, { method: 'POST', body: { name: 'Second project' }, status: 201 })).json()
+    const otherRoot = (await api(teams + '/' + otherTeam.id)).json().folderId
+    await api(team, { auth: outsider, status: 404 })
+    assert.deepEqual((await api(teams, { auth: outsider })).json().teams, [])
+
+    for (const [auth, role] of [[viewer, 'VIEWER'], [uploader, 'UPLOADER'], [editor, 'EDITOR']]) {
+        await api(team + '/members', { method: 'POST', body: { username: username(auth), role } })
+        assert.equal((await api(team, { auth })).json().role, role)
+        assert.equal((await api(teams, { auth })).json().teams[0].id, id)
+    }
+    await api(team + '/members', { method: 'POST', body: { username: username(owner), role: 'EDITOR' }, status: 409 })
+    await api(team + '/members/' + owner, { method: 'PATCH', body: { role: 'VIEWER' }, status: 400 })
+
+    const folders = team + '/folders'
+    await api(folders, { auth: viewer, method: 'POST', body: { name: 'Forbidden' }, status: 403 })
+    await api(team + '/files', { auth: viewer, method: 'POST', body: fileForm('forbidden.txt'), status: 403 })
+    const sharedFolder = (await api(folders, { auth: uploader, method: 'POST', body: { name: 'Shared folder' }, status: 201 })).json().id
+    const nested = (await api(folders, {
+        auth: uploader, method: 'POST', body: { name: 'Nested', folderId: sharedFolder }, status: 201,
+    })).json().id
+    await api(folders, { auth: uploader, method: 'POST', body: { name: 'shared FOLDER' }, status: 409 })
+    for (const folderId of [privateFolder, otherRoot]) {
+        await api(team + '?folderId=' + folderId, { auth: viewer, status: 404 })
+        await api(folders, { auth: uploader, method: 'POST', body: { name: 'Cross-boundary', folderId }, status: 404 })
+        await api(team + '/files?folderId=' + folderId, {
+            auth: uploader, method: 'POST', body: fileForm('forbidden.txt'), status: 404,
+        })
+    }
+    assert.deepEqual((await api(team + '?folderId=' + nested, { auth: viewer })).json().breadcrumbs.map(row => row.id), [root, sharedFolder, nested])
+    const personal = (await api('/api/folders')).json().folders
+    assert.ok(personal.some(folder => folder.id === privateFolder))
+    assert.ok(personal.every(folder => ![root, otherRoot].includes(folder.id)))
+    const tree = (await api('/api/folders/tree')).json().folders
+    assert.ok(tree.every(folder => ![root, otherRoot, nested, sharedFolder].includes(folder.id)))
+    await api('/api/items/move', {
+        method: 'POST', body: { items: [{ id: root, type: 'folder' }], destinationId: privateFolder }, status: 400,
+    })
+
+    const uploadUrl = team + '/files?folderId=' + nested
+    assert.equal((await api(uploadUrl, { auth: uploader, method: 'POST', body: fileForm('plan.txt'), status: 201 })).json().uploaded, 1)
+    await api(uploadUrl, { auth: uploader, method: 'POST', body: fileForm('PLAN.TXT'), status: 409 })
+    const { items } = (await api(team + '?folderId=' + nested, { auth: viewer })).json()
+    assert.equal(items.length, 1)
+    assert.equal(items[0].name, 'plan.txt')
+    assert.equal('storage_key' in items[0], false)
+    const fileId = items[0].id
+    const delivery = team + '/files/' + fileId
+    const download = await api(delivery + '/download', { auth: viewer })
+    assert.deepEqual(download.data, bytes)
+    assert.match(download.headers.get('cache-control'), /no-store/)
+    assert.match(download.headers.get('content-disposition'), /attachment/)
+    assert.equal((await api(delivery + '/download', { auth: viewer, method: 'HEAD' })).data.length, 0)
+    assert.deepEqual((await api(delivery + '/preview', { auth: viewer })).data, bytes)
+    await api(delivery + '/download', { auth: outsider, status: 404 })
+    await api(delivery + '/preview', { auth: outsider, status: 404 })
+    await api('/api/files/' + fileId + '/download', { auth: uploader, status: 404 })
+    const quota = await db.query('SELECT id,storage_used FROM users WHERE id=ANY($1::uuid[])', [[owner, uploader]])
+    assert.equal(Number(quota.rows.find(row => row.id === owner).storage_used), bytes.length)
+    assert.equal(Number(quota.rows.find(row => row.id === uploader).storage_used), 0)
+
+    await db.query('UPDATE users SET storage_limit=$1 WHERE id=$2', [bytes.length, owner])
+    await api(uploadUrl, { auth: uploader, method: 'POST', body: fileForm('over-quota.txt'), status: 400 })
+    assert.equal((await api(team + '?folderId=' + nested, { auth: viewer })).json().items.length, 1)
+
+    const item = team + '/items/' + fileId + '?type=file'
+    await api(item, { auth: uploader, method: 'PATCH', body: { name: 'forbidden.txt' }, status: 403 })
+    await api(item, { auth: uploader, method: 'DELETE', status: 403 })
+    await api(item, { auth: editor, method: 'PATCH', body: { name: 'revised.txt' } })
+    assert.equal((await api(team + '?folderId=' + nested, { auth: viewer })).json().items[0].name, 'revised.txt')
+    await api(team, { auth: editor, method: 'PATCH', body: teamBody, status: 403 })
+    await api(team + '/members/' + viewer, { auth: editor, method: 'DELETE', status: 403 })
+    await api(team + '/members/' + uploader, { method: 'PATCH', body: { role: 'VIEWER' } })
+    await api(folders, { auth: uploader, method: 'POST', body: { name: 'No longer allowed' }, status: 403 })
+    await api(team + '/members/' + viewer, { auth: viewer, method: 'DELETE' })
+    await api(delivery + '/download', { auth: viewer, status: 404 })
+    await api(team + '/members/' + uploader, { method: 'DELETE' })
+    await api(team, { auth: uploader, status: 404 })
+    await api(item, { auth: editor, method: 'DELETE' })
+    await api(delivery + '/download', { auth: editor, status: 404 })
+
+    await api(team, { method: 'PATCH', body: { name: 'Updated project', description: '' } })
+    await api(team, { auth: editor, method: 'DELETE', status: 403 })
+    await api(team, { method: 'DELETE' })
+    await api(team, { auth: editor, status: 404 })
+    await api(teams + '/' + otherTeam.id)
+    const trash = await db.query('SELECT item_id, name FROM trash WHERE user_id=$1', [owner])
+    assert.ok(trash.rows.some(row => row.item_id === root && row.name === 'Updated project'))
+    assert.ok(trash.rows.some(row => row.item_id === fileId))
+    assert.ok(trash.rows.some(row => row.item_id === nested))
+    console.log('Team integration passed: roles, scope, download and preview, quota, revocation and Trash.')
+} finally {
+    try {
+        await db.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [users])
+        const target = resolve(storage, owner)
+        assert.equal(target, storage + sep + owner)
+        await rm(target, { recursive: true, force: true })
+    } finally {
+        await db.end()
+    }
+}

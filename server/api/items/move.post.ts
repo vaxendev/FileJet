@@ -23,7 +23,7 @@ export default defineEventHandler(async event => {
                     items.filter(item => item.type === type).map(item => item.id)
 
                 const [allFolders, files, notes] = await Promise.all([
-                    tx.folders.findMany({ where: { user_id: userId } }),
+                    tx.folders.findMany({ where: { user_id: userId }, include: { team_space: { select: { id: true } } } }),
                     tx.files.findMany({ where: { user_id: userId, id: { in: ids('file') } } }),
                     tx.notes.findMany({ where: { user_id: userId, id: { in: ids('note') } } })
                 ])
@@ -31,6 +31,7 @@ export default defineEventHandler(async event => {
                 const folderMap = new Map(allFolders.map(folder => [folder.id, folder]))
                 const selectedFolderIds = new Set(ids('folder'))
                 const chosenFolders = allFolders.filter(folder => selectedFolderIds.has(folder.id))
+                if (chosenFolders.some(folder => folder.team_space)) throwError(400, 'Team space roots cannot be moved.')
 
                 if (
                     files.length !== ids('file').length ||

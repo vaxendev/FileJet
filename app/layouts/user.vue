@@ -31,6 +31,7 @@ const pageTitle = computed(() => {
         '/favorites': 'Favorites',
         '/shared': 'Shared',
         '/inbox': 'Inbox',
+        '/teams': localize('Team spaces'),
         '/trash': 'Trash',
         '/quarantine': 'Quarantine',
         '/activity': localize("Activity history"),
@@ -38,7 +39,7 @@ const pageTitle = computed(() => {
         '/settings/personalization': 'Appearance'
     }
 
-    return titles[route.path] || (route.path.startsWith('/inbox/') ? 'Inbox' : 'FileJet')
+    return titles[route.path] || (route.path.startsWith('/teams/') ? localize('Team spaces') : route.path.startsWith('/inbox/') ? 'Inbox' : 'FileJet')
 })
 
 </script>

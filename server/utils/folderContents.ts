@@ -2,6 +2,7 @@ import { throwError } from './error'
 import { prisma } from './prisma'
 import { isUuid } from './validation'
 import type { LibraryItem } from '../../shared/types/library'
+import type { Prisma } from '~~/src/generated/prisma/client'
 
 export async function requireFolderWithin(userId: string, rootId: string, folderId: string) {
     if (!isUuid(folderId)) throwError(400, 'Invalid folder ID.')
@@ -51,13 +52,13 @@ export async function getFolderTree(userId: string, rootId: string) {
     return [...ids]
 }
 
-export async function getFolderContents(userId: string, folderId: string, includeTags = false) {
+export async function getFolderContents(userId: string, folderId: string, includeTags = false, db: Prisma.TransactionClient = prisma) {
     const [folders, files, notes] = await Promise.all([
-        prisma.folders.findMany({
+        db.folders.findMany({
             where: { user_id: userId, parent_folder_id: folderId },
             select: { id: true, tags: true, name: true, created_at: true, updated_at: true }
         }),
-        prisma.files.findMany({
+        db.files.findMany({
             where: { user_id: userId, folder_id: folderId },
             select: {
                 id: true,
@@ -70,7 +71,7 @@ export async function getFolderContents(userId: string, folderId: string, includ
                 updated_at: true
             }
         }),
-        prisma.notes.findMany({
+        db.notes.findMany({
             where: { user_id: userId, folder_id: folderId },
             select: { id: true, tags: true, title: true, size: true, created_at: true, updated_at: true }
         })

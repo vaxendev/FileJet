@@ -1,5 +1,5 @@
 <template>
-    <Teleport to="body">
+    <Teleport to="#teleports">
         <Transition name="modal">
             <div
                 v-if="show"

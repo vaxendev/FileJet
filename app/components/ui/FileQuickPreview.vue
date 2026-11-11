@@ -1,5 +1,5 @@
 <template>
-    <Teleport to="body">
+    <Teleport to="#teleports">
         <dialog ref="dialog" class="quick-preview-dialog" aria-labelledby="quick-preview-title" @cancel.prevent="emit('close')" @close="emit('close')" @pointerdown="outsideStart = outside($event)" @click.self="outsideStart && outside($event) && emit('close')">
             <header class="flex shrink-0 items-center gap-3 border-b border-divider p-4">
                 <div class="min-w-0 flex-1"><h2 id="quick-preview-title" class="truncate font-semibold" :title="item?.name">{{ item?.name }}</h2><p class="mt-1 text-xs text-muted">{{ item?.size ? formatFileSize(item.size) : '' }} {{ $msg("· Quick preview · Esc to close") }}</p></div>
@@ -27,12 +27,12 @@
 import type { QuickPreviewItem } from '~~/shared/types/quickPreview'
 import { getInboxPreview } from '~~/shared/utils/inboxPreview'
 import { formatFileSize } from '~/utils/file'
-const props = defineProps<{ item: QuickPreviewItem | null }>()
+const props = defineProps<{ item: QuickPreviewItem | null; apiBase?: string }>()
 const emit = defineEmits<{ close: [] }>()
 const dialog = ref<HTMLDialogElement | null>(null), closeButton = ref<HTMLButtonElement | null>(null)
 const text = ref(''), errorMessage = ref(''), loading = ref(false), truncated = ref(false)
 const kind = computed(() => props.item?.type === 'note' ? 'text' : getInboxPreview(props.item?.name ?? '', props.item?.mime_type ?? null).kind)
-const base = computed(() => props.item ? `/api/${props.item.type === 'note' ? 'notes' : 'files'}/${encodeURIComponent(props.item.resourceId ?? props.item.id)}` : '')
+const base = computed(() => props.apiBase ?? (props.item ? `/api/${props.item.type === 'note' ? 'notes' : 'files'}/${encodeURIComponent(props.item.resourceId ?? props.item.id)}` : ''))
 const previewUrl = computed(() => `${base.value}/preview`), downloadUrl = computed(() => `${base.value}/download`)
 let controller: AbortController | null = null, generation = 0, outsideStart = false
 const outside = (event: MouseEvent) => {
