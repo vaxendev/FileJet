@@ -1618,5 +1618,9 @@
   "m49dcb861": "Takım alanından ayrıldınız.",
   "m510420c9": "Bu takım alanına erişiminiz sona erecek.",
   "me55feb72": "Takım rolünüz bu işleme izin vermiyor.",
-  "c_teamMembers": "Üye yok | Bir üye | {count} üye"
+  "c_teamMembers": "Üye yok | Bir üye | {count} üye",
+  "m7e991d37": "Sayfa bulunamadı",
+  "mae05077c": "Adres değişmiş veya sayfa kaldırılmış olabilir.",
+  "m3dae7fc4": "Kontrol paneline git",
+  "m1501f1bd": "Giriş sayfasına git"
 }

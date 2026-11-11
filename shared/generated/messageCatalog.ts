@@ -1620,7 +1620,11 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "m49dcb861": "You left the team space.",
     "m510420c9": "You will lose access to this team space.",
     "me55feb72": "Your team role does not allow this action.",
-    "c_teamMembers": "No members | One member | {count} members"
+    "c_teamMembers": "No members | One member | {count} members",
+    "m7e991d37": "Page not found",
+    "mae05077c": "This address may have changed, or the page may have been removed.",
+    "m3dae7fc4": "Go to dashboard",
+    "m1501f1bd": "Go to login"
   },
   "tr": {
     "m34dc962f": "Daha önce:",
@@ -3242,7 +3246,11 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "m49dcb861": "Takım alanından ayrıldınız.",
     "m510420c9": "Bu takım alanına erişiminiz sona erecek.",
     "me55feb72": "Takım rolünüz bu işleme izin vermiyor.",
-    "c_teamMembers": "Üye yok | Bir üye | {count} üye"
+    "c_teamMembers": "Üye yok | Bir üye | {count} üye",
+    "m7e991d37": "Sayfa bulunamadı",
+    "mae05077c": "Adres değişmiş veya sayfa kaldırılmış olabilir.",
+    "m3dae7fc4": "Kontrol paneline git",
+    "m1501f1bd": "Giriş sayfasına git"
   },
   "de": {
     "m4af72ffa": "pro Datei",
@@ -4864,6 +4872,10 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "m49dcb861": "Du hast den Teambereich verlassen.",
     "m510420c9": "Du verlierst den Zugriff auf diesen Teambereich.",
     "me55feb72": "Deine Teamrolle erlaubt diese Aktion nicht.",
-    "c_teamMembers": "Keine Mitglieder | Ein Mitglied | {count} Mitglieder"
+    "c_teamMembers": "Keine Mitglieder | Ein Mitglied | {count} Mitglieder",
+    "m7e991d37": "Seite nicht gefunden",
+    "mae05077c": "Die Adresse wurde möglicherweise geändert oder die Seite wurde entfernt.",
+    "m3dae7fc4": "Zum Dashboard",
+    "m1501f1bd": "Zur Anmeldung"
   }
 }

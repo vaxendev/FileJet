@@ -1618,5 +1618,9 @@
   "m49dcb861": "You left the team space.",
   "m510420c9": "You will lose access to this team space.",
   "me55feb72": "Your team role does not allow this action.",
-  "c_teamMembers": "No members | One member | {count} members"
+  "c_teamMembers": "No members | One member | {count} members",
+  "m7e991d37": "Page not found",
+  "mae05077c": "This address may have changed, or the page may have been removed.",
+  "m3dae7fc4": "Go to dashboard",
+  "m1501f1bd": "Go to login"
 }

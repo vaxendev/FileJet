@@ -1618,5 +1618,9 @@
   "m49dcb861": "Du hast den Teambereich verlassen.",
   "m510420c9": "Du verlierst den Zugriff auf diesen Teambereich.",
   "me55feb72": "Deine Teamrolle erlaubt diese Aktion nicht.",
-  "c_teamMembers": "Keine Mitglieder | Ein Mitglied | {count} Mitglieder"
+  "c_teamMembers": "Keine Mitglieder | Ein Mitglied | {count} Mitglieder",
+  "m7e991d37": "Seite nicht gefunden",
+  "mae05077c": "Die Adresse wurde möglicherweise geändert oder die Seite wurde entfernt.",
+  "m3dae7fc4": "Zum Dashboard",
+  "m1501f1bd": "Zur Anmeldung"
 }
