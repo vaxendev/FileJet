@@ -23,6 +23,7 @@ export default defineEventHandler(async event => {
                           ownerId: team.owner_id,
                           ownerName: team.owner.username,
                           role,
+                          isPublic: team.is_public,
                           memberCount: team._count.members + 1,
                           createdAt: team.created_at.toISOString()
                       }

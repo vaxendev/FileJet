@@ -24,11 +24,15 @@ model team_spaces {
   description String @default("") @db.VarChar(500)
   owner_id String @db.Uuid
   root_folder_id String @unique @db.Uuid
+  is_public Boolean @default(false)
+  join_password_hash String?
+  invite_token String? @unique @db.VarChar(43)
   created_at DateTime @default(now()) @db.Timestamptz(6)
   owner users @relation("OwnedTeams", fields: [owner_id], references: [id], onDelete: Cascade)
   root folders @relation(fields: [root_folder_id], references: [id], onDelete: Cascade)
   members team_members[]
   @@index([owner_id, created_at])
+  @@index([is_public, created_at, id])
 }
 
 model team_members {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TeamSummary } from '~~/shared/types/team'
+import type { TeamSettings, TeamSummary } from '~~/shared/types/team'
 definePageMeta({ middleware: 'auth', layout: 'user' })
 useHead(() => ({ title: `${localize('Team spaces')} · FileJet` }))
 const user = useAuthUser(),
@@ -22,7 +22,7 @@ const openCreate = () => {
     formError.value = ''
     modal.value = true
 }
-const create = async (body: { name: string; description: string }) => {
+const create = async (body: TeamSettings) => {
     if (busy.value) return
     busy.value = true
     formError.value = ''
@@ -49,9 +49,12 @@ const create = async (body: { name: string; description: string }) => {
                         {{ $msg('Shared folders, files and permissions in one place.') }}
                     </p>
                 </div>
-                <button type="button" class="inbox-button inbox-primary" @click="openCreate">
-                    <Icon name="solar:users-group-rounded-linear" size="20" />{{ $msg('Create team space') }}
-                </button>
+                <div class="flex flex-wrap gap-2">
+                    <NuxtLink to="/teams/explore" class="inbox-button">{{ $msg('Public teams') }}</NuxtLink>
+                    <button type="button" class="inbox-button inbox-primary" @click="openCreate">
+                        <Icon name="solar:users-group-rounded-linear" size="20" />{{ $msg('Create team space') }}
+                    </button>
+                </div>
             </section>
             <SearchBox
                 v-model="search"

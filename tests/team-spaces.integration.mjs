@@ -60,10 +60,84 @@ try {
     const { id } = (await api(teams, { method: 'POST', body: teamBody, status: 201 })).json()
     const team = teams + '/' + id
     const root = (await api(team)).json().folderId
-    const otherTeam = (await api(teams, { method: 'POST', body: { name: 'Second project' }, status: 201 })).json()
-    const otherRoot = (await api(teams + '/' + otherTeam.id)).json().folderId
+    const publicName = 'Joinable project ' + id
+    const otherTeam = (await api(teams, { method: 'POST', body: { name: publicName, isPublic: true }, status: 201 })).json()
+    const other = teams + '/' + otherTeam.id
+    const otherRoot = (await api(other)).json().folderId
     await api(team, { auth: outsider, status: 404 })
     assert.deepEqual((await api(teams, { auth: outsider })).json().teams, [])
+    const directory = teams + '/public?q=' + encodeURIComponent(publicName)
+    const publicJoin = teams + '/join/' + otherTeam.id
+    const privateJoin = teams + '/join/'
+    const initialPrivate = (await api(team)).json()
+    assert.equal(initialPrivate.isPublic, false)
+    assert.equal(initialPrivate.hasJoinPassword, false)
+    assert.equal(initialPrivate.inviteToken, null)
+    await api(team + '/invite', { method: 'PUT', status: 400 })
+    await api(privateJoin + id, { auth: outsider, status: 404 })
+    await api(directory, { auth: null, status: 401 })
+    const discovery = (await api(directory, { auth: outsider })).json()
+    assert.deepEqual(discovery.teams.map(entry => [entry.id, entry.isMember]), [[otherTeam.id, false]])
+    assert.equal(discovery.totalPages, 1)
+    assert.deepEqual((await api(teams + '/public?q=' + encodeURIComponent(teamBody.name), { auth: outsider })).json().teams, [])
+    assert.deepEqual((await api(teams + '/public?q=%25', { auth: outsider })).json().teams, [])
+    await api(other, { auth: outsider, status: 404 })
+    await api(publicJoin, { auth: null, status: 401 })
+    assert.deepEqual((await api(publicJoin, { auth: outsider })).json(), {
+        teamId: null, name: publicName, requiresPassword: false
+    })
+    await api(publicJoin, {
+        auth: outsider, method: 'POST', status: 403, body: {}, headers: { Origin: 'https://foreign.example' }
+    })
+    const publicToken = (await api(other + '/invite', { method: 'PUT' })).json().inviteToken
+    const publicInvitation = privateJoin + publicToken
+    assert.equal((await api(publicInvitation, { auth: outsider })).json().requiresPassword, false)
+    const joined = await Promise.all([publicJoin, publicInvitation].map(path => api(path, {
+        auth: outsider, method: 'POST', body: { role: 'EDITOR' }
+    })))
+    assert.ok(joined.every(response => response.json().teamId === otherTeam.id))
+    const outsiderDetails = (await api(other, { auth: outsider })).json()
+    assert.equal(outsiderDetails.role, 'VIEWER')
+    assert.equal('inviteToken' in outsiderDetails, false)
+    assert.equal('join_password_hash' in outsiderDetails, false)
+    await api(other + '/invite', { auth: outsider, method: 'PUT', status: 403 })
+    await api(other + '/invite', { auth: outsider, method: 'DELETE', status: 403 })
+    assert.equal((await api(directory, { auth: outsider })).json().teams[0].isMember, true)
+
+    const password = 'Private space passphrase'
+    const changedPassword = 'Private space replacement'
+    const makePrivate = { name: publicName, isPublic: false, password }
+    await api(other, { method: 'PATCH', body: { ...makePrivate, password: 'short' }, status: 400 })
+    await api(other, { method: 'PATCH', body: { ...makePrivate, isPublic: 'false' }, status: 400 })
+    await api(other, { method: 'PATCH', body: makePrivate })
+    await api(publicInvitation, { auth: viewer, status: 404 })
+    await api(publicJoin, { auth: viewer, status: 404 })
+    assert.deepEqual((await api(directory, { auth: outsider })).json().teams, [])
+    assert.equal((await api(other, { auth: outsider })).json().role, 'VIEWER')
+    const row = (await db.query('SELECT join_password_hash FROM team_spaces WHERE id=$1', [otherTeam.id])).rows[0]
+    assert.match(row.join_password_hash, /^\$argon2id\$/)
+    const first = (await api(other + '/invite', { method: 'PUT' })).json().inviteToken
+    assert.match(first, /^[A-Za-z0-9_-]{43}$/)
+    assert.equal((await api(other)).json().inviteToken, first)
+    assert.deepEqual((await api(privateJoin + first, { auth: viewer })).json(), {
+        teamId: null, name: null, requiresPassword: true
+    })
+    await api(privateJoin + first, { auth: viewer, method: 'POST', body: {}, status: 400 })
+    await api(privateJoin + first, { auth: viewer, method: 'POST', body: { password: 'wrong' }, status: 403 })
+    await api(other, { auth: viewer, status: 404 })
+    assert.equal((await api(privateJoin + first, { auth: viewer, method: 'POST', body: { password } })).json().teamId, otherTeam.id)
+    assert.equal((await api(other, { auth: viewer })).json().role, 'VIEWER')
+    await api(other + '/members/' + viewer, { method: 'DELETE' })
+    await api(other, { method: 'PATCH', body: { ...makePrivate, password: changedPassword } })
+    await api(privateJoin + first, { auth: viewer, method: 'POST', body: { password }, status: 403 })
+    const second = (await api(other + '/invite', { method: 'PUT' })).json().inviteToken
+    assert.notEqual(second, first)
+    await api(privateJoin + first, { auth: viewer, method: 'POST', body: { password: changedPassword }, status: 404 })
+    await api(privateJoin + second, { auth: viewer, method: 'POST', body: { password: changedPassword } })
+    await api(other + '/invite', { method: 'DELETE' })
+    await api(privateJoin + second, { auth: uploader, status: 404 })
+    assert.equal((await api(other, { auth: viewer })).json().role, 'VIEWER')
+    await api(other + '/members/' + viewer, { method: 'DELETE' })
 
     for (const [auth, role] of [[viewer, 'VIEWER'], [uploader, 'UPLOADER'], [editor, 'EDITOR']]) {
         await api(team + '/members', { method: 'POST', body: { username: username(auth), role } })
@@ -149,7 +223,7 @@ try {
     assert.ok(trash.rows.some(row => row.item_id === root && row.name === 'Updated project'))
     assert.ok(trash.rows.some(row => row.item_id === fileId))
     assert.ok(trash.rows.some(row => row.item_id === nested))
-    console.log('Team integration passed: roles, scope, download and preview, quota, revocation and Trash.')
+    console.log('Team integration passed: visibility, invitations, passwords, roles, scope, quota and Trash.')
 } finally {
     try {
         await db.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [users])

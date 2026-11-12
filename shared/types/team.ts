@@ -8,6 +8,30 @@ export const teamCan = (role: TeamRole | null | undefined, permission: TeamPermi
     if (permission === 'upload') return role === 'EDITOR' || role === 'UPLOADER'
     return role === 'VIEWER' || role === 'UPLOADER' || role === 'EDITOR'
 }
+export interface TeamSettings {
+    name: string
+    description: string
+    isPublic: boolean
+    password?: string
+}
+
+export interface PublicTeam {
+    id: string
+    name: string
+    description: string
+    ownerName: string
+    isMember: boolean
+}
+
+export const isTeamJoinKey = (value: unknown): value is string =>
+    typeof value === 'string' && (/^[\da-f]{8}-[\da-f]{4}-[1-5][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i.test(value) || /^[A-Za-z0-9_-]{43}$/.test(value))
+
+export interface TeamJoinPreview {
+    teamId: string | null
+    name: string | null
+    requiresPassword: boolean
+}
+
 export interface TeamSummary {
     id: string
     name: string
@@ -15,6 +39,7 @@ export interface TeamSummary {
     ownerId: string
     ownerName: string
     role: TeamRole
+    isPublic: boolean
     memberCount: number
     createdAt: string
 }
@@ -24,6 +49,8 @@ export interface TeamMember {
     role: TeamRole
 }
 export interface TeamDetails extends TeamSummary {
+    hasJoinPassword: boolean
+    inviteToken?: string | null
     folderId: string
     breadcrumbs: { id: string; name: string }[]
     items: LibraryItem[]

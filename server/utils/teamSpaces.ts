@@ -49,19 +49,32 @@ export async function teamAccess(db: TeamDB, id: string, actor: string, permissi
     })
     if (!team || team.root.user_id !== team.owner_id || team.root.parent_folder_id !== null)
         throwError(404, 'Team space not found.')
-    const role: TeamRole | undefined =
-        team.owner_id === actor
-            ? 'OWNER'
-            : (
-                  await db.team_members.findUnique({
-                      where: { team_id_user_id: { team_id: id, user_id: actor } }
-                  })
-              )?.role
+    const role = await teamMemberRole(db, team, actor)
     if (!role) throwError(404, 'Team space not found.')
     if (!teamCan(role, permission)) throwError(403, 'Your team role does not allow this action.')
     return { ...team, role }
 }
 export type TeamAccess = Awaited<ReturnType<typeof teamAccess>>
+
+export async function teamMemberRole(db: TeamDB, team: { id: string; owner_id: string }, actor: string): Promise<TeamRole | undefined> {
+    if (team.owner_id === actor) return 'OWNER'
+    const member = await db.team_members.findUnique({
+        where: { team_id_user_id: { team_id: team.id, user_id: actor } },
+        select: { role: true }
+    })
+    return member?.role
+}
+
+export async function lockTeam(tx: TeamDB, team: { id: string; owner_id: string }) {
+    await lockStorageUser(tx, team.owner_id)
+    await tx.$queryRaw`SELECT id FROM team_spaces WHERE id = ${team.id}::uuid FOR UPDATE`
+}
+
+export async function addTeamMember(tx: TeamDB, teamId: string, userId: string, role: Exclude<TeamRole, 'OWNER'>) {
+    if ((await tx.team_members.count({ where: { team_id: teamId } })) >= 99)
+        throwError(400, 'A team space can have up to 100 members.')
+    await tx.team_members.create({ data: { team_id: teamId, user_id: userId, role } })
+}
 
 // Team writes and membership changes share this lock. Recheck membership after
 // slow uploads/scans so revocation cannot race a write. Match personal storage's lock order.
@@ -75,8 +88,7 @@ export async function teamWrite<T>(
     const initial = await teamAccess(prisma, id, actor, permission)
     return prisma.$transaction(
         async tx => {
-            await lockStorageUser(tx, initial.owner_id)
-            await tx.$queryRaw`SELECT id FROM team_spaces WHERE id = ${id}::uuid FOR UPDATE`
+            await lockTeam(tx, initial)
             const team = await teamAccess(tx, id, actor, permission)
             return run(tx, team, actor)
         },

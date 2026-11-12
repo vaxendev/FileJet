@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { $fetch as teamFetch } from 'ofetch'
-import { teamCan, type TeamDetails, type TeamRole, type TeamMember } from '~~/shared/types/team'
+import { teamCan, type TeamDetails, type TeamSettings, type TeamRole, type TeamMember } from '~~/shared/types/team'
 import type { LibraryItem } from '~~/shared/types/library'
 import type { QuickPreviewItem } from '~~/shared/types/quickPreview'
 import { getFileIcon, formatFileSize, formatFileTime } from '~/utils/file'
@@ -199,7 +199,7 @@ const openTeamForm = () => {
     teamError.value = ''
     teamFormOpen.value = true
 }
-const saveTeam = async (body: { name: string; description: string }) => {
+const saveTeam = async (body: TeamSettings) => {
     if (working.value || !canManage.value) return
     working.value = true
     teamError.value = ''
@@ -212,6 +212,33 @@ const saveTeam = async (body: { name: string; description: string }) => {
         teamError.value = resolveApiError(failure)
     } finally {
         working.value = false
+    }
+}
+const inviteError = ref('')
+const inviteUrl = computed(() => {
+    if (!data.value?.inviteToken || import.meta.server) return ''
+    const path = router.resolve(`/teams/join/${data.value.inviteToken}`).href
+    return new URL(path, window.location.origin).href
+})
+const updateInvite = async (method: 'PUT' | 'DELETE') => {
+    if (!data.value || !canManage.value || working.value) return
+    working.value = true
+    inviteError.value = ''
+    try {
+        const result = await teamFetch<{ inviteToken?: string }>(`/api/teams/${id}/invite`, { method })
+        data.value = { ...data.value, inviteToken: result.inviteToken ?? null }
+    } catch (failure) {
+        inviteError.value = resolveApiError(failure)
+    } finally {
+        working.value = false
+    }
+}
+const copyInvite = async () => {
+    try {
+        await navigator.clipboard.writeText(inviteUrl.value)
+        openToast(localize('Invitation link copied.'), 'success')
+    } catch {
+        openToast(localize('Could not copy the link. You can select and copy it from the link field.'), 'error')
     }
 }
 const exitTeam = async () => {
@@ -276,7 +303,8 @@ const exitTeam = async () => {
                                     {{ data.description }}
                                 </p>
                                 <p class="mt-2 text-xs text-muted">
-                                    {{ $msg('Owner') }}: {{ data.ownerName }} · {{ teamRoleLabel(data.role) }}
+                                    {{ $msg('Owner') }}: {{ data.ownerName }} · {{ teamRoleLabel(data.role) }} ·
+                                    {{ data.isPublic ? $msg('Public team') : $msg('Private team') }}
                                 </p>
                             </div>
                         </div>
@@ -477,6 +505,27 @@ const exitTeam = async () => {
                             )
                         }}
                     </p>
+                    <section v-if="canManage" class="mt-5 flex flex-col gap-3 rounded-xl border border-divider bg-canvas p-4">
+                        <h3 class="text-sm font-semibold text-foreground">{{ $msg('Invitation link') }}</h3>
+                        <p v-if="!data.isPublic" class="text-xs leading-5 text-muted">
+                            {{ data.hasJoinPassword ? $msg('Share the team password separately from the invitation link.') : $msg('Set a team password in Team settings before creating a link.') }}
+                        </p>
+                        <div v-if="data.inviteToken" class="flex flex-wrap items-center gap-2">
+                            <input :value="inviteUrl" :aria-label="$msg('Invitation link')" class="inbox-input min-w-0 flex-1" readonly />
+                            <button type="button" class="inbox-button" :disabled="!inviteUrl" @click="copyInvite">
+                                {{ $msg('Copy link') }}
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" class="inbox-button" :disabled="working || (!data.isPublic && !data.hasJoinPassword)" @click="updateInvite('PUT')">
+                                {{ data.inviteToken ? $msg('Replace invitation link') : $msg('Create invitation link') }}
+                            </button>
+                            <button v-if="data.inviteToken" type="button" class="inbox-button text-danger!" :disabled="working" @click="updateInvite('DELETE')">
+                                {{ $msg('Revoke invitation link') }}
+                            </button>
+                        </div>
+                        <p v-if="inviteError" role="alert" class="text-sm text-danger">{{ inviteError }}</p>
+                    </section>
                     <form
                         v-if="canManage"
                         class="my-5 flex flex-wrap items-end gap-3 rounded-xl border border-divider bg-canvas p-4"

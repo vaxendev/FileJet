@@ -1,16 +1,24 @@
 <script setup lang="ts">
+import type { TeamDetails, TeamSettings } from '~~/shared/types/team'
+
 const props = defineProps<{
     open: boolean
     busy: boolean
     error: string
-    team?: { name: string; description: string } | null
+    team?: TeamDetails | null
 }>()
-const emit = defineEmits<{ close: []; save: [value: { name: string; description: string }] }>()
+const emit = defineEmits<{ close: []; save: [value: TeamSettings] }>()
 const dialog = ref<HTMLDialogElement | null>(null),
     input = ref<HTMLInputElement | null>(null)
 const name = ref(''),
     description = ref(''),
+    visibility = ref('private'),
+    password = ref(''),
     id = useId()
+const visibilityOptions = computed(() => [
+    { value: 'private', label: localize('Private team') },
+    { value: 'public', label: localize('Public team') }
+])
 const close = () => {
     if (!props.busy) emit('close')
 }
@@ -23,6 +31,8 @@ watch(
         }
         name.value = props.team?.name ?? ''
         description.value = props.team?.description ?? ''
+        visibility.value = props.team?.isPublic ? 'public' : 'private'
+        password.value = ''
         await nextTick()
         if (props.open && dialog.value?.isConnected) {
             dialog.value.showModal()
@@ -32,8 +42,14 @@ watch(
     { flush: 'post', immediate: true }
 )
 const save = () => {
-    if (!props.busy && name.value.trim() && name.value.trim().length <= 120)
-        emit('save', { name: name.value.trim(), description: description.value.trim() })
+    if (props.busy || !name.value.trim() || name.value.trim().length > 120) return
+    const isPublic = visibility.value === 'public'
+    emit('save', {
+        name: name.value.trim(),
+        description: description.value.trim(),
+        isPublic,
+        ...(!isPublic && password.value ? { password: password.value } : {})
+    })
 }
 </script>
 <template>
@@ -79,6 +95,23 @@ const save = () => {
                         maxlength="500"
                         :disabled="busy"
                     />
+                </label>
+                <div class="flex flex-col gap-2">
+                    <FormSelect v-model="visibility" :label="$msg('Visibility')" :options="visibilityOptions" :disabled="busy" />
+                    <p class="text-xs leading-5 text-muted">
+                        {{ visibility === 'public' ? $msg('Signed-in users can find and join public teams.') : $msg('Private teams require an invitation link and a password to join.') }}
+                    </p>
+                    <p v-if="team && team.isPublic !== (visibility === 'public')" class="text-xs leading-5 text-warning">
+                        {{ $msg('Current members keep their access.') }}
+                        <span v-if="team.inviteToken">{{ $msg('Changing visibility revokes the current invitation link.') }}</span>
+                    </p>
+                </div>
+                <label v-if="visibility === 'private'" class="flex flex-col gap-2 text-sm text-label">
+                    {{ $msg('Team password') }}
+                    <input v-model="password" type="password" class="inbox-input" minlength="8" maxlength="128" autocomplete="new-password" :disabled="busy" />
+                    <span class="text-xs leading-5 text-muted">
+                        {{ team?.hasJoinPassword ? $msg('Leave blank to keep the current team password.') : $msg('Set a team password to enable private invitations.') }}
+                    </span>
                 </label>
                 <p class="text-xs leading-5 text-muted">
                     {{ $msg("Files use the owner's storage quota. Removed items go to the owner's Trash.") }}
