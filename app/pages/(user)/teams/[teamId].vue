@@ -165,7 +165,7 @@ const inviteMember = async () => {
                     method: 'POST',
                     body: { username: username.value.trim(), role: newRole.value }
                 }),
-            localize('Team invitation sent.')
+            localize('Invitation sent.')
         )
     )
         username.value = ''
