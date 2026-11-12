@@ -222,6 +222,7 @@ Nuxt serves both the interface and API. PostgreSQL holds users, item metadata, n
 
 - Node.js 24.11+ within the 24.x release line, 22.19+ within 22.x, or 26+, with npm (matching Nuxt's declared Node.js support).
 - PostgreSQL 15 or newer and Git.
+- A reachable ClamAV daemon for file uploads, previews, and downloads. See [ClamAV setup](deploy/antivirus/README.md).
 - A writable, persistent local filesystem for uploaded files.
 - A modern browser with native dialog and popover support. Folder uploads depend on browser support; clipboard access requires HTTPS or localhost.
 - Optional: `ffprobe` on `PATH` for media dimensions, duration, and other technical metadata. Set `FFPROBE_PATH` to use a specific executable.
@@ -307,6 +308,8 @@ The schema's default storage quota is **10 MiB** (`10485760` bytes). An administ
 
 ### Development
 
+Start ClamAV and wait for it to be ready before testing file uploads or previews.
+
 ```bash
 npm run dev
 ```
@@ -314,6 +317,8 @@ npm run dev
 Open [localhost:3000](http://localhost:3000).
 
 ## 🌐 Deployment
+
+Start ClamAV on the FileJet host or configure a reachable scanner on a private network. See the [deployment instructions](deploy/antivirus/README.md).
 
 Build and start the Node.js server from the project root, with `NODE_ENV=production` set in the deployment environment:
 

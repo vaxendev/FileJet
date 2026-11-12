@@ -5,7 +5,7 @@ All upload paths require a successful ClamAV scan before contents become availab
 ## Linux / Docker
 
 ```sh
-docker compose -f deploy/antivirus/compose.yaml up -d
+docker compose -f deploy/antivirus/compose.yaml up -d --wait
 ```
 
 The service binds **127.0.0.1:3310** only. FreshClam maintains the persistent signature volume. If FileJet itself runs in Docker, attach both services to the same private network and use `CLAMAV_HOST=clamav`; never publish the scanner to the Internet. Clamd has no TCP authentication or encryption.
@@ -18,7 +18,7 @@ Download the official x64 ZIP from https://github.com/Cisco-Talos/clamav/release
 ./deploy/antivirus/start-windows.ps1 -ClamAvDirectory 'C:/path/to/clamav'
 ```
 
-The helper updates official signatures first, starts Clamd and the FreshClam updater as hidden user processes, and binds localhost. No administrator service or startup entry is installed. Run it again after reboot, or arrange startup using your existing service manager. The default engine directory is `%LOCALAPPDATA%/FileJet/Antivirus/clamav`; runtime files, signatures and logs are under `%LOCALAPPDATA%/FileJet/Antivirus/runtime`.
+The helper works in Windows PowerShell 5.1 and PowerShell 7. It updates official signatures and waits for Clamd to answer on localhost before reporting that it is ready. Run it again after reboot, or arrange startup using your existing service manager. The default engine directory is `%LOCALAPPDATA%/FileJet/Antivirus/clamav`; runtime files, signatures and logs are under `%LOCALAPPDATA%/FileJet/Antivirus/runtime`.
 
 ## FileJet setup
 
