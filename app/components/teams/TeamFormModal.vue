@@ -99,7 +99,7 @@ const save = () => {
                 <div class="flex flex-col gap-2">
                     <FormSelect v-model="visibility" :label="$msg('Visibility')" :options="visibilityOptions" :disabled="busy" />
                     <p class="text-xs leading-5 text-muted">
-                        {{ visibility === 'public' ? $msg('Signed-in users can find and join public teams.') : $msg('Private teams require an invitation link and a password to join.') }}
+                        {{ visibility === 'public' ? $msg('Signed-in users can find and join public teams.') : $msg('Joining a private team through a link requires its password.') }}
                     </p>
                     <p v-if="team && team.isPublic !== (visibility === 'public')" class="text-xs leading-5 text-warning">
                         {{ $msg('Current members keep their access.') }}

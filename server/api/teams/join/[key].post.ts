@@ -20,7 +20,10 @@ export default defineEventHandler(async event => {
         const team = await findTeamJoinTarget(tx, key)
         if (team.id !== initial.id || team.is_public !== initial.is_public || team.join_password_hash !== initial.join_password_hash)
             throwError(409, 'Team invitation settings changed. Try again.')
-        if (!(await teamMemberRole(tx, team, actor))) await addTeamMember(tx, team.id, actor, 'VIEWER')
+        if (!(await teamMemberRole(tx, team, actor))) {
+            await addTeamMember(tx, team.id, actor, 'VIEWER')
+            await tx.team_invitations.deleteMany({ where: { team_id: team.id, user_id: actor } })
+        }
         return { teamId: team.id }
     })
 })

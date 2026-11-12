@@ -9,13 +9,20 @@ export default defineEventHandler(async event => {
         async tx => {
             const team = await teamAccess(tx, id, actor)
             const folder = await teamFolder(tx, team, folderId)
-            const [contents, members] = await Promise.all([
+            const [contents, members, invitations] = await Promise.all([
                 getFolderContents(team.owner_id, folder.id, false, tx),
                 tx.team_members.findMany({
                     where: { team_id: team.id },
                     include: { user: { select: { username: true } } },
                     orderBy: { created_at: 'asc' }
-                })
+                }),
+                team.role === 'OWNER'
+                    ? tx.team_invitations.findMany({
+                          where: { team_id: team.id },
+                          select: { id: true, role: true, user: { select: { username: true } } },
+                          orderBy: { created_at: 'desc' }
+                      })
+                    : undefined
             ])
             return {
                 id: team.id,
@@ -27,6 +34,9 @@ export default defineEventHandler(async event => {
                 isPublic: team.is_public,
                 hasJoinPassword: team.role === 'OWNER' && Boolean(team.join_password_hash),
                 ...(team.role === 'OWNER' ? { inviteToken: team.invite_token } : {}),
+                ...(invitations ? {
+                    invitations: invitations.map(({ id, role, user }) => ({ id, role, username: user.username }))
+                } : {}),
                 memberCount: members.length + 1,
                 createdAt: team.created_at.toISOString(),
                 folderId: folder.id,

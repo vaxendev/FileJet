@@ -91,6 +91,8 @@ try {
     })
     const publicToken = (await api(other + '/invite', { method: 'PUT' })).json().inviteToken
     const publicInvitation = privateJoin + publicToken
+    await api(other + '/members', { method: 'POST', body: { username: username(outsider), role: 'EDITOR' } })
+    assert.equal((await api(teams, { auth: outsider })).json().invitations[0].role, 'EDITOR')
     assert.equal((await api(publicInvitation, { auth: outsider })).json().requiresPassword, false)
     const joined = await Promise.all([publicJoin, publicInvitation].map(path => api(path, {
         auth: outsider, method: 'POST', body: { role: 'EDITOR' }
@@ -99,6 +101,8 @@ try {
     const outsiderDetails = (await api(other, { auth: outsider })).json()
     assert.equal(outsiderDetails.role, 'VIEWER')
     assert.equal('inviteToken' in outsiderDetails, false)
+    assert.equal('invitations' in outsiderDetails, false)
+    assert.deepEqual((await api(teams, { auth: outsider })).json().invitations, [])
     assert.equal('join_password_hash' in outsiderDetails, false)
     await api(other + '/invite', { auth: outsider, method: 'PUT', status: 403 })
     await api(other + '/invite', { auth: outsider, method: 'DELETE', status: 403 })
@@ -139,10 +143,52 @@ try {
     assert.equal((await api(other, { auth: viewer })).json().role, 'VIEWER')
     await api(other + '/members/' + viewer, { method: 'DELETE' })
 
+    const invitations = teams + '/invitations/'
+    const outsiderInvite = { username: username(outsider), role: 'VIEWER' }
+    await api(team + '/members', { method: 'POST', body: outsiderInvite })
+    const revokedId = (await api(teams, { auth: outsider })).json().invitations[0].id
+    await api(invitations + revokedId, { method: 'DELETE', auth: viewer, status: 404 })
+    await api(invitations + revokedId, { method: 'DELETE' })
+    await api(team + '/members', { method: 'POST', body: outsiderInvite })
+    const declinedId = (await api(teams, { auth: outsider })).json().invitations[0].id
+    assert.notEqual(declinedId, revokedId)
+    await api(invitations + revokedId, { method: 'POST', auth: outsider, status: 404 })
+    await api(invitations + declinedId, { method: 'DELETE', auth: outsider })
+    const afterDecline = (await api(teams, { auth: outsider })).json()
+    assert.deepEqual(afterDecline.invitations, [])
+    assert.ok(afterDecline.teams.every(entry => entry.id !== id))
+    await api(team, { auth: outsider, status: 404 })
+
     for (const [auth, role] of [[viewer, 'VIEWER'], [uploader, 'UPLOADER'], [editor, 'EDITOR']]) {
         await api(team + '/members', { method: 'POST', body: { username: username(auth), role } })
+        await api(team + '/members', { method: 'POST', body: { username: username(auth), role: 'EDITOR' }, status: 409 })
+        await api(team, { auth, status: 404 })
+        const pending = (await api(teams, { auth })).json()
+        assert.deepEqual(pending.teams, [])
+        const [invite] = pending.invitations
+        assert.deepEqual(pending.invitations, [{ id: invite.id, role, teamName: teamBody.name, ownerName: username(owner) }])
+        if (auth === viewer) {
+            const page = (await api('/teams', { auth })).data.toString()
+            assert.match(page, /<h2[^>]*>Team invitations<\/h2>/)
+            assert.ok(!page.includes('href="/teams/' + id + '"'))
+        }
+        const ownerView = (await api(team)).json()
+        assert.ok(!ownerView.members.some(member => member.id === auth))
+        assert.deepEqual(ownerView.invitations, [{ id: invite.id, username: username(auth), role }])
+        assert.deepEqual((await api(teams, { auth: outsider })).json().invitations, [])
+        await api(invitations + invite.id, { method: 'POST', auth: outsider, status: 404 })
+        await api(invitations + invite.id, { method: 'POST', status: 404 })
+        await api(invitations + invite.id, { method: 'POST', auth, status: 403, headers: { Origin: 'https://foreign.example' } })
+        assert.equal((await api(invitations + invite.id, { method: 'POST', auth, body: { role: 'OWNER' } })).json().teamId, id)
         assert.equal((await api(team, { auth })).json().role, role)
-        assert.equal((await api(teams, { auth })).json().teams[0].id, id)
+        const joinedTeamList = (await api(teams, { auth })).json()
+        assert.equal(joinedTeamList.teams[0].id, id)
+        assert.deepEqual(joinedTeamList.invitations, [])
+        if (auth === viewer) {
+            const page = (await api('/teams', { auth })).data.toString()
+            assert.doesNotMatch(page, /<h2[^>]*>Team invitations<\/h2>/)
+            assert.ok(page.includes('href="/teams/' + id + '"'))
+        }
     }
     await api(team + '/members', { method: 'POST', body: { username: username(owner), role: 'EDITOR' }, status: 409 })
     await api(team + '/members/' + owner, { method: 'PATCH', body: { role: 'VIEWER' }, status: 400 })
@@ -216,8 +262,10 @@ try {
 
     await api(team, { method: 'PATCH', body: { name: 'Updated project', description: '' } })
     await api(team, { auth: editor, method: 'DELETE', status: 403 })
+    await api(team + '/members', { method: 'POST', body: outsiderInvite })
     await api(team, { method: 'DELETE' })
     await api(team, { auth: editor, status: 404 })
+    assert.deepEqual((await api(teams, { auth: outsider })).json().invitations, [])
     await api(teams + '/' + otherTeam.id)
     const trash = await db.query('SELECT item_id, name FROM trash WHERE user_id=$1', [owner])
     assert.ok(trash.rows.some(row => row.item_id === root && row.name === 'Updated project'))

@@ -48,6 +48,20 @@ export interface TeamMember {
     username: string
     role: TeamRole
 }
+
+export interface TeamInvitation {
+    id: string
+    teamName: string
+    ownerName: string
+    role: Exclude<TeamRole, 'OWNER'>
+}
+
+export interface SentTeamInvitation {
+    id: string
+    username: string
+    role: Exclude<TeamRole, 'OWNER'>
+}
+
 export interface TeamDetails extends TeamSummary {
     hasJoinPassword: boolean
     inviteToken?: string | null
@@ -55,4 +69,5 @@ export interface TeamDetails extends TeamSummary {
     breadcrumbs: { id: string; name: string }[]
     items: LibraryItem[]
     members: TeamMember[]
+    invitations?: SentTeamInvitation[]
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TeamSettings, TeamSummary } from '~~/shared/types/team'
+import type { TeamInvitation, TeamSettings, TeamSummary } from '~~/shared/types/team'
 definePageMeta({ middleware: 'auth', layout: 'user' })
 useHead(() => ({ title: `${localize('Team spaces')} · FileJet` }))
 const user = useAuthUser(),
@@ -8,7 +8,7 @@ const user = useAuthUser(),
     busy = ref(false),
     formError = ref('')
 const { openToast } = useToast()
-const { data, pending, error, refresh } = await useFetch<{ teams: TeamSummary[] }>('/api/teams', {
+const { data, pending, error, refresh } = await useFetch<{ teams: TeamSummary[]; invitations: TeamInvitation[] }>('/api/teams', {
     key: `teams:${user.value?.id}`
 })
 const teams = computed(() =>
@@ -18,6 +18,20 @@ const teams = computed(() =>
         )
     )
 )
+const respondingTo = ref<string | null>(null)
+const respondToInvitation = async (invitation: TeamInvitation, method: 'POST' | 'DELETE') => {
+    if (respondingTo.value) return
+    respondingTo.value = invitation.id
+    try {
+        await $fetch(`/api/teams/invitations/${invitation.id}`, { method })
+        openToast(method === 'POST' ? localize('Team invitation accepted.') : localize('Team invitation declined.'), 'success')
+    } catch (failure) {
+        openToast(resolveApiError(failure), 'error')
+    } finally {
+        await refresh()
+        respondingTo.value = null
+    }
+}
 const openCreate = () => {
     formError.value = ''
     modal.value = true
@@ -56,6 +70,26 @@ const create = async (body: TeamSettings) => {
                     </button>
                 </div>
             </section>
+            <section v-if="data?.invitations?.length" class="rounded-2xl border border-divider bg-surface p-5 max-mobile:p-3">
+                <h2 class="font-semibold text-foreground">{{ $msg('Team invitations') }}</h2>
+                <ul class="mt-2 divide-y divide-divider">
+                    <li v-for="invitation in data.invitations" :key="invitation.id"
+                        class="flex flex-wrap items-center justify-between gap-3 py-3">
+                        <div class="min-w-0">
+                            <h3 class="break-words text-sm font-medium text-foreground">{{ invitation.teamName }}</h3>
+                            <p class="mt-1 break-words text-xs text-muted">
+                                {{ $msg('Owner') }}: {{ invitation.ownerName }} · {{ teamRoleLabel(invitation.role) }}
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-2" :aria-busy="respondingTo === invitation.id">
+                            <button type="button" class="inbox-button" :disabled="respondingTo !== null"
+                                @click="respondToInvitation(invitation, 'DELETE')">{{ $msg('Decline') }}</button>
+                            <button type="button" class="inbox-button inbox-primary" :disabled="respondingTo !== null"
+                                @click="respondToInvitation(invitation, 'POST')">{{ $msg('Accept') }}</button>
+                        </div>
+                    </li>
+                </ul>
+            </section>
             <SearchBox
                 v-model="search"
                 class="w-full! max-w-none!"
@@ -79,7 +113,7 @@ const create = async (body: TeamSettings) => {
                     {{ search ? $msg('No matching team spaces') : $msg('Create your first team space') }}
                 </h2>
                 <p class="max-w-100 text-sm leading-6 text-muted">
-                    {{ $msg('Create a space or ask its owner to add your username.') }}
+                    {{ $msg('Create a space or ask its owner to invite you by username.') }}
                 </p>
             </div>
             <div v-else class="grid grid-cols-3 gap-4 max-laptop:grid-cols-2 max-tablet:grid-cols-1">

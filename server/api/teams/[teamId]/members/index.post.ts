@@ -1,5 +1,5 @@
 import { throwError } from '../../../../utils/error'
-import { readTeamBody, teamWrite, memberRole, teamMemberRole, addTeamMember } from '../../../../utils/teamSpaces'
+import { readTeamBody, teamWrite, memberRole, teamMemberRole } from '../../../../utils/teamSpaces'
 export default defineEventHandler(async event => {
     const body = await readTeamBody(event),
         role = memberRole(body.role ?? 'VIEWER')
@@ -11,7 +11,11 @@ export default defineEventHandler(async event => {
         if (!user) throwError(404, 'User not found.')
         if (await teamMemberRole(tx, team, user.id))
             throwError(409, 'This user is already a team member.')
-        await addTeamMember(tx, team.id, user.id, role)
+        const invitation = await tx.team_invitations.createMany({
+            data: { team_id: team.id, user_id: user.id, role },
+            skipDuplicates: true
+        })
+        if (!invitation.count) throwError(409, 'This user already has a pending invitation.')
     })
     return { success: true }
 })

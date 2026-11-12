@@ -156,7 +156,7 @@ const upload = async (files: FileList) => {
 const username = ref(''),
     newRole = ref<TeamRole>('VIEWER'),
     roleOptions = computed(teamRoleOptions)
-const addMember = async () => {
+const inviteMember = async () => {
     if (!canManage.value || !username.value.trim()) return
     if (
         await mutate(
@@ -165,10 +165,17 @@ const addMember = async () => {
                     method: 'POST',
                     body: { username: username.value.trim(), role: newRole.value }
                 }),
-            localize('Member added.')
+            localize('Team invitation sent.')
         )
     )
         username.value = ''
+}
+const cancelInvitation = async (invitationId: string) => {
+    if (!canManage.value) return
+    await mutate(
+        () => teamFetch(`/api/teams/invitations/${invitationId}`, { method: 'DELETE' }),
+        localize('Team invitation canceled.')
+    )
 }
 const changeRole = async (member: TeamMember, role: string) => {
     if (!canManage.value || member.role === role) return
@@ -529,7 +536,7 @@ const exitTeam = async () => {
                     <form
                         v-if="canManage"
                         class="my-5 flex flex-wrap items-end gap-3 rounded-xl border border-divider bg-canvas p-4"
-                        @submit.prevent="addMember"
+                        @submit.prevent="inviteMember"
                     >
                         <label class="flex min-w-0 flex-1 flex-col gap-2 text-xs text-muted"
                             >{{ $msg('Existing username')
@@ -554,9 +561,23 @@ const exitTeam = async () => {
                             :disabled="working || !username.trim()"
                             type="submit"
                         >
-                            {{ $msg('Add member') }}
+                            {{ $msg('Send invitation') }}
                         </button>
                     </form>
+                    <section v-if="canManage && data.invitations?.length" class="mb-5 rounded-xl border border-divider bg-canvas p-4">
+                        <h3 class="text-sm font-semibold text-foreground">{{ $msg('Pending invitations') }}</h3>
+                        <ul class="mt-2 divide-y divide-divider">
+                            <li v-for="invitation in data.invitations" :key="invitation.id"
+                                class="flex flex-wrap items-center justify-between gap-3 py-3">
+                                <div class="min-w-0">
+                                    <p class="break-all text-sm text-foreground">{{ invitation.username }}</p>
+                                    <p class="mt-1 text-xs text-muted">{{ teamRoleLabel(invitation.role) }}</p>
+                                </div>
+                                <button type="button" class="inbox-button" :disabled="working"
+                                    @click="cancelInvitation(invitation.id)">{{ $msg('Cancel invitation') }}</button>
+                            </li>
+                        </ul>
+                    </section>
                     <ul class="mt-4 divide-y divide-divider">
                         <li
                             v-for="member in data.members"
