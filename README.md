@@ -58,9 +58,11 @@ Open **Team spaces** in the sidebar to create a private workspace for shared fil
 - **Uploader** can also upload files and create folders.
 - **Editor** can also rename and remove files and folders.
 
+The **Chat** tab is available to every team member. It shows saved messages, refreshes automatically while open, and lets members load older messages. Messages are plain text and can contain up to 2,000 characters.
+
 Shared files use the owner's storage quota. Removed content goes to the owner's Trash. A team upload supports up to six files, 25 MB each and 50 MB in total.
 
-Apply pending migrations, including `202611130001_team_member_invitations`, and regenerate the Prisma client before restarting an existing instance. Run `npm run test:teams` against a running FileJet instance with PostgreSQL and ClamAV. Set `FILEJET_TEST_URL` to the app origin if it differs from `http://127.0.0.1:3022`.
+Apply pending migrations, including `202611130002_team_chat`, and regenerate the Prisma client before restarting an existing instance. Run `npm run test:teams` against a running FileJet instance with PostgreSQL and ClamAV. Set `FILEJET_TEST_URL` to the app origin if it differs from `http://127.0.0.1:3022`.
 
 ### Sharing
 

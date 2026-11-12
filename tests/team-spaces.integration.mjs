@@ -59,12 +59,15 @@ try {
     await api(teams, { method: 'POST', body: teamBody, headers: { Origin: 'https://foreign.example' }, status: 403 })
     const { id } = (await api(teams, { method: 'POST', body: teamBody, status: 201 })).json()
     const team = teams + '/' + id
+    const chat = team + '/messages'
     const root = (await api(team)).json().folderId
     const publicName = 'Joinable project ' + id
     const otherTeam = (await api(teams, { method: 'POST', body: { name: publicName, isPublic: true }, status: 201 })).json()
     const other = teams + '/' + otherTeam.id
     const otherRoot = (await api(other)).json().folderId
     await api(team, { auth: outsider, status: 404 })
+    await api(chat, { auth: null, status: 401 })
+    await api(chat, { auth: outsider, status: 404 })
     assert.deepEqual((await api(teams, { auth: outsider })).json().teams, [])
     const directory = teams + '/public?q=' + encodeURIComponent(publicName)
     const publicJoin = teams + '/join/' + otherTeam.id
@@ -163,6 +166,7 @@ try {
         await api(team + '/members', { method: 'POST', body: { username: username(auth), role } })
         await api(team + '/members', { method: 'POST', body: { username: username(auth), role: 'EDITOR' }, status: 409 })
         await api(team, { auth, status: 404 })
+        await api(chat, { auth, status: 404 })
         const pending = (await api(teams, { auth })).json()
         assert.deepEqual(pending.teams, [])
         const [invite] = pending.invitations
@@ -192,6 +196,45 @@ try {
     }
     await api(team + '/members', { method: 'POST', body: { username: username(owner), role: 'EDITOR' }, status: 409 })
     await api(team + '/members/' + owner, { method: 'PATCH', body: { role: 'VIEWER' }, status: 400 })
+
+    assert.deepEqual((await api(chat, { auth: viewer })).json(), { messages: [], hasMore: false })
+    const firstMessage = { requestId: randomUUID(), message: '  Discuss <b>the plan</b>\nnext week.  ' }
+    await api(chat, { auth: outsider, method: 'POST', body: firstMessage, status: 404 })
+    await api(chat, { auth: viewer, method: 'POST', body: firstMessage, status: 403, headers: { Origin: 'https://foreign.example' } })
+    for (const invalidMessage of ['', '   ', 'a'.repeat(2001), 'null\0byte']) {
+        await api(chat, { auth: viewer, method: 'POST', body: { ...firstMessage, message: invalidMessage }, status: 400 })
+    }
+    await api(chat, { auth: viewer, method: 'POST', body: { ...firstMessage, requestId: [firstMessage.requestId] }, status: 400 })
+    const sent = await Promise.all([1, 2].map(() => api(chat, {
+        auth: viewer, method: 'POST', body: { ...firstMessage, authorId: owner }
+    })))
+    const firstSaved = sent[0].json().message
+    assert.deepEqual(sent[1].json().message, firstSaved)
+    assert.equal(firstSaved.authorId, viewer)
+    assert.equal(firstSaved.authorName, username(viewer))
+    assert.equal(firstSaved.body, firstMessage.message.trim())
+    await api(chat, { auth: editor, method: 'POST', body: firstMessage, status: 409 })
+    await api(chat, { auth: viewer, method: 'POST', body: { ...firstMessage, message: 'Changed retry' }, status: 409 })
+    assert.deepEqual((await api(chat, { auth: editor })).json().messages, [firstSaved])
+    assert.deepEqual((await api(other + '/messages')).json().messages, [])
+    for (const query of ['before=0', 'after=9223372036854775808', 'before=1&after=2', 'after=1&after=2']) {
+        await api(chat + '?' + query, { status: 400 })
+    }
+    await db.query(
+        "INSERT INTO team_messages(team_id,author_id,request_id,body) SELECT $1,$2,gen_random_uuid(),'Message ' || n FROM generate_series(1,52) AS n",
+        [id, owner]
+    )
+    const latestMessages = (await api(chat)).json()
+    assert.equal(latestMessages.messages.length, 50)
+    assert.equal(latestMessages.messages[0].body, 'Message 3')
+    assert.equal(latestMessages.messages.at(-1).body, 'Message 52')
+    assert.equal(latestMessages.hasMore, true)
+    const olderMessages = (await api(chat + '?before=' + latestMessages.messages[0].id)).json()
+    assert.deepEqual(olderMessages.messages.map(message => message.body), [firstSaved.body, 'Message 1', 'Message 2'])
+    assert.equal(olderMessages.hasMore, false)
+    const newerMessages = (await api(chat + '?after=' + olderMessages.messages.at(-1).id)).json()
+    assert.deepEqual(newerMessages.messages, latestMessages.messages)
+    assert.equal(newerMessages.hasMore, false)
 
     const folders = team + '/folders'
     await api(folders, { auth: viewer, method: 'POST', body: { name: 'Forbidden' }, status: 403 })
@@ -255,6 +298,8 @@ try {
     await api(folders, { auth: uploader, method: 'POST', body: { name: 'No longer allowed' }, status: 403 })
     await api(team + '/members/' + viewer, { auth: viewer, method: 'DELETE' })
     await api(delivery + '/download', { auth: viewer, status: 404 })
+    await api(chat, { auth: viewer, status: 404 })
+    await api(chat, { auth: viewer, method: 'POST', body: firstMessage, status: 404 })
     await api(team + '/members/' + uploader, { method: 'DELETE' })
     await api(team, { auth: uploader, status: 404 })
     await api(item, { auth: editor, method: 'DELETE' })
@@ -265,13 +310,15 @@ try {
     await api(team + '/members', { method: 'POST', body: outsiderInvite })
     await api(team, { method: 'DELETE' })
     await api(team, { auth: editor, status: 404 })
+    const deletedMessages = await db.query('SELECT 1 FROM team_messages WHERE team_id=$1', [id])
+    assert.equal(deletedMessages.rowCount, 0)
     assert.deepEqual((await api(teams, { auth: outsider })).json().invitations, [])
     await api(teams + '/' + otherTeam.id)
     const trash = await db.query('SELECT item_id, name FROM trash WHERE user_id=$1', [owner])
     assert.ok(trash.rows.some(row => row.item_id === root && row.name === 'Updated project'))
     assert.ok(trash.rows.some(row => row.item_id === fileId))
     assert.ok(trash.rows.some(row => row.item_id === nested))
-    console.log('Team integration passed: visibility, invitations, passwords, roles, scope, quota and Trash.')
+    console.log('Team integration passed: visibility, invitations, chat, passwords, roles, scope, quota and Trash.')
 } finally {
     try {
         await db.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [users])

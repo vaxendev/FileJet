@@ -1664,5 +1664,20 @@
   "m330a6c07": "Die Team-Einladung wurde abgelehnt.",
   "m494435ef": "Für diesen Benutzer liegt bereits eine offene Einladung vor.",
   "m4be1053b": "Erstelle einen Team-Bereich oder bitte den Besitzer, dich über deinen Benutzernamen einzuladen.",
-  "mc248cc3d": "Um einem privaten Team über einen Link beizutreten, ist das Team-Passwort erforderlich."
+  "mc248cc3d": "Um einem privaten Team über einen Link beizutreten, ist das Team-Passwort erforderlich.",
+  "m2279d8cb": "Chat",
+  "m4afbbf82": "Team-Chat",
+  "mfab5ed70": "Teamnachrichten",
+  "mae0ed984": "Nachricht",
+  "mf28e14cf": "Senden",
+  "m9d26e8d": "Wird gesendet...",
+  "m513fe046": "Noch keine Nachrichten.",
+  "m35bd2c31": "Ältere Nachrichten laden",
+  "md0b38d51": "Gelöschter Benutzer",
+  "m80006804": "Teamnachrichten konnten nicht geladen werden.",
+  "m81949d8f": "Die Nachricht konnte nicht gesendet werden.",
+  "m61c9f793": "Ungültiger Nachrichtencursor.",
+  "m321adfea": "Ungültige Nachrichten-ID.",
+  "m1b2fbd2b": "Gib eine Nachricht mit 1 bis 2.000 Zeichen ein.",
+  "m37a6526e": "Diese Nachrichten-ID wurde bereits verwendet."
 }

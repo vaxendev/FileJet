@@ -32,6 +32,7 @@ model team_spaces {
   root folders @relation(fields: [root_folder_id], references: [id], onDelete: Cascade)
   members team_members[]
   invitations team_invitations[]
+  messages team_messages[]
   @@index([owner_id, created_at])
   @@index([is_public, created_at, id])
 }
@@ -59,6 +60,20 @@ model team_invitations {
   @@index([user_id, created_at])
 }
 
+model team_messages {
+  id BigInt @id @default(autoincrement())
+  team_id String @db.Uuid
+  author_id String? @db.Uuid
+  request_id String @db.Uuid
+  body String @db.VarChar(2000)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  team team_spaces @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  author users? @relation(fields: [author_id], references: [id], onDelete: SetNull)
+  @@unique([team_id, request_id])
+  @@index([team_id, id])
+  @@index([author_id])
+}
+
 // Kept after account deletion so filesystem cleanup survives crashes and retries.
 model user_deletion_jobs {
   user_id String @id @db.Uuid
@@ -70,6 +85,7 @@ model users {
   owned_teams team_spaces[] @relation("OwnedTeams")
   team_memberships team_members[] @relation("TeamMemberships")
   team_invitations team_invitations[]
+  team_messages team_messages[]
   role          UserRole  @default(USER)
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username      String    @unique @db.VarChar(50)

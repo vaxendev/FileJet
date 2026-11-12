@@ -17,7 +17,7 @@ const { data, pending, error, refresh } = await useFetch<TeamDetails>(`/api/team
 useHead(() => ({ title: `${data.value?.name ?? localize('Team spaces')} · FileJet` }))
 const { openToast } = useToast(),
     { confirm } = useConfirm()
-const tab = ref<'files' | 'members'>('files'),
+const tab = ref<'files' | 'members' | 'chat'>('files'),
     working = ref(false),
     search = ref('')
 const view = ref<'grid' | 'list'>('grid'),
@@ -329,7 +329,7 @@ const exitTeam = async () => {
                         </div>
                     </div>
                     <div
-                        class="mt-5 flex gap-2 border-t border-divider pt-4"
+                        class="mt-5 flex flex-wrap gap-2 border-t border-divider pt-4"
                         role="group"
                         :aria-label="$msg('Team sections')"
                     >
@@ -347,6 +347,15 @@ const exitTeam = async () => {
                             @click="tab = 'members'"
                         >
                             {{ $msg('Members') }} <span class="text-xs opacity-70">{{ data.memberCount }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="inbox-button"
+                            :class="{ 'inbox-primary': tab === 'chat' }"
+                            :aria-pressed="tab === 'chat'"
+                            @click="tab = 'chat'"
+                        >
+                            <Icon name="solar:chat-round-line-linear" aria-hidden="true" />{{ $msg('Chat') }}
                         </button>
                     </div>
                 </header>
@@ -503,6 +512,7 @@ const exitTeam = async () => {
                         }}</span>
                     </p>
                 </section>
+                <TeamChat v-else-if="tab === 'chat'" :team-id="id" />
                 <section v-else class="rounded-2xl border border-divider bg-surface p-5 max-mobile:p-3">
                     <h2 class="text-base font-semibold text-foreground">{{ $msg('Members') }}</h2>
                     <p class="mt-2 text-xs leading-6 text-muted">
