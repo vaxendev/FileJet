@@ -24,7 +24,7 @@
         <template #mobile-actions><button type="button" :disabled="busy" @click="showHistory"><Icon name="solar:history-linear" /> {{ $msg("Version history") }}</button></template>
         <template #extra>
             <NoteVersionHistory ref="historyPanel" :note-id="note.id" :revision="note.revision" :title="note.title" :content="note.content" :disabled="dirty || busy" :locked="busy" @changed="versionRestored" @restoring="restoring = $event" />
-            <OfflineNoteButton :note="note" :disabled="dirty || busy" />
+            <OfflineNoteButton v-if="!note.effectivelyHidden" :note="note" :disabled="dirty || busy" />
         </template>
         <article
             v-if="!isEditing"

@@ -58,7 +58,7 @@ Open **Team spaces** in the sidebar to create a private workspace for shared fil
 - **Uploader** can also upload files and create folders.
 - **Editor** can also rename and remove files and folders.
 
-The **Chat** tab is available to every team member. Team Spaces shows unread counts. Chat refreshes while open, keeps message history, and sends in-app notifications for `@username` mentions. Members can reply to a specific message or share a team file as a preview card. Editors and the owner can pin up to 20 messages.
+The **Chat** tab is available to every team member. Team Spaces shows unread counts. Type `@` and the first letters of a username to select a member and send an in-app mention. Replies show the original message above the response. Use **Share in chat** on a team file or the **+** button in the composer to attach a local file. Direct uploads follow team upload permissions and the 25 MB per-file limit. Editors and the owner can pin up to 20 messages.
 
 Use **Request file review** on a team file to assign a reviewer. The assigned member can approve that version or request changes. From a chat message, use **Create task** to assign it to a teammate and set a due date. The assignee, task creator, and team owner can complete or reopen the task.
 
@@ -153,7 +153,7 @@ Saved versions count toward storage, including while the file is in Trash. Resto
 
 ### Hidden items
 
-Choose **Hide item** from the menu of a personal file, folder, or note. The item keeps its location and appears in **Hidden**. Hiding a folder also hides its contents from regular lists. Public share links to hidden items pause until they are visible again. Use **Make visible** on the Hidden page to restore visibility. This requires migration `202611130004_hidden_library_items`.
+Choose **Hide item** from the menu of a personal file, folder, or note. The item keeps its location and appears in **Hidden**. Set a separate password the first time you open Hidden. The unlock lasts 15 minutes, and **Lock Hidden** closes it sooner. Hidden items and descendants stay out of regular lists, and their public share links pause until they are visible again. Use **Make visible** to restore visibility. Existing installations need migration `202611140001_hidden_password`.
 
 ### Trash
 

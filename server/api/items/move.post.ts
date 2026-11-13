@@ -2,6 +2,7 @@ import { prisma } from '~~/server/utils/prisma'
 import { getAuthSession } from '~~/server/utils/auth'
 import { throwError } from '~~/server/utils/error'
 import { moveItemsSchema } from '~~/shared/schemas/selection'
+import { protectHiddenRows } from '~~/server/utils/hiddenAccess'
 
 export default defineEventHandler(async event => {
     const session = getAuthSession(event)
@@ -43,6 +44,12 @@ export default defineEventHandler(async event => {
 
                 if (destinationId && !folderMap.has(destinationId))
                     throwError(404, 'Destination folder not found.')
+                await protectHiddenRows(event, userId, [
+                    ...files.map(file => ({ hidden: file.hidden, folderId: file.folder_id })),
+                    ...notes.map(note => ({ hidden: note.hidden, folderId: note.folder_id })),
+                    ...chosenFolders.map(folder => ({ hidden: folder.hidden, folderId: folder.id })),
+                    ...(destinationId ? [{ folderId: destinationId }] : [])
+                ], tx)
 
                 const teamRoot = (folderId: string | null) => {
                     const visited = new Set<string>()

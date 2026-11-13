@@ -3,6 +3,7 @@ import { prisma } from '~~/server/utils/prisma'
 import { getAuthSession } from '~~/server/utils/auth'
 import { throwError } from '~~/server/utils/error'
 import { isUuid } from '~~/server/utils/validation'
+import { protectHiddenRows } from '~~/server/utils/hiddenAccess'
 
 export default defineEventHandler(async event => {
     try {
@@ -42,6 +43,7 @@ export default defineEventHandler(async event => {
             if (folders.length !== folderIds.length) {
                 throwError(404, 'One or more folders not found.')
             }
+            await protectHiddenRows(event, session.userId, folders.map(folder => ({ hidden: folder.hidden, folderId: folder.id })), tx)
 
             const allFolderIds = new Set<string>(folderIds)
             let pendingIds = [...folderIds]

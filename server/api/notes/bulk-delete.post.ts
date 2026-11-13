@@ -3,6 +3,7 @@ import { prisma } from '~~/server/utils/prisma'
 import { getAuthSession } from '~~/server/utils/auth'
 import { throwError } from '~~/server/utils/error'
 import { isUuid } from '~~/server/utils/validation'
+import { protectHiddenRows } from '~~/server/utils/hiddenAccess'
 
 export default defineEventHandler(async event => {
     try {
@@ -42,6 +43,7 @@ export default defineEventHandler(async event => {
             if (notes.length !== noteIds.length) {
                 throwError(404, 'One or more notes not found.')
             }
+            await protectHiddenRows(event, session.userId, notes.map(note => ({ hidden: note.hidden, folderId: note.folder_id })), tx)
 
             await tx.trash.createMany({
                 data: notes.map(note => ({

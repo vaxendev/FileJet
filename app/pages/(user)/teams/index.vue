@@ -59,12 +59,12 @@ const create = async (body: TeamSettings) => {
 </script>
 <template>
     <div class="min-h-0 flex-1 overflow-y-auto">
-        <div class="mx-auto flex w-full max-w-350 flex-col gap-5 p-5 max-mobile:p-3">
+        <div class="flex w-full min-w-0 flex-col gap-3">
             <section
-                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-divider bg-surface p-6 max-mobile:p-4"
+                class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-divider bg-surface p-3"
             >
                 <div>
-                    <p class="mt-2 text-sm text-muted">
+                    <p class="text-sm text-muted">
                         {{ $msg('Shared folders, files and permissions in one place.') }}
                     </p>
                 </div>

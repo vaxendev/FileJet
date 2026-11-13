@@ -25,7 +25,7 @@ watch(() => data.value?.totalPages, total => {
 
 <template>
     <main class="min-h-0 flex-1 overflow-y-auto">
-        <div class="mx-auto flex w-full max-w-350 flex-col gap-5 p-5 max-mobile:p-3">
+        <div class="flex w-full min-w-0 flex-col gap-3">
             <NuxtLink to="/teams" class="inline-flex w-fit items-center gap-2 text-sm text-accent no-underline">
                 <Icon name="solar:arrow-left-linear" />{{ $msg('Team spaces') }}
             </NuxtLink>

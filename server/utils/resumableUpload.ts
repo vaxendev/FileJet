@@ -15,6 +15,8 @@ import { replaceVersionedFile } from './fileVersions'
 import { UPLOAD_CHUNK_SIZE, type UploadManifest, type UploadSessionView } from '../../shared/utils/resumableUpload'
 import { scanStoredFile, requireCleanScan } from './fileSecurity'
 import { scanClamPath } from './clamav'
+import { protectHiddenRows } from './hiddenAccess'
+import { ownedLibraryVisibility } from './hiddenItems'
 
 export const accessHash = (key: string) => createHash('sha256').update(key).digest('hex')
 export const stagedPath = (id: string, index: number) => {
@@ -104,7 +106,7 @@ async function destination(tx: Prisma.TransactionClient, userId: string, folderI
     const rows = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM folders WHERE id = ${folderId}::uuid AND user_id = ${userId}::uuid FOR KEY SHARE`
     if (!rows.length) throwError(404, 'Destination folder not found.')
 }
-export async function finishUpload(id: string, userId: string) {
+export async function finishUpload(event: H3Event, id: string, userId: string) {
     // Complete parts are immutable: repeated chunk writes are ignored above.
     // Scan before opening the transaction so large scans do not hold DB locks.
     const ready = await prisma.upload_sessions.findUnique({ where: { id } })
@@ -134,7 +136,11 @@ export async function finishUpload(id: string, userId: string) {
         if (session.result) return session.result as Record<string, unknown>
         const manifest = manifestOf(session), offsets = session.offsets as number[]
         if (manifest.files.some((file, index) => offsets[index] !== file.size)) throwError(409, 'The upload is incomplete. Resume it before finishing.')
+        if (manifest.folderId && manifest.kind !== 'inbox')
+            await protectHiddenRows(event, userId, [{ folderId: manifest.folderId }], tx)
         if (manifest.replaceFileId) {
+            const target = await ownedLibraryVisibility(userId, manifest.replaceFileId, 'file', tx)
+            if (target) await protectHiddenRows(event, userId, [target], tx)
             const incoming = manifest.files[0]!, path = stagedPath(id, 0)
             if (!incoming.size) { await mkdir(dirname(path), { recursive: true }); const handle = await open(path, 'a', 0o600); await handle.close() }
             const content = await stat(path).catch(() => null)

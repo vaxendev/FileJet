@@ -20,9 +20,8 @@ export default defineEventHandler(async event => {
         })
 
         return {
-            items: items.map(item => ({
-                ...item,
-                size: item.size?.toString() ?? null
+            items: items.map(({ content, storage_key, ...item }) => ({
+                ...item, size: item.size?.toString() ?? null
             }))
         }
     } catch (err: any) {

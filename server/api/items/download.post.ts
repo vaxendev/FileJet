@@ -7,6 +7,7 @@ import { throwError } from '~~/server/utils/error'
 import { storagePath } from '~~/server/utils/files'
 import { createFolderArchive } from '~~/server/utils/folderArchive'
 import { itemSelectionSchema } from '~~/shared/schemas/selection'
+import { protectHiddenRows } from '~~/server/utils/hiddenAccess'
 
 export default defineEventHandler(async event => {
     const session = getAuthSession(event)
@@ -32,6 +33,12 @@ export default defineEventHandler(async event => {
 
         if (files.length + folders.length + notes.length !== parsed.data.items.length)
             throwError(404, 'One or more selected items could not be found.')
+
+        await protectHiddenRows(event, session.userId, [
+            ...files.map(file => ({ hidden: file.hidden, folderId: file.folder_id })),
+            ...notes.map(note => ({ hidden: note.hidden, folderId: note.folder_id })),
+            ...folders.map(folder => ({ hidden: folder.hidden, folderId: folder.id }))
+        ])
 
         const entries: Record<string, Uint8Array> = Object.create(null)
         const used = new Set<string>()

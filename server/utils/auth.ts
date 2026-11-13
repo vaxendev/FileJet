@@ -2,7 +2,7 @@ import { throwError } from './error'
 import crypto from 'node:crypto'
 import type { H3Event } from 'h3'
 
-const SESSION_COOKIE = 'filejet_session'
+export const SESSION_COOKIE = 'filejet_session'
 const SESSION_TTL = 60 * 60 * 24 * 7
 
 type SessionPayload = {

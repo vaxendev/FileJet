@@ -1,12 +1,10 @@
 import type { LibraryItem } from '~~/shared/types/library'
 import { prisma } from '~~/server/utils/prisma'
-import { getAuthSession } from '~~/server/utils/auth'
-import { throwError } from '~~/server/utils/error'
+import { hiddenAccount, requireHiddenUnlock } from '~~/server/utils/hiddenAccess'
 
 export default defineEventHandler(async event => {
-    const userId = getAuthSession(event)?.userId
-    if (!userId) throwError(401, 'You need to be logged in.')
-    setHeader(event, 'Cache-Control', 'private, no-store')
+    const userId = hiddenAccount(event)
+    await requireHiddenUnlock(event, userId)
     const where = { user_id: userId, hidden: true }
     const dates = { id: true, created_at: true, updated_at: true } as const
     const [files, folders, notes] = await prisma.$transaction([

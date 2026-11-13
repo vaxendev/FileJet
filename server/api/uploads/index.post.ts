@@ -11,6 +11,7 @@ import { accessHash, boundedUploadBody, ownedUploadSession, sessionView } from '
 import { parseUploadManifest, UPLOAD_LIFETIME } from '../../../shared/utils/resumableUpload'
 import { parseSender } from '../../../shared/utils/sender'
 import { Prisma } from '~~/src/generated/prisma/client'
+import { protectHiddenRows } from '../../utils/hiddenAccess'
 
 export default defineEventHandler(async event => {
     assertShareOrigin(event)
@@ -51,9 +52,11 @@ export default defineEventHandler(async event => {
         if (manifest.replaceFileId) {
             const file = await tx.files.findFirst({ where: { id: manifest.replaceFileId, user_id: userId } })
             if (!file) throwError(404, 'File not found.')
+            await protectHiddenRows(event, userId, [{ hidden: file.hidden, folderId: file.folder_id }], tx)
             if (file.revision !== manifest.expectedRevision) throwError(409, 'This file changed. Refresh its history before trying again.')
         }
         if (manifest.folderId && manifest.kind !== 'inbox' && !await tx.folders.findFirst({ where: { id: manifest.folderId, user_id: userId } })) throwError(404, 'Destination folder not found.')
+        if (manifest.folderId && manifest.kind !== 'inbox') await protectHiddenRows(event, userId, [{ folderId: manifest.folderId }], tx)
         const where = { user_id: userId, result: { equals: Prisma.DbNull }, expires_at: { gt: new Date() } }
         const active = await tx.upload_sessions.aggregate({ where, _sum: { total_size: true }, _count: true })
         if (active._count >= 20) throwError(429, 'Too many unfinished uploads. Finish an upload or wait for it to expire.')

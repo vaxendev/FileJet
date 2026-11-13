@@ -13,18 +13,25 @@ const storage = resolve('storage')
 const fixture = resolve(storage, owner)
 assert.equal(fixture, storage + sep + owner)
 const bytes = Buffer.from('Hidden file fixture')
+const sessionCookies = new Map()
+const hiddenCookies = new Map()
 const cookie = userId => {
+    if (sessionCookies.has(userId)) return sessionCookies.get(userId)
     const payload = Buffer.from(JSON.stringify({ userId, expiresAt: Date.now() + 3600000 })).toString('base64url')
-    return 'filejet_session=' + payload + '.' + createHmac('sha256', process.env.AUTH_SECRET).update(payload).digest('base64url')
+    const value = 'filejet_session=' + payload + '.' + createHmac('sha256', process.env.AUTH_SECRET).update(payload).digest('base64url')
+    sessionCookies.set(userId, value)
+    return value
 }
 async function api(path, { auth = owner, method = 'GET', body, status = 200, origin } = {}) {
     const response = await fetch(base + path, {
         method, signal: AbortSignal.timeout(20000),
-        headers: { ...(auth ? { Cookie: cookie(auth) } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}), ...(origin ? { Origin: origin } : {}) },
+        headers: { ...(auth ? { Cookie: [cookie(auth), hiddenCookies.get(auth)].filter(Boolean).join('; ') } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}), ...(origin ? { Origin: origin } : {}) },
         body: body && JSON.stringify(body)
     })
     const buffer = Buffer.from(await response.arrayBuffer())
     assert.equal(response.status, status, method + ' ' + path + ': ' + buffer.toString().slice(0, 400))
+    const grant = response.headers.getSetCookie().find(value => value.startsWith('filejet_hidden='))
+    if (grant) hiddenCookies.set(auth, grant.split(';')[0])
     return {
         buffer, cache: response.headers.get('cache-control'),
         json: () => JSON.parse(buffer.toString())
@@ -73,11 +80,30 @@ try {
     await hidden('file', file, true)
     await hidden('note', note, true)
     await hidden('folder', child, true)
+    await api('/api/items/hidden', { status: 423 })
+    await api('/api/files/' + file, { status: 423 })
+    await api('/api/files/' + file + '/download', { method: 'HEAD', status: 423 })
+    await api('/api/notes/' + nestedNote + '/download', { status: 423 })
+    await api('/api/folders/' + child, { status: 423 })
+    await api('/api/items/download', { method: 'POST', body: { items: [{ type: 'note', id: nestedNote }] }, status: 423 })
+    await hidden('file', file, false, { status: 423 })
+    const access = '/api/items/hidden/access'
+    const password = 'hidden-fixture-password'
+    assert.deepEqual(await list(access), { configured: false, expiresAt: null })
+    await api(access, { method: 'POST', body: { setup: true, password, confirmPassword: 'mismatch' }, status: 400 })
+    await api(access, { method: 'POST', body: { setup: true, password, confirmPassword: password } })
+    assert.ok((await list(access)).expiresAt > Date.now())
+    const sameAccountGrant = hiddenCookies.get(owner)
+    sessionCookies.delete(owner)
+    await api('/api/items/hidden', { status: 423 })
+    assert.equal(hiddenCookies.get(owner), sameAccountGrant)
+    await api(access, { method: 'POST', body: { password: 'wrong-password' }, status: 401 })
+    await api(access, { method: 'POST', body: { password } })
     await hidden('folder', child, true)
     const hiddenList = await api('/api/items/hidden')
     assert.match(hiddenList.cache, /no-store/)
     assert.deepEqual(new Set(hiddenList.json().items.map(item => item.id)), new Set([file, note, child]))
-    assert.deepEqual((await api('/api/items/hidden', { auth: other })).json().items, [])
+    await api('/api/items/hidden', { auth: other, status: 423 })
     assert.deepEqual((await list('/api/files')).files, [])
     assert.deepEqual((await list('/api/notes')).notes, [])
     assert.deepEqual((await list('/api/favorites')).favorites, [])
@@ -109,6 +135,8 @@ try {
     assert.deepEqual((await api(links[file] + '/download', { auth: null })).buffer, bytes)
     await api(links[nestedNote], { auth: null })
     assert.equal((await list('/api/folders/' + parent)).items[0].id, child)
+    await api(access, { method: 'DELETE' })
+    await api('/api/items/hidden', { status: 423 })
     console.log('Hidden items integration passed: ownership, lists, nested shares, ZIP, safe restore and original location.')
 } finally {
     try {

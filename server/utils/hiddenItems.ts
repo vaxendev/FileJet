@@ -40,11 +40,12 @@ export async function ownedLibraryVisibility(userId: string, id: string, type: S
     return item && { hidden: item.hidden, folderId: item.folder_id }
 }
 
-export async function hasHiddenAncestor(userId: string, folderId: string | null, db: Prisma.TransactionClient = prisma) {
+export async function hasHiddenAncestor(userId: string, folderId: string | string[] | null, db: Prisma.TransactionClient = prisma) {
     if (!folderId) return false
     const rows = await db.$queryRaw<{ hidden: boolean }[]>`
         WITH RECURSIVE ancestors AS (
-            SELECT id, parent_folder_id, hidden FROM folders WHERE id = ${folderId}::uuid AND user_id = ${userId}::uuid
+            SELECT id, parent_folder_id, hidden FROM folders
+            WHERE id = ANY(${Array.isArray(folderId) ? folderId : [folderId]}::uuid[]) AND user_id = ${userId}::uuid
             UNION
             SELECT f.id, f.parent_folder_id, f.hidden FROM folders f JOIN ancestors a ON f.id = a.parent_folder_id
             WHERE f.user_id = ${userId}::uuid

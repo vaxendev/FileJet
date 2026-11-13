@@ -15,6 +15,7 @@ import { MAX_REQUEST_FILE_SIZE, validateRequestFiles } from '../../../utils/inbo
 import { scanUploadParts } from '../../../utils/fileSecurity'
 import { saveFileToStorage, storagePath } from '../../../utils/files'
 import { lockStorageUser, reserveStorage } from '../../../utils/storage'
+import { teamFileReference, teamFileReferenceSelect } from '../../../utils/teamCollaboration'
 export default defineEventHandler(async event => {
     const actor = teamActor(event),
         team = await teamAccess(prisma, teamParam(event), actor, 'upload')
@@ -27,10 +28,11 @@ export default defineEventHandler(async event => {
     const proofs = await scanUploadParts(parts),
         keys: string[] = []
     try {
-        const uploaded = await teamWrite(event, 'upload', async (tx, current) => {
+        const files = await teamWrite(event, 'upload', async (tx, current) => {
             const folder = await teamFolder(tx, current, folderId)
             for (const part of parts) await teamNameAvailable(tx, current, folder.id, part.filename)
             await reserveStorage(tx, current.owner_id, bytes)
+            const files = []
             for (const part of parts) {
                 const { storageKey } = await saveFileToStorage(
                     current.owner_id,
@@ -40,7 +42,7 @@ export default defineEventHandler(async event => {
                     proofs.get(part)
                 )
                 keys.push(storageKey)
-                await tx.files.create({
+                const file = await tx.files.create({
                     data: {
                         user_id: current.owner_id,
                         folder_id: folder.id,
@@ -49,13 +51,15 @@ export default defineEventHandler(async event => {
                         mime_type: part.type && part.type.length <= 150 ? part.type : null,
                         size: BigInt(part.data.length),
                         storage_key: storageKey
-                    }
+                    },
+                    select: teamFileReferenceSelect
                 })
+                files.push(teamFileReference(file))
             }
-            return parts.length
+            return files
         })
         setResponseStatus(event, 201)
-        return { uploaded }
+        return { uploaded: files.length, files }
     } catch (error) {
         // Wait for the writer's lock before checking a commit with an unknown outcome.
         // The scan record is committed with the upload and survives moves to Trash.

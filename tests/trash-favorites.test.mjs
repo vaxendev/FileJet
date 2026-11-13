@@ -103,6 +103,7 @@ function fixture() {
     function load(path) {
         const filename = resolve(root, path)
         if (filename === resolve(root, 'server/utils/prisma.ts')) return { prisma: db }
+        if (filename === resolve(root, 'server/utils/hiddenAccess.ts')) return { protectHiddenRows: async () => {} }
         if (cache.has(filename)) return cache.get(filename).exports
         const module = { exports: {} }
         cache.set(filename, module)

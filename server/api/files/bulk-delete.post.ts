@@ -3,6 +3,7 @@ import { prisma } from '~~/server/utils/prisma'
 import { getAuthSession } from '~~/server/utils/auth'
 import { throwError } from '~~/server/utils/error'
 import { isUuid } from '~~/server/utils/validation'
+import { protectHiddenRows } from '~~/server/utils/hiddenAccess'
 
 export default defineEventHandler(async event => {
     try {
@@ -43,6 +44,7 @@ export default defineEventHandler(async event => {
             if (files.length !== fileIds.length) {
                 throwError(404, 'One or more selected files could not be found.')
             }
+            await protectHiddenRows(event, session.userId, files.map(file => ({ hidden: file.hidden, folderId: file.folder_id })), tx)
 
             await tx.favorites.deleteMany({
                 where: {

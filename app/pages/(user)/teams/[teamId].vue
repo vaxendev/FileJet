@@ -61,7 +61,6 @@ const workSource = ref<{ message: TeamChatMessage } | { file: TeamFileReference 
 const fileReference = (item: LibraryItem): TeamFileReference => ({
     id: item.id, name: item.name, size: item.size, mime_type: item.mime_type ?? null
 })
-const folderFiles = computed(() => (data.value?.items ?? []).filter(item => item.type === 'file').map(fileReference))
 const chatUnread = ref(0)
 watch(() => data.value?.unreadCount, value => { chatUnread.value = value ?? 0 }, { immediate: true })
 const previewTeamFile = (file: TeamFileReference) => { preview.value = { ...file, type: 'file' } }
@@ -308,7 +307,7 @@ const exitTeam = async () => {
 
 <template>
     <div class="team-detail min-h-0 flex-1 overflow-y-auto">
-        <div class="mx-auto flex w-full max-w-350 flex-col gap-4 p-5 max-mobile:p-3">
+        <div class="flex w-full min-w-0 flex-col gap-3">
             <NuxtLink to="/teams" class="inline-flex w-fit items-center gap-2 text-sm text-accent no-underline"
                 ><Icon name="solar:arrow-left-linear" />{{ $msg('Team spaces') }}</NuxtLink
             >
@@ -321,7 +320,7 @@ const exitTeam = async () => {
                 <button class="inbox-button mt-4" @click="refresh()">{{ $msg('Try again') }}</button>
             </div>
             <template v-else>
-                <header class="rounded-2xl border border-divider bg-surface p-6 max-mobile:p-4">
+                <header class="rounded-xl border border-divider bg-surface p-3">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div class="flex min-w-0 flex-1 items-start gap-3">
                             <span
@@ -568,7 +567,7 @@ const exitTeam = async () => {
                         }}</span>
                     </p>
                 </section>
-                <TeamChat v-else-if="tab === 'chat'" :team-id="id" :members="data.members" :files="folderFiles"
+                <TeamChat v-else-if="tab === 'chat'" :team-id="id" :members="data.members" :can-upload="canUpload"
                     :selected-file="attachedFile" :focus-message="focusMessage" :can-pin="canEdit"
                     @file-change="attachedFile = $event" @preview="previewTeamFile" @task="workSource = { message: $event }"
                     @unread="chatUnread = $event" />

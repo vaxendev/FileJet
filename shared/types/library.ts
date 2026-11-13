@@ -13,6 +13,7 @@ export interface LibraryItem {
 }
 
 export interface NoteDetails {
+    effectivelyHidden?: boolean
     revision: number
     tags?: string[]
     id: string

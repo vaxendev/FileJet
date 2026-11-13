@@ -6,6 +6,7 @@ import { throwError } from '~~/server/utils/error'
 import { lockStorageUser } from '~~/server/utils/storage'
 import { libraryFolderScopes, ownedLibraryVisibility } from '~~/server/utils/hiddenItems'
 import { isUuid } from '~~/server/utils/validation'
+import { protectHiddenRows } from '~~/server/utils/hiddenAccess'
 
 export default defineEventHandler(async event => {
     assertShareOrigin(event)
@@ -24,6 +25,7 @@ export default defineEventHandler(async event => {
         await lockStorageUser(tx, userId)
         const item = await ownedLibraryVisibility(userId, id, type, tx)
         if (!item) throwError(404, 'Item not found.')
+        if (!hidden) await protectHiddenRows(event, userId, [item], tx)
         if (hidden && item.folderId && (await libraryFolderScopes(userId, tx)).teamFolders.has(item.folderId))
             throwError(400, 'Team items cannot be hidden.')
         const where = { id, user_id: userId }, data = { hidden }

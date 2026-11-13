@@ -268,13 +268,17 @@ try {
     })
 
     const uploadUrl = team + '/files?folderId=' + nested
-    assert.equal((await api(uploadUrl, { auth: uploader, method: 'POST', body: fileForm('plan.txt'), status: 201 })).json().uploaded, 1)
+    const uploadedFile = (await api(uploadUrl, { auth: uploader, method: 'POST', body: fileForm('plan.txt'), status: 201 })).json()
+    assert.equal(uploadedFile.uploaded, 1)
+    assert.equal(uploadedFile.files[0].name, 'plan.txt')
+    assert.equal('storage_key' in uploadedFile.files[0], false)
     await api(uploadUrl, { auth: uploader, method: 'POST', body: fileForm('PLAN.TXT'), status: 409 })
     const { items } = (await api(team + '?folderId=' + nested, { auth: viewer })).json()
     assert.equal(items.length, 1)
     assert.equal(items[0].name, 'plan.txt')
     assert.equal('storage_key' in items[0], false)
     const fileId = items[0].id
+    assert.equal(uploadedFile.files[0].id, fileId)
     const delivery = team + '/files/' + fileId
     const download = await api(delivery + '/download', { auth: viewer })
     assert.deepEqual(download.data, bytes)

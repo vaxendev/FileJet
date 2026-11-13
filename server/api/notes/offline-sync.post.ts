@@ -6,6 +6,7 @@ import { throwError } from '../../utils/error'
 import { isUuid } from '../../utils/validation'
 import { noteSchema } from '../../../shared/schemas/note'
 import { writeNoteVersion } from '../../utils/noteVersions'
+import { protectHiddenRows } from '../../utils/hiddenAccess'
 export default defineEventHandler(async event => {
     assertShareOrigin(event)
     const userId = inboxOwner(event)
@@ -19,6 +20,7 @@ export default defineEventHandler(async event => {
         await lockStorageUser(tx, userId)
         const existing = await tx.notes.findUnique({ where: { id: body.id } })
         if (existing && existing.user_id !== userId) throwError(404, 'Note not found.')
+        if (existing) await protectHiddenRows(event, userId, [{ hidden: existing.hidden, folderId: existing.folder_id }], tx)
         if (existing && existing.title === title && existing.content === content) return existing // Lost-response retry.
         if (body.isNew ? !!existing : !existing) throwError(body.isNew ? 409 : 404, body.isNew ? 'This note already exists. Keep your draft and save a copy.' : 'The original note was deleted or moved to Trash. Save your draft as a new note.')
         if (existing && body.baseUpdatedAt !== (existing.updated_at?.toISOString() ?? null)) throwError(409, 'This note changed on the server. Your offline draft is preserved.')

@@ -1747,5 +1747,21 @@
   "mf193567a": "No hidden items yet.",
   "mdd7bdb9e": "Team items cannot be hidden.",
   "mf92482ee": "Hidden items cannot be moved into a team.",
-  "m44f54b78": "Folder visibility changed. Try again."
+  "m44f54b78": "Folder visibility changed. Try again.",
+  "m4b058728": "Settings",
+  "m11eb20bf": "Unlock Hidden",
+  "m82eea045": "Set a Hidden password",
+  "mff666c3a": "Hidden password",
+  "mbe6ac022": "Confirm Hidden password",
+  "mfa2a13a4": "Set password",
+  "md72b624e": "Lock Hidden",
+  "m4f085139": "Unlock Hidden to access this item.",
+  "m743fa0b1": "Enter a valid Hidden password.",
+  "me35d52b7": "A Hidden password is already set.",
+  "m122b4e55": "Use at least 8 characters for the Hidden password.",
+  "m51573faf": "Set a Hidden password first.",
+  "mb946fb6d": "Incorrect Hidden password.",
+  "m79e842f5": "Choose a file up to 25 MB.",
+  "mdea408d3": "Attach a file",
+  "m2d603512": "Remove attachment"
 }
