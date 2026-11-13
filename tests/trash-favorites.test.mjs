@@ -46,7 +46,7 @@ function fixture() {
         const create = data => {
             const row = {
                 id: randomUUID(), root_folder_id: null, parent_folder_id: null,
-                folder_id: null, ...data
+                folder_id: null, hidden: false, ...data
             }
             state[name].push(row)
             return row
@@ -147,6 +147,7 @@ function fixture() {
         const item = {
             id: randomUUID(), user_id: userId, folder_id: folderId,
             parent_folder_id: kind === 'folder' ? folderId : null,
+            hidden: false,
             name: `${kind}.txt`, title: 'Note', content: 'Note content',
             original_name: 'file.txt', mime_type: 'text/plain', size: 25n,
             storage_key: randomUUID()

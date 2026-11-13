@@ -27,7 +27,7 @@ export async function getSharedTarget(event: H3Event) {
         }
     }
 
-    const where = { id, user_id: share.user_id }
+    const where = { id, user_id: share.user_id, hidden: false }
 
     const item =
         type === 'file'

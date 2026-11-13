@@ -154,6 +154,7 @@ async function pageFixture() {
         ...Object.fromEntries(Object.entries(vue).filter(([name]) => /^[A-Za-z_$][\w$]*$/.test(name))),
         formatFileSize, definePageMeta() {}, useToast: () => ({ openToast() {} }),
         useUser: () => ({ user: vue.ref(null), files, folders: vue.ref([]), notes: vue.ref([]), favorites: vue.ref([]), error: vue.ref(null), fetchAll: async () => calls.push('collections') }),
+        useHiddenItems: () => ({ setHidden: async () => true }),
         useFileActions: () => ({ deleteFile: async () => calls.push('delete'), renameFile: async () => calls.push('rename'), isDeleting: vue.ref(false) }),
         useFavoriteActions: () => ({}),
         useFetch: async url => {

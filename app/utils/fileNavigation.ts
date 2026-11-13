@@ -4,6 +4,7 @@ const fileReturnPages: Record<string, string> = {
     '/folders': 'Folders',
     '/notes': 'Notes',
     '/favorites': 'Favorites',
+    '/hidden': 'Hidden',
     '/shared': 'Shared',
     '/inbox': 'Inbox',
     '/trash': 'Trash',

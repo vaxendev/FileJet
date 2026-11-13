@@ -129,6 +129,8 @@
                                 >
                                     <ItemMenu
                                         :ref="menu => setMenuRef(item.id, menu)"
+                                        hideable
+                                        @hide="setHidden(getItemType(item), getItemId(item))"
                                         :type="getItemType(item)"
                                         :actions="[...getItemActions(item)]"
                                         :is-favorite="true"
@@ -197,6 +199,8 @@
                             </label>
                             <ItemMenu
                                 :ref="menu => setMenuRef(item.id, menu)"
+                                hideable
+                                @hide="setHidden(getItemType(item), getItemId(item))"
                                 :type="getItemType(item)"
                                 :actions="[...getItemActions(item)]"
                                 :is-favorite="true"
@@ -256,6 +260,7 @@ const fileActions = useFileActions()
 const folderActions = useFolderActions()
 const noteActions = useNoteActions()
 const { favorites, pending, error, fetchAll } = useUser()
+const { setHidden } = useHiddenItems()
 
 type FavoriteItem = (typeof favorites.value)[number]
 

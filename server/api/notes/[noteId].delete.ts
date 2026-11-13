@@ -50,6 +50,7 @@ export default defineEventHandler(async event => {
                     item_type: 'note',
                     revision: note.revision,
                     tags: note.tags,
+                    hidden: note.hidden,
                     name: note.title,
                     content: note.content,
                     size: note.size,

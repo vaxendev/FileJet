@@ -21,7 +21,8 @@ export default defineEventHandler(async event => {
             setHeader(event, 'Content-Type', 'application/zip')
             return ''
         }
-        const archive = await createFolderArchive(sharedItem.user_id, target.id)
+        const archive = await createFolderArchive(sharedItem.user_id, target.id, true)
+        await getSharedTarget(event)
         await claimShareDownload(event, sharedItem)
         setResponseHeaders(event, {
             'Content-Type': 'application/zip',
@@ -96,6 +97,7 @@ export default defineEventHandler(async event => {
     const fileName = file.original_name || file.name || 'download'
     const encodedName = encodeURIComponent(fileName)
 
+    await getSharedTarget(event)
     await claimShareDownload(event, sharedItem)
 
     setResponseHeaders(event, {

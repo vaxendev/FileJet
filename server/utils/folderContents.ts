@@ -15,7 +15,7 @@ export async function requireFolderWithin(userId: string, rootId: string, folder
 
         const folder: { id: string; parent_folder_id: string | null } | null =
             await prisma.folders.findFirst({
-                where: { id: current, user_id: userId },
+                where: { id: current, user_id: userId, hidden: false },
                 select: { id: true, parent_folder_id: true }
             })
 
@@ -35,7 +35,7 @@ export async function getFolderTree(userId: string, rootId: string) {
 
     while (pending.length) {
         const children = await prisma.folders.findMany({
-            where: { user_id: userId, parent_folder_id: { in: pending } },
+            where: { user_id: userId, parent_folder_id: { in: pending }, hidden: false },
             select: { id: true }
         })
 
@@ -55,11 +55,11 @@ export async function getFolderTree(userId: string, rootId: string) {
 export async function getFolderContents(userId: string, folderId: string, includeTags = false, db: Prisma.TransactionClient = prisma) {
     const [folders, files, notes] = await Promise.all([
         db.folders.findMany({
-            where: { user_id: userId, parent_folder_id: folderId },
+            where: { user_id: userId, parent_folder_id: folderId, hidden: false },
             select: { id: true, tags: true, name: true, created_at: true, updated_at: true }
         }),
         db.files.findMany({
-            where: { user_id: userId, folder_id: folderId },
+            where: { user_id: userId, folder_id: folderId, hidden: false },
             select: {
                 id: true,
                 name: true,
@@ -72,7 +72,7 @@ export async function getFolderContents(userId: string, folderId: string, includ
             }
         }),
         db.notes.findMany({
-            where: { user_id: userId, folder_id: folderId },
+            where: { user_id: userId, folder_id: folderId, hidden: false },
             select: { id: true, tags: true, title: true, size: true, created_at: true, updated_at: true }
         })
     ])

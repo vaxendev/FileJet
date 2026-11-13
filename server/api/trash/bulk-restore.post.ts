@@ -139,6 +139,7 @@ export default defineEventHandler(async event => {
                                 id: folder.item_id,
                                 user_id: session.userId,
                                 tags: folder.tags,
+                                hidden: folder.hidden,
                                 name: folder.name,
                                 parent_folder_id: parentId
                             }
@@ -184,6 +185,7 @@ export default defineEventHandler(async event => {
                             user_id: session.userId,
                             folder_id: file.folder_id,
                             tags: file.tags,
+                            hidden: file.hidden,
                             name: file.name,
                             original_name: file.original_name,
                             mime_type: file.mime_type,
@@ -220,6 +222,7 @@ export default defineEventHandler(async event => {
                             user_id: session.userId,
                             folder_id: note.folder_id,
                             tags: note.tags,
+                            hidden: note.hidden,
                             title: note.name,
                             content: note.content,
                             revision: note.revision,

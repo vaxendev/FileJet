@@ -32,7 +32,7 @@ export default defineEventHandler(async event => {
         })
     ])
 
-    const where = { user_id: session.userId, folder_id: { in: tree } }
+    const where = { user_id: session.userId, folder_id: { in: tree }, hidden: false }
 
     const [files, notes] = await Promise.all([
         prisma.files.aggregate({ where, _sum: { size: true } }),

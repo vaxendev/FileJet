@@ -1734,5 +1734,18 @@
   "m90957bf6": "Only the assigned reviewer can respond.",
   "mcae537ab": "This file version has changed. Request a new review.",
   "m5e1ce68c": "This review has already been answered.",
-  "m20354a70": "Invalid file version."
+  "m20354a70": "Invalid file version.",
+  "m3c2dfe59": "Hidden",
+  "mcac1aed0": "Hide item",
+  "m5967dc6b": "Hide this item?",
+  "m187709a7": "The item will move out of regular lists. Share links to it and its contents will be unavailable while hidden.",
+  "m6a78931c": "Item hidden.",
+  "m919484fa": "Item is visible again.",
+  "mb257c639": "Make visible",
+  "mb019ba77": "Search hidden items…",
+  "mf17a0027": "No matching hidden items.",
+  "mf193567a": "No hidden items yet.",
+  "mdd7bdb9e": "Team items cannot be hidden.",
+  "mf92482ee": "Hidden items cannot be moved into a team.",
+  "m44f54b78": "Folder visibility changed. Try again."
 }

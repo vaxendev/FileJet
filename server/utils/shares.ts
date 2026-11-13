@@ -4,6 +4,7 @@ import { prisma } from './prisma'
 import { isUuid } from './validation'
 import { assertShareAccess, assertShareNotExpired } from './shareSecurity'
 import { shareLimitReached, type ShareDownloadLimit } from './shareLimits'
+import { requireVisibleShareTarget } from './hiddenItems'
 
 export function shareState(
     event: H3Event,
@@ -40,6 +41,7 @@ export async function getPublicShare(event: H3Event, requirePassword = true) {
     })
 
     if (!share) throwError(404, 'Shared item not found.')
+    await requireVisibleShareTarget(share.user_id, share.item_id, share.item_type)
 
     if (requirePassword) assertShareAccess(event, share)
     else assertShareNotExpired(event, share)

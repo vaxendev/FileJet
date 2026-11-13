@@ -109,6 +109,8 @@
                                 >
                                     <ItemMenu
                                         :ref="menu => setMenu(item.id, menu)"
+                                        hideable
+                                        @hide="$emit('action', 'hide', item)"
                                         :type="item.type"
                                         :is-favorite="favoriteIds.includes(item.id)"
                                         :can-copy="
@@ -183,6 +185,8 @@
                             </label>
                             <ItemMenu
                                 :ref="menu => setMenu(item.id, menu)"
+                                hideable
+                                @hide="$emit('action', 'hide', item)"
                                 :type="item.type"
                                 :is-favorite="favoriteIds.includes(item.id)"
                                 :can-copy="

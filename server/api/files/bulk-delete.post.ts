@@ -60,6 +60,7 @@ export default defineEventHandler(async event => {
                         item_id: file.id,
                         item_type: 'file',
                         tags: file.tags,
+                        hidden: file.hidden,
                         name: file.name,
                         original_name: file.original_name,
                         mime_type: file.mime_type,

@@ -53,6 +53,7 @@ const navigation = computed(() => [
         get label() { return localize("OTHERS") },
         items: [
             { get label() { return localize("Favorites") }, to: '/favorites', icon: 'solar:star-outline', activeIcon: 'solar:star-bold' },
+            { get label() { return localize('Hidden') }, to: '/hidden', icon: 'solar:eye-closed-linear', activeIcon: 'solar:eye-closed-bold' },
             { get label() { return localize("Shared") }, to: '/shared', icon: 'solar:share-circle-linear', activeIcon: 'solar:share-circle-bold' },
             { get label() { return localize("Inbox") }, to: '/inbox', icon: 'solar:inbox-in-linear', activeIcon: 'solar:inbox-in-bold' },
             { get label() { return localize('Team spaces') }, to: '/teams', icon: 'solar:users-group-rounded-linear', activeIcon: 'solar:users-group-rounded-bold' },

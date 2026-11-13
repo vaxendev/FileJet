@@ -33,6 +33,7 @@ logs
 !/tests/note-diff.test.mjs
 !/tests/admin-activity.integration.mjs
 !/tests/team-spaces.integration.mjs
+!/tests/hidden-items.integration.mjs
 !/tests/modal-backdrop.test.mjs
 !/tests/localization-setup.mjs
 !/tests/localization.test.mjs

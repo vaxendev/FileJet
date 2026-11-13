@@ -245,6 +245,7 @@ model file_scans {
 }
 
 model files {
+  hidden Boolean @default(false)
   tags String[] @default([]) @db.VarChar(32)
   revision Int @default(1)
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -340,6 +341,7 @@ model upload_sessions {
 }
 
 model folders {
+  hidden Boolean @default(false)
   team_space team_spaces?
   tags String[] @default([]) @db.VarChar(32)
   // Partial unique indexes for root/child names are maintained in migration SQL.
@@ -359,6 +361,7 @@ model folders {
 }
 
 model notes {
+  hidden Boolean @default(false)
   revision Int @default(1)
   tags String[] @default([]) @db.VarChar(32)
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -450,6 +453,7 @@ model share_event_keys {
 }
 
 model trash {
+  hidden Boolean @default(false)
   tags String[] @default([]) @db.VarChar(32)
   revision Int @default(1)
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

@@ -2,6 +2,7 @@ import { prisma } from '~~/server/utils/prisma'
 import { getAuthSession } from '~~/server/utils/auth'
 import { throwError } from '~~/server/utils/error'
 import type { SharedItemType } from '~~/shared/types/share'
+import { libraryFolderScopes } from '../../utils/hiddenItems'
 
 export default defineEventHandler(async event => {
     try {
@@ -39,30 +40,44 @@ export default defineEventHandler(async event => {
 
         if (!shares.length) return []
 
-        const [files, folders, notes] = await Promise.all([
-            prisma.files.findMany({
+        const [files, folders, notes, { hiddenFolders }] = await prisma.$transaction(tx => Promise.all([
+            tx.files.findMany({
                 where: { user_id: session.userId, id: { in: ids('file') } },
-                select: { id: true, name: true, mime_type: true, size: true }
+                select: { id: true, name: true, mime_type: true, size: true, hidden: true, folder_id: true }
             }),
-            prisma.folders.findMany({
+            tx.folders.findMany({
                 where: { user_id: session.userId, id: { in: ids('folder') } },
                 select: { id: true, name: true }
             }),
-            prisma.notes.findMany({
+            tx.notes.findMany({
                 where: { user_id: session.userId, id: { in: ids('note') } },
-                select: { id: true, title: true, size: true }
-            })
-        ])
+                select: { id: true, title: true, size: true, hidden: true, folder_id: true }
+            }),
+            libraryFolderScopes(session.userId, tx)
+        ]), { isolationLevel: 'RepeatableRead' })
 
         const targets = new Map<string, { name: string; mimeType: string | null; size: string | null }>()
+        const hiddenTargets = new Set<string>()
 
-        for (const file of files) targets.set(`file:${file.id}`, { name: file.name, mimeType: file.mime_type, size: file.size.toString() })
-        for (const folder of folders) targets.set(`folder:${folder.id}`, { name: folder.name, mimeType: null, size: null })
-        for (const note of notes) targets.set(`note:${note.id}`, { name: note.title, mimeType: 'text/plain', size: note.size.toString() })
+        for (const file of files) {
+            const key = `file:${file.id}`
+            if (file.hidden || (file.folder_id && hiddenFolders.has(file.folder_id))) hiddenTargets.add(key)
+            else targets.set(key, { name: file.name, mimeType: file.mime_type, size: file.size.toString() })
+        }
+        for (const folder of folders) {
+            const key = `folder:${folder.id}`
+            if (hiddenFolders.has(folder.id)) hiddenTargets.add(key)
+            else targets.set(key, { name: folder.name, mimeType: null, size: null })
+        }
+        for (const note of notes) {
+            const key = `note:${note.id}`
+            if (note.hidden || (note.folder_id && hiddenFolders.has(note.folder_id))) hiddenTargets.add(key)
+            else targets.set(key, { name: note.title, mimeType: 'text/plain', size: note.size.toString() })
+        }
 
         const origin = getRequestURL(event).origin
 
-        return shares.map(item => {
+        return shares.filter(item => !hiddenTargets.has(`${item.item_type}:${item.item_id}`)).map(item => {
             const target = targets.get(`${item.item_type}:${item.item_id}`)
 
             return {

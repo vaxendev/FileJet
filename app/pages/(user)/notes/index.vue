@@ -151,6 +151,8 @@
                                 <td class="item-actions-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell" @click.stop>
                                     <ItemMenu
                                         :ref="menu => setNoteMenuRef(note.id, menu)"
+                                        hideable
+                                        @hide="setHidden('note', note.id)"
                                         type="note"
                                         :actions="[
                                             'open',
@@ -200,6 +202,8 @@
                             </label>
                             <ItemMenu
                                 :ref="menu => setNoteMenuRef(note.id, menu)"
+                                hideable
+                                @hide="setHidden('note', note.id)"
                                 type="note"
                                 :actions="[
                                     'open',
@@ -279,6 +283,7 @@ const {
 
 const { openToast } = useToast()
 const { notes, favorites, pending, error, fetchAll } = useUser()
+const { setHidden } = useHiddenItems()
 type NoteItem = (typeof notes.value)[number]
 
 await fetchAll()

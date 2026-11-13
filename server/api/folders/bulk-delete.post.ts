@@ -136,6 +136,7 @@ export default defineEventHandler(async event => {
                     item_id: folder.id,
                     item_type: 'folder',
                     tags: folder.tags,
+                    hidden: folder.hidden,
                     name: folder.name,
                     parent_folder_id: folder.parent_folder_id,
                     root_folder_id: getRootId(folder.id)
@@ -148,6 +149,7 @@ export default defineEventHandler(async event => {
                     item_id: file.id,
                     item_type: 'file',
                     tags: file.tags,
+                    hidden: file.hidden,
                     name: file.name,
                     original_name: file.original_name,
                     mime_type: file.mime_type,
@@ -165,6 +167,7 @@ export default defineEventHandler(async event => {
                     item_id: note.id,
                     item_type: 'note',
                     tags: note.tags,
+                    hidden: note.hidden,
                     name: note.title,
                     content: note.content,
                     revision: note.revision,

@@ -130,6 +130,12 @@
                         {{ isFavorite ? $msg('Remove from Favorites') : $msg('Add to Favorites') }}
                     </button>
 
+                    <button v-if="hideable" type="button" class="menu-item text-content hover:bg-raised hover:text-foreground"
+                        @click="isOpen = false; emit('hide')">
+                        <Icon class="text-lg flex-none size-4.5" name="solar:eye-closed-linear" />
+                        {{ $msg('Hide item') }}
+                    </button>
+
                     <button
                         v-if="hasAction('delete')"
                         type="button"
@@ -162,6 +168,7 @@ const props = withDefaults(
         canCopy?: boolean
         contextOnly?: boolean
         disabled?: boolean
+        hideable?: boolean
         customActions?: CustomAction[]
     }>(),
     {
@@ -182,6 +189,7 @@ const emit = defineEmits<{
     download: []
     favorite: []
     delete: []
+    hide: []
     customAction: [id: string]
 }>()
 

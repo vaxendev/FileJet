@@ -143,6 +143,8 @@
                                     <ItemMenu
                                         type="file"
                                         :is-favorite="isFileFavorite(file.id)"
+                                        hideable
+                                        @hide="setHidden('file', file.id)"
                                         :can-copy="canCopyFile(file.mime_type, file.original_name)"
                                         @open="openFile(file)"
                                         @download="handleDownload(file.id)"
@@ -285,6 +287,7 @@ import type { StorageUsage } from '~~/shared/types/storage'
 const { openToast } = useToast()
 
 const { user, files, folders, notes, favorites, error, fetchAll } = useUser()
+const { setHidden } = useHiddenItems()
 const { deleteFile, renameFile, copyFile, downloadFile, isDeleting } = useFileActions()
 const { addFavorite, removeFavorite } = useFavoriteActions()
 

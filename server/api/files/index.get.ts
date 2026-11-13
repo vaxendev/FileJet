@@ -13,7 +13,8 @@ export default defineEventHandler(async event => {
         const files = await prisma.files.findMany({
             where: {
                 user_id: session.userId,
-                folder_id: null
+                folder_id: null,
+                hidden: false
             },
             orderBy: {
                 created_at: 'desc'

@@ -29,6 +29,7 @@ const pageTitle = computed(() => {
         '/folders': 'Folders',
         '/notes': 'Notes',
         '/favorites': 'Favorites',
+        '/hidden': localize('Hidden'),
         '/shared': 'Shared',
         '/inbox': 'Inbox',
         '/teams': localize('Team spaces'),

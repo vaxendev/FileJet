@@ -44,6 +44,22 @@ export default defineEventHandler(async event => {
                 if (destinationId && !folderMap.has(destinationId))
                     throwError(404, 'Destination folder not found.')
 
+                const teamRoot = (folderId: string | null) => {
+                    const visited = new Set<string>()
+                    while (folderId && !visited.has(folderId)) {
+                        visited.add(folderId)
+                        const folder = folderMap.get(folderId)
+                        if (!folder) break
+                        if (folder.team_space) return folder.id
+                        folderId = folder.parent_folder_id
+                    }
+                    return null
+                }
+
+                const destinationTeam = teamRoot(destinationId)
+                if (destinationTeam && [...chosenFolders, ...files, ...notes].some(item => item.hidden))
+                    throwError(400, 'Hidden items cannot be moved into a team.')
+
                 const insideSelection = (parentId: string | null): boolean => {
                     const visited = new Set<string>()
 

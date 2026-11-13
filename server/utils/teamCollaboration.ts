@@ -32,10 +32,11 @@ export function teamReferenceIds(db: TeamDB, team: TeamAccess, fileIds: string[]
     return db.$queryRaw<{ id: string }[]>`
         WITH RECURSIVE ancestors(file_id, folder_id) AS (
             SELECT id, folder_id FROM files
-            WHERE user_id = ${team.owner_id}::uuid AND id = ANY(${fileIds}::uuid[])
+            WHERE user_id = ${team.owner_id}::uuid AND id = ANY(${fileIds}::uuid[]) AND NOT hidden
             UNION
             SELECT a.file_id, f.parent_folder_id FROM ancestors a JOIN folders f ON f.id = a.folder_id
             WHERE f.user_id = ${team.owner_id}::uuid
+              AND NOT f.hidden
               AND f.id <> ${team.root_folder_id}::uuid
               AND NOT EXISTS (SELECT 1 FROM team_spaces t WHERE t.root_folder_id = f.id)
         )

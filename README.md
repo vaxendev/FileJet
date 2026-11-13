@@ -151,6 +151,10 @@ Saved versions count toward storage, including while the file is in Trash. Resto
 - File contents are checked per part. Retrying a part or completing a transfer twice cannot create duplicate files or charge quota twice. Changed file contents, different destinations, and different sender metadata start a separate upload.
 - The unfinished-upload notice offers **Discard unfinished uploads**. Expired staging files are also reclaimed on server startup and every 15 minutes. Keep `storage/.uploads` persistent alongside the rest of storage when restarting the app.
 
+### Hidden items
+
+Choose **Hide item** from the menu of a personal file, folder, or note. The item keeps its location and appears in **Hidden**. Hiding a folder also hides its contents from regular lists. Public share links to hidden items pause until they are visible again. Use **Make visible** on the Hidden page to restore visibility. This requires migration `202611130004_hidden_library_items`.
+
 ### Trash
 
 - Move files, folders, and notes to Trash, then restore or permanently delete them.

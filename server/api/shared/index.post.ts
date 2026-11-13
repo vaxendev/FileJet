@@ -6,6 +6,7 @@ import { prisma } from '~~/server/utils/prisma'
 import { getAuthSession } from '~~/server/utils/auth'
 import { throwError } from '~~/server/utils/error'
 import { isUuid } from '~~/server/utils/validation'
+import { requireVisibleShareTarget } from '../../utils/hiddenItems'
 
 export default defineEventHandler(async event => {
     try {
@@ -39,45 +40,7 @@ export default defineEventHandler(async event => {
             throwError(400, 'Invalid item type.')
         }
 
-        if (itemType === 'file') {
-            const file = await prisma.files.findFirst({
-                where: {
-                    id: itemId,
-                    user_id: session.userId
-                }
-            })
-
-            if (!file) {
-                throwError(404, 'File not found.')
-            }
-        }
-
-        if (itemType === 'folder') {
-            const folder = await prisma.folders.findFirst({
-                where: {
-                    id: itemId,
-                    user_id: session.userId
-                }
-            })
-
-            if (!folder) {
-                throwError(404, 'Folder not found.')
-            }
-        }
-
-        if (itemType === 'note') {
-            const note = await prisma.notes.findFirst({
-                where: {
-                    id: itemId,
-                    user_id: session.userId
-                }
-            })
-
-            if (!note) {
-                throwError(404, 'Note not found.')
-            }
-        }
-
+        await requireVisibleShareTarget(session.userId, itemId, itemType)
         const settings = await parseShareSettings(body)
 
         const existing = await prisma.shared_items.findFirst({
@@ -106,6 +69,7 @@ export default defineEventHandler(async event => {
             try {
                 const result = await prisma.$transaction(
                     async tx => {
+                        await requireVisibleShareTarget(session.userId, itemId, itemType, tx)
                         const existing = await tx.shared_items.findFirst({
                             where: {
                                 user_id: session.userId,

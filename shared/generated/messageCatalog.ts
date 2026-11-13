@@ -1736,7 +1736,20 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "m90957bf6": "Only the assigned reviewer can respond.",
     "mcae537ab": "This file version has changed. Request a new review.",
     "m5e1ce68c": "This review has already been answered.",
-    "m20354a70": "Invalid file version."
+    "m20354a70": "Invalid file version.",
+    "m3c2dfe59": "Hidden",
+    "mcac1aed0": "Hide item",
+    "m5967dc6b": "Hide this item?",
+    "m187709a7": "The item will move out of regular lists. Share links to it and its contents will be unavailable while hidden.",
+    "m6a78931c": "Item hidden.",
+    "m919484fa": "Item is visible again.",
+    "mb257c639": "Make visible",
+    "mb019ba77": "Search hidden items…",
+    "mf17a0027": "No matching hidden items.",
+    "mf193567a": "No hidden items yet.",
+    "mdd7bdb9e": "Team items cannot be hidden.",
+    "mf92482ee": "Hidden items cannot be moved into a team.",
+    "m44f54b78": "Folder visibility changed. Try again."
   },
   "tr": {
     "m34dc962f": "Daha önce:",
@@ -3474,7 +3487,20 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "m90957bf6": "Yalnızca atanan inceleyen yanıt verebilir.",
     "mcae537ab": "Dosya sürümü değişti. Yeni bir inceleme iste.",
     "m5e1ce68c": "Bu inceleme zaten yanıtlandı.",
-    "m20354a70": "Geçersiz dosya sürümü."
+    "m20354a70": "Geçersiz dosya sürümü.",
+    "m3c2dfe59": "Gizli",
+    "mcac1aed0": "Gizle",
+    "m5967dc6b": "Bu öğe gizlensin mi?",
+    "m187709a7": "Öğe normal listelerden çıkarılır. Öğe ve içeriği gizliyken paylaşım bağlantıları kullanılamaz.",
+    "m6a78931c": "Öğe gizlendi.",
+    "m919484fa": "Öğe yeniden görünür oldu.",
+    "mb257c639": "Geri göster",
+    "mb019ba77": "Gizli öğeleri ara…",
+    "mf17a0027": "Eşleşen gizli öğe yok.",
+    "mf193567a": "Henüz gizli öğe yok.",
+    "mdd7bdb9e": "Ekip öğeleri gizlenemez.",
+    "mf92482ee": "Gizli öğeler bir ekibe taşınamaz.",
+    "m44f54b78": "Klasörün görünürlüğü değişti. Tekrar dene."
   },
   "de": {
     "m4af72ffa": "pro Datei",
@@ -5212,6 +5238,19 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "m90957bf6": "Nur die zugewiesene Person kann antworten.",
     "mcae537ab": "Die Dateiversion hat sich geändert. Fordere eine neue Prüfung an.",
     "m5e1ce68c": "Diese Prüfungsanfrage wurde bereits beantwortet.",
-    "m20354a70": "Ungültige Dateiversion."
+    "m20354a70": "Ungültige Dateiversion.",
+    "m3c2dfe59": "Ausgeblendet",
+    "mcac1aed0": "Ausblenden",
+    "m5967dc6b": "Dieses Element ausblenden?",
+    "m187709a7": "Das Element verschwindet aus den normalen Listen. Freigabelinks zum Element und seinem Inhalt sind solange nicht verfügbar.",
+    "m6a78931c": "Element ausgeblendet.",
+    "m919484fa": "Das Element ist wieder sichtbar.",
+    "mb257c639": "Einblenden",
+    "mb019ba77": "Ausgeblendete Elemente suchen…",
+    "mf17a0027": "Keine passenden ausgeblendeten Elemente.",
+    "mf193567a": "Noch keine ausgeblendeten Elemente.",
+    "mdd7bdb9e": "Teamelemente können nicht ausgeblendet werden.",
+    "mf92482ee": "Ausgeblendete Elemente können nicht in ein Team verschoben werden.",
+    "m44f54b78": "Die Sichtbarkeit des Ordners hat sich geändert. Versuche es erneut."
   }
 }

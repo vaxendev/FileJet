@@ -3,13 +3,14 @@ import { stat, readFile } from 'node:fs/promises'
 import { zipSync, strToU8 } from 'fflate'
 import { prisma } from './prisma'
 import { throwError } from './error'
-import { storagePath } from './files'
+import { libraryFolderScopes } from './hiddenItems'
 
-export async function createFolderArchive(userId: string, folderId: string) {
+export async function createFolderArchive(userId: string, folderId: string, publicShare = false) {
     const root = await prisma.folders.findFirst({
         where: {
             id: folderId,
-            user_id: userId
+            user_id: userId,
+            ...(publicShare ? { hidden: false } : {})
         }
     })
 
@@ -45,6 +46,7 @@ export async function createFolderArchive(userId: string, folderId: string) {
         const children = await prisma.folders.findMany({
             where: {
                 user_id: userId,
+                hidden: false,
                 parent_folder_id: {
                     in: pending
                 }
@@ -68,6 +70,7 @@ export async function createFolderArchive(userId: string, folderId: string) {
 
     const where = {
         user_id: userId,
+        hidden: false,
         folder_id: {
             in: [...paths.keys()]
         }
@@ -123,6 +126,21 @@ export async function createFolderArchive(userId: string, folderId: string) {
     const zip = zipSync(zipEntries, {
         level: 6
     })
+
+    if (publicShare) {
+        await prisma.$transaction(async tx => {
+            const { folders, hiddenFolders } = await libraryFolderScopes(userId, tx)
+            const currentFolders = new Map(folders.map(folder => [folder.id, folder.parent_folder_id]))
+            const [currentFiles, currentNotes] = await Promise.all([
+                tx.files.findMany({ where: { user_id: userId, id: { in: files.map(file => file.id) } }, select: { hidden: true, folder_id: true } }),
+                tx.notes.findMany({ where: { user_id: userId, id: { in: notes.map(note => note.id) } }, select: { hidden: true, folder_id: true } })
+            ])
+            if (currentFiles.length !== files.length || currentNotes.length !== notes.length ||
+                [...paths.keys()].some(id => !currentFolders.has(id) || hiddenFolders.has(id)) ||
+                [...currentFiles, ...currentNotes].some(item => item.hidden || !item.folder_id || hiddenFolders.has(item.folder_id)))
+                throwError(409, 'Folder visibility changed. Try again.')
+        }, { isolationLevel: 'RepeatableRead' })
+    }
 
     return { data: Buffer.from(zip), name: safe(root.name) + '.zip' }
 }

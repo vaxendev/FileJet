@@ -109,7 +109,7 @@ export async function teamFolder(db: TeamDB, team: TeamAccess, id = team.root_fo
             parent_folder_id: string | null
             team_space: { id: string } | null
         } | null = await db.folders.findFirst({
-            where: { id: current, user_id: team.owner_id },
+            where: { id: current, user_id: team.owner_id, hidden: false },
             select: { id: true, name: true, parent_folder_id: true, team_space: { select: { id: true } } }
         })
         if (!folder || (folder.team_space && folder.id !== team.root_folder_id)) break
@@ -124,7 +124,7 @@ export async function teamFolder(db: TeamDB, team: TeamAccess, id = team.root_fo
 }
 
 export async function teamFile(db: TeamDB, team: TeamAccess, id: string) {
-    const file = await db.files.findFirst({ where: { id, user_id: team.owner_id } })
+    const file = await db.files.findFirst({ where: { id, user_id: team.owner_id, hidden: false } })
     if (!file?.folder_id) throwError(404, 'File not found.')
     await teamFolder(db, team, file.folder_id)
     return file
@@ -193,6 +193,7 @@ export async function trashTeamItem(tx: TeamDB, team: TeamAccess, type: 'file' |
                 item_id: file.id,
                 item_type: 'file',
                 tags: file.tags,
+                hidden: file.hidden,
                 name: file.name,
                 original_name: file.original_name,
                 mime_type: file.mime_type,
@@ -232,6 +233,7 @@ export async function trashTeamItem(tx: TeamDB, team: TeamAccess, type: 'file' |
                 item_type: 'folder',
                 name: folder.id === team.root_folder_id ? team.name : folder.name,
                 tags: folder.tags,
+                hidden: folder.hidden,
                 parent_folder_id: folder.parent_folder_id,
                 root_folder_id: id
             })),
@@ -242,6 +244,7 @@ export async function trashTeamItem(tx: TeamDB, team: TeamAccess, type: 'file' |
                 name: file.name,
                 original_name: file.original_name,
                 tags: file.tags,
+                hidden: file.hidden,
                 mime_type: file.mime_type,
                 size: file.size,
                 revision: file.revision,
@@ -257,6 +260,7 @@ export async function trashTeamItem(tx: TeamDB, team: TeamAccess, type: 'file' |
                 content: note.content,
                 size: note.size,
                 tags: note.tags,
+                hidden: note.hidden,
                 revision: note.revision,
                 folder_id: note.folder_id,
                 root_folder_id: id

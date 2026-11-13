@@ -40,6 +40,7 @@ export default defineEventHandler(async event => {
         }
 
         const filePath = await safeStoragePath(sharedItem.user_id, file.storage_key)
+        await getSharedTarget(event)
         setHeader(event, 'Cache-Control', 'no-store')
         setHeader(event, 'X-Content-Type-Options', 'nosniff')
         setHeader(

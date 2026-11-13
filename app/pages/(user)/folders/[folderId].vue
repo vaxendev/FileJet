@@ -354,8 +354,14 @@ const deleteItem = async (item: LibraryItem) => {
     else await fileActions.deleteFile(item.id)
 }
 
+const { setHidden } = useHiddenItems()
 const itemAction = async (action: string, item: LibraryItem) => {
     if (busy.value) return
+
+    if (action === 'hide') {
+        await setHidden(item.type, item.id, true, refreshContents)
+        return
+    }
 
     if (action === 'edit' || (action === 'rename' && item.type === 'note'))
         return openItem(item, true)

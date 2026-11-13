@@ -196,6 +196,8 @@
                                 <td class="item-actions-cell h-[4.2rem] file-table-cell" @click.stop>
                                     <ItemMenu
                                         :ref="menu => setFileMenuRef(file.id, menu)"
+                                        hideable
+                                        @hide="setHidden('file', file.id)"
                                         type="file"
                                         :is-favorite="isFileFavorite(file.id)"
                                         :can-copy="canCopyFile(file.mime_type, file.original_name)"
@@ -272,6 +274,8 @@
                             </label>
                             <ItemMenu
                                 :ref="menu => setFileMenuRef(file.id, menu)"
+                                hideable
+                                @hide="setHidden('file', file.id)"
                                 type="file"
                                 :is-favorite="isFileFavorite(file.id)"
                                 :can-copy="canCopyFile(file.mime_type, file.original_name)"
@@ -363,6 +367,7 @@ const {
 const { addFavorite, removeFavorite } = useFavoriteActions()
 
 const { files, favorites, pending, error, fetchAll } = useUser()
+const { setHidden } = useHiddenItems()
 
 const isInitialLoading = computed(
     () => pending.value && files.value.length === 0 && !isUploading.value

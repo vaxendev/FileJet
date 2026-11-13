@@ -156,6 +156,8 @@
                                 <td class="item-actions-cell h-[4.2rem] text-secondary text-[0.85rem] file-table-cell" @click.stop>
                                     <ItemMenu
                                         :ref="menu => setFolderMenuRef(folder.id, menu)"
+                                        hideable
+                                        @hide="setHidden('folder', folder.id)"
                                         type="folder"
                                         :actions="[
                                             'open',
@@ -202,6 +204,8 @@
                             </label>
                             <ItemMenu
                                 :ref="menu => setFolderMenuRef(folder.id, menu)"
+                                hideable
+                                @hide="setHidden('folder', folder.id)"
                                 type="folder"
                                 :actions="['open', 'rename', 'download', 'favorite', 'delete']"
                                 :is-favorite="isFolderFavorite(folder.id)"
@@ -260,6 +264,7 @@ const { uploadFolders } = folderActions
 const { addFavorite, removeFavorite } = useFavoriteActions()
 
 const { folders, favorites, pending, error, fetchAll } = useUser()
+const { setHidden } = useHiddenItems()
 type FolderItem = (typeof folders.value)[number]
 const folderModalOpen = ref(false)
 

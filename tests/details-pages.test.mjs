@@ -298,6 +298,7 @@ async function folderPage(options = {}) {
         useFileDrop: () => ({ isDragging: vue.ref(false), dragenter() {}, dragover() {}, dragleave() {}, drop() {} }),
         useNoteActions: () => ({}),
         useFavoriteActions: () => ({}), useUser: () => ({ folders: vue.ref([]), favorites: vue.ref([]), fetchFavorites: async () => {} }),
+        useHiddenItems: () => ({ setHidden: async () => true }),
         useToast: () => ({ openToast: (...args) => toasts.push(args) }),
         useTrashActions: () => ({ notifyTrashed() {} })
     }
