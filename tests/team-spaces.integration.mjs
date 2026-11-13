@@ -197,7 +197,7 @@ try {
     await api(team + '/members', { method: 'POST', body: { username: username(owner), role: 'EDITOR' }, status: 409 })
     await api(team + '/members/' + owner, { method: 'PATCH', body: { role: 'VIEWER' }, status: 400 })
 
-    assert.deepEqual((await api(chat, { auth: viewer })).json(), { messages: [], hasMore: false })
+    assert.deepEqual((await api(chat, { auth: viewer })).json(), { messages: [], hasMore: false, pinned: [], unreadCount: 0 })
     const firstMessage = { requestId: randomUUID(), message: '  Discuss <b>the plan</b>\nnext week.  ' }
     await api(chat, { auth: outsider, method: 'POST', body: firstMessage, status: 404 })
     await api(chat, { auth: viewer, method: 'POST', body: firstMessage, status: 403, headers: { Origin: 'https://foreign.example' } })
@@ -235,6 +235,12 @@ try {
     const newerMessages = (await api(chat + '?after=' + olderMessages.messages.at(-1).id)).json()
     assert.deepEqual(newerMessages.messages, latestMessages.messages)
     assert.equal(newerMessages.hasMore, false)
+    assert.equal(latestMessages.unreadCount, 1)
+    assert.equal((await api(teams)).json().teams.find(entry => entry.id === id).unreadCount, 1)
+    await api(chat + '/read', { method: 'PUT', body: { through: latestMessages.messages.at(-1).id } })
+    await api(chat + '/read', { method: 'PUT', body: { through: firstSaved.id } })
+    assert.equal((await api(chat)).json().unreadCount, 0)
+    assert.equal((await api(chat, { auth: viewer })).json().unreadCount, 52)
 
     const folders = team + '/folders'
     await api(folders, { auth: viewer, method: 'POST', body: { name: 'Forbidden' }, status: 403 })
@@ -276,6 +282,8 @@ try {
     assert.match(download.headers.get('content-disposition'), /attachment/)
     assert.equal((await api(delivery + '/download', { auth: viewer, method: 'HEAD' })).data.length, 0)
     assert.deepEqual((await api(delivery + '/preview', { auth: viewer })).data, bytes)
+    await api(delivery + '/preview?revision=2', { auth: viewer, status: 409 })
+    assert.deepEqual((await api(delivery + '/preview?revision=1', { auth: viewer })).data, bytes)
     await api(delivery + '/download', { auth: outsider, status: 404 })
     await api(delivery + '/preview', { auth: outsider, status: 404 })
     await api('/api/files/' + fileId + '/download', { auth: uploader, status: 404 })
@@ -288,6 +296,61 @@ try {
     assert.equal((await api(team + '?folderId=' + nested, { auth: viewer })).json().items.length, 1)
 
     const item = team + '/items/' + fileId + '?type=file'
+    const outsideMessage = (await api(other + '/messages', {
+        method: 'POST', body: { requestId: randomUUID(), message: 'Separate team message' }
+    })).json().message
+    await api(chat, { method: 'POST', status: 404, body: { requestId: randomUUID(), message: 'Outside', replyTo: outsideMessage.id } })
+    await api(chat + '/read', { method: 'PUT', status: 404, body: { through: outsideMessage.id } })
+    const fileMessage = {
+        requestId: randomUUID(), message: `@${username(viewer)}. @${username(outsider)} qa@${username(uploader)}.example`,
+        fileId, replyTo: firstSaved.id
+    }
+    const sharedFile = (await api(chat, { method: 'POST', body: fileMessage })).json().message
+    assert.deepEqual((await api(chat, { method: 'POST', body: fileMessage })).json().message, sharedFile)
+    assert.equal(sharedFile.file.name, 'plan.txt')
+    assert.equal(sharedFile.reply.id, firstSaved.id)
+    assert.equal(sharedFile.reply.excerpt, firstSaved.body)
+    await api(other + '/messages', { method: 'POST', status: 404, body: { ...fileMessage, replyTo: undefined } })
+    const mentions = teams + '/mentions'
+    assert.deepEqual((await api(mentions, { auth: viewer })).json().mentions, [{
+        id: sharedFile.id, teamId: id, teamName: teamBody.name, authorName: username(owner)
+    }])
+    for (const auth of [uploader, outsider]) assert.deepEqual((await api(mentions, { auth })).json().mentions, [])
+    const pin = chat + '/' + sharedFile.id + '/pin'
+    await api(pin, { method: 'PUT', auth: viewer, status: 403, body: { pinned: true } })
+    await api(pin, { method: 'PUT', auth: editor, body: { pinned: true } })
+    assert.equal((await api(chat, { auth: viewer })).json().pinned[0].id, sharedFile.id)
+    assert.equal((await api(chat + '?at=' + firstSaved.id)).json().messages.at(-1).id, firstSaved.id)
+    await api(pin, { method: 'PUT', auth: editor, body: { pinned: false } })
+    assert.deepEqual((await api(chat)).json().pinned, [])
+    const tasks = team + '/tasks'
+    const taskInput = { messageId: sharedFile.id, title: 'Check the plan', assigneeId: viewer, dueOn: '2027-01-04' }
+    await api(tasks, { method: 'POST', body: { ...taskInput, assigneeId: outsider }, status: 400 })
+    await api(tasks, { method: 'POST', body: { ...taskInput, dueOn: '2027-02-30' }, status: 400 })
+    await api(tasks, { method: 'POST', body: { ...taskInput, messageId: outsideMessage.id }, status: 404 })
+    const task = (await api(tasks, { method: 'POST', body: taskInput })).json().task
+    assert.equal((await api(tasks, { method: 'POST', body: taskInput })).json().task.id, task.id)
+    assert.equal(task.dueOn, taskInput.dueOn)
+    assert.equal((await api(tasks, { auth: viewer })).json().items[0].canUpdate, true)
+    await api(tasks + '/' + task.id, { method: 'PATCH', auth: uploader, body: { completed: true }, status: 403 })
+    assert.equal((await api(tasks + '/' + task.id, { method: 'PATCH', auth: viewer, body: { completed: true } })).json().task.completed, true)
+    assert.equal((await api(tasks + '/' + task.id, { method: 'PATCH', body: { completed: false } })).json().task.completed, false)
+    const reviews = team + '/reviews'
+    const reviewInput = { fileId, reviewerId: viewer, note: 'Please check the plan.' }
+    await api(reviews, { method: 'POST', body: { ...reviewInput, reviewerId: outsider }, status: 400 })
+    const review = (await api(reviews, { method: 'POST', body: reviewInput })).json().review
+    assert.equal((await api(reviews, { method: 'POST', body: reviewInput })).json().review.id, review.id)
+    assert.equal((await api(reviews, { auth: viewer })).json().items[0].canRespond, true)
+    const reviewUrl = reviews + '/' + review.id
+    await api(reviewUrl, { method: 'PATCH', body: { status: 'APPROVED' }, status: 403 })
+    const changes = { status: 'CHANGES_REQUESTED', note: 'Clarify the scope.' }
+    assert.equal((await api(reviewUrl, { method: 'PATCH', auth: viewer, body: changes })).json().review.responseNote, changes.note)
+    const secondReview = (await api(reviews, { method: 'POST', body: reviewInput })).json().review
+    assert.equal((await api(reviews + '/' + secondReview.id, { method: 'PATCH', auth: viewer, body: { status: 'APPROVED' } })).json().review.status, 'APPROVED')
+    const staleReview = (await api(reviews, { auth: uploader, method: 'POST', body: { ...reviewInput, reviewerId: editor } })).json().review
+    await db.query('UPDATE files SET revision=2 WHERE id=$1', [fileId])
+    await api(reviews + '/' + staleReview.id, { method: 'PATCH', auth: editor, body: { status: 'APPROVED' }, status: 409 })
+    assert.equal((await api(reviews, { auth: editor })).json().items.find(entry => entry.id === staleReview.id).stale, true)
     await api(item, { auth: uploader, method: 'PATCH', body: { name: 'forbidden.txt' }, status: 403 })
     await api(item, { auth: uploader, method: 'DELETE', status: 403 })
     await api(item, { auth: editor, method: 'PATCH', body: { name: 'revised.txt' } })
@@ -299,6 +362,9 @@ try {
     await api(team + '/members/' + viewer, { auth: viewer, method: 'DELETE' })
     await api(delivery + '/download', { auth: viewer, status: 404 })
     await api(chat, { auth: viewer, status: 404 })
+    await api(tasks, { auth: viewer, status: 404 })
+    await api(reviews, { auth: viewer, status: 404 })
+    assert.deepEqual((await api(mentions, { auth: viewer })).json().mentions, [])
     await api(chat, { auth: viewer, method: 'POST', body: firstMessage, status: 404 })
     await api(team + '/members/' + uploader, { method: 'DELETE' })
     await api(team, { auth: uploader, status: 404 })
@@ -318,7 +384,7 @@ try {
     assert.ok(trash.rows.some(row => row.item_id === root && row.name === 'Updated project'))
     assert.ok(trash.rows.some(row => row.item_id === fileId))
     assert.ok(trash.rows.some(row => row.item_id === nested))
-    console.log('Team integration passed: visibility, invitations, chat, passwords, roles, scope, quota and Trash.')
+    console.log('Team integration passed: invitations, chat, unread counts, mentions, replies, pins, files, tasks, reviews, roles and Trash.')
 } finally {
     try {
         await db.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [users])

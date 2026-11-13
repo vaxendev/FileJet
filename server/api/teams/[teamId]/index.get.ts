@@ -1,6 +1,7 @@
 import { prisma } from '../../../utils/prisma'
 import { teamActor, teamParam, teamAccess, teamFolder, teamFolderQuery } from '../../../utils/teamSpaces'
 import { getFolderContents } from '../../../utils/folderContents'
+import { teamUnreadCounts } from '../../../utils/teamChat'
 export default defineEventHandler(async event => {
     const actor = teamActor(event),
         id = teamParam(event),
@@ -9,7 +10,7 @@ export default defineEventHandler(async event => {
         async tx => {
             const team = await teamAccess(tx, id, actor)
             const folder = await teamFolder(tx, team, folderId)
-            const [contents, members, invitations] = await Promise.all([
+            const [contents, members, invitations, unread] = await Promise.all([
                 getFolderContents(team.owner_id, folder.id, false, tx),
                 tx.team_members.findMany({
                     where: { team_id: team.id },
@@ -22,7 +23,8 @@ export default defineEventHandler(async event => {
                           select: { id: true, role: true, user: { select: { username: true } } },
                           orderBy: { created_at: 'desc' }
                       })
-                    : undefined
+                    : undefined,
+                teamUnreadCounts(tx, actor, [id])
             ])
             return {
                 id: team.id,
@@ -38,6 +40,7 @@ export default defineEventHandler(async event => {
                     invitations: invitations.map(({ id, role, user }) => ({ id, role, username: user.username }))
                 } : {}),
                 memberCount: members.length + 1,
+                unreadCount: Number(unread[0]?.unread ?? 0),
                 createdAt: team.created_at.toISOString(),
                 folderId: folder.id,
                 breadcrumbs: folder.breadcrumbs,

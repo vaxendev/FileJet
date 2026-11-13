@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useDocumentVisibility, useIntervalFn } from '@vueuse/core'
 import type { TeamInvitation, TeamSettings, TeamSummary } from '~~/shared/types/team'
 definePageMeta({ middleware: 'auth', layout: 'user' })
 useHead(() => ({ title: `${localize('Team spaces')} · FileJet` }))
@@ -11,6 +12,10 @@ const { openToast } = useToast()
 const { data, pending, error, refresh } = await useFetch<{ teams: TeamSummary[]; invitations: TeamInvitation[] }>('/api/teams', {
     key: `teams:${user.value?.id}`
 })
+const visibility = useDocumentVisibility()
+useIntervalFn(() => {
+    if (visibility.value === 'visible' && !pending.value) void refresh()
+}, 20000)
 const teams = computed(() =>
     (data.value?.teams ?? []).filter(team =>
         [team.name, team.description, team.ownerName].some(text =>
@@ -141,6 +146,9 @@ const create = async (body: TeamSettings) => {
                     >
                         <span>{{ $countMsg('teamMembers', team.memberCount) }}</span
                         ><span>{{ $msg('Owner') }}: {{ team.ownerName }}</span>
+                        <span v-if="team.unreadCount" class="rounded-md bg-accent/10 px-2 py-1 font-medium text-accent">
+                            {{ $msg('{count} unread', { count: team.unreadCount }) }}
+                        </span>
                     </footer>
                 </NuxtLink>
             </div>

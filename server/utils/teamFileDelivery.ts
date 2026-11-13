@@ -11,8 +11,13 @@ export async function deliverTeamFile(event: H3Event, previewOnly: boolean) {
     const actor = teamActor(event),
         id = teamParam(event),
         fileId = teamParam(event, 'fileId')
+    const revision = getQuery(event).revision
+    if (revision !== undefined && (typeof revision !== 'string' || !/^[1-9][0-9]{0,9}$/.test(revision)))
+        throwError(400, 'Invalid file version.')
     const team = await teamAccess(prisma, id, actor),
         file = await teamFile(prisma, team, fileId)
+    if (revision !== undefined && file.revision !== Number(revision))
+        throwError(409, 'This file version has changed. Request a new review.')
     const path = await safeStoragePath(team.owner_id, file.storage_key)
     // Antivirus checks may be slow. Do not deliver bytes using an expired membership.
     const current = await prisma.$transaction(
@@ -24,6 +29,8 @@ export async function deliverTeamFile(event: H3Event, previewOnly: boolean) {
     )
     if (file.storage_key !== current.storage_key)
         throwError(409, 'The stored file changed during scanning. Access remains blocked.')
+    if (revision !== undefined && current.revision !== Number(revision))
+        throwError(409, 'This file version has changed. Request a new review.')
     const info = await stat(path).catch(() => null)
     if (!info?.isFile()) throwError(404, 'Stored file not found.')
     setHeader(event, 'X-Content-Type-Options', 'nosniff')

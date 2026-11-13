@@ -41,6 +41,7 @@ export interface TeamSummary {
     role: TeamRole
     isPublic: boolean
     memberCount: number
+    unreadCount: number
     createdAt: string
 }
 export interface TeamMember {

@@ -27,13 +27,15 @@
 import type { QuickPreviewItem } from '~~/shared/types/quickPreview'
 import { getInboxPreview } from '~~/shared/utils/inboxPreview'
 import { formatFileSize } from '~/utils/file'
-const props = defineProps<{ item: QuickPreviewItem | null; apiBase?: string }>()
+const props = defineProps<{ item: QuickPreviewItem | null; apiBase?: string; revision?: number }>()
 const emit = defineEmits<{ close: [] }>()
 const dialog = ref<HTMLDialogElement | null>(null), closeButton = ref<HTMLButtonElement | null>(null)
 const text = ref(''), errorMessage = ref(''), loading = ref(false), truncated = ref(false)
 const kind = computed(() => props.item?.type === 'note' ? 'text' : getInboxPreview(props.item?.name ?? '', props.item?.mime_type ?? null).kind)
 const base = computed(() => props.apiBase ?? (props.item ? `/api/${props.item.type === 'note' ? 'notes' : 'files'}/${encodeURIComponent(props.item.resourceId ?? props.item.id)}` : ''))
-const previewUrl = computed(() => `${base.value}/preview`), downloadUrl = computed(() => `${base.value}/download`)
+const revisionQuery = computed(() => props.revision === undefined ? '' : `?revision=${props.revision}`)
+const previewUrl = computed(() => `${base.value}/preview${revisionQuery.value}`),
+    downloadUrl = computed(() => `${base.value}/download${revisionQuery.value}`)
 let controller: AbortController | null = null, generation = 0, outsideStart = false
 const outside = (event: MouseEvent) => {
     const r = dialog.value?.getBoundingClientRect()

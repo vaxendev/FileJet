@@ -33,6 +33,9 @@ model team_spaces {
   members team_members[]
   invitations team_invitations[]
   messages team_messages[]
+  chat_reads team_chat_reads[]
+  tasks team_tasks[]
+  reviews team_file_reviews[]
   @@index([owner_id, created_at])
   @@index([is_public, created_at, id])
 }
@@ -66,12 +69,89 @@ model team_messages {
   author_id String? @db.Uuid
   request_id String @db.Uuid
   body String @db.VarChar(2000)
+  reply_to_id BigInt?
+  file_id String? @db.Uuid
+  pinned_at DateTime? @db.Timestamptz(6)
   created_at DateTime @default(now()) @db.Timestamptz(6)
   team team_spaces @relation(fields: [team_id], references: [id], onDelete: Cascade)
   author users? @relation(fields: [author_id], references: [id], onDelete: SetNull)
+  file files? @relation(fields: [file_id], references: [id], onDelete: SetNull)
+  reply_to team_messages? @relation("TeamMessageReplies", fields: [reply_to_id], references: [id], onDelete: SetNull)
+  replies team_messages[] @relation("TeamMessageReplies")
+  mentions team_chat_mentions[]
+  task team_tasks?
   @@unique([team_id, request_id])
   @@index([team_id, id])
   @@index([author_id])
+  @@index([file_id])
+  @@index([reply_to_id])
+  @@index([team_id, pinned_at])
+}
+
+model team_chat_reads {
+  team_id String @db.Uuid
+  user_id String @db.Uuid
+  last_read_id BigInt
+  team team_spaces @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  @@id([team_id, user_id])
+  @@index([user_id, team_id])
+}
+
+model team_chat_mentions {
+  message_id BigInt
+  user_id String @db.Uuid
+  message team_messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  @@id([message_id, user_id])
+  @@index([user_id, message_id])
+}
+
+model team_tasks {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  team_id String @db.Uuid
+  message_id BigInt @unique
+  created_by_id String? @db.Uuid
+  assignee_id String? @db.Uuid
+  title String @db.VarChar(160)
+  due_on DateTime @db.Date
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  completed_at DateTime? @db.Timestamptz(6)
+  team team_spaces @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  message team_messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
+  creator users? @relation("TeamTaskCreator", fields: [created_by_id], references: [id], onDelete: SetNull)
+  assignee users? @relation("TeamTaskAssignee", fields: [assignee_id], references: [id], onDelete: SetNull)
+  @@index([team_id, created_at, id])
+  @@index([created_by_id])
+  @@index([assignee_id])
+}
+
+enum TeamReviewStatus {
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+model team_file_reviews {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  team_id String @db.Uuid
+  file_id String @db.Uuid
+  revision Int
+  requested_by_id String? @db.Uuid
+  reviewer_id String? @db.Uuid
+  status TeamReviewStatus @default(PENDING)
+  request_note String @default("") @db.VarChar(1000)
+  response_note String @default("") @db.VarChar(1000)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  responded_at DateTime? @db.Timestamptz(6)
+  team team_spaces @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  file files @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  requester users? @relation("TeamReviewRequester", fields: [requested_by_id], references: [id], onDelete: SetNull)
+  reviewer users? @relation("TeamReviewReviewer", fields: [reviewer_id], references: [id], onDelete: SetNull)
+  @@index([team_id, created_at, id])
+  @@index([file_id, revision, reviewer_id, status])
+  @@index([requested_by_id])
+  @@index([reviewer_id])
 }
 
 // Kept after account deletion so filesystem cleanup survives crashes and retries.
@@ -86,6 +166,12 @@ model users {
   team_memberships team_members[] @relation("TeamMemberships")
   team_invitations team_invitations[]
   team_messages team_messages[]
+  team_chat_reads team_chat_reads[]
+  team_chat_mentions team_chat_mentions[]
+  created_team_tasks team_tasks[] @relation("TeamTaskCreator")
+  assigned_team_tasks team_tasks[] @relation("TeamTaskAssignee")
+  requested_team_reviews team_file_reviews[] @relation("TeamReviewRequester")
+  assigned_team_reviews team_file_reviews[] @relation("TeamReviewReviewer")
   role          UserRole  @default(USER)
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username      String    @unique @db.VarChar(50)
@@ -179,6 +265,8 @@ model files {
   users     users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_files_user")
   favorites favorites[]
   request_uploads request_uploads[]
+  team_messages team_messages[]
+  team_file_reviews team_file_reviews[]
 }
 
 model file_versions {

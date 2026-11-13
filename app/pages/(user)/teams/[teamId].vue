@@ -3,6 +3,8 @@ import { $fetch as teamFetch } from 'ofetch'
 import { teamCan, type TeamDetails, type TeamSettings, type TeamRole, type TeamMember } from '~~/shared/types/team'
 import type { LibraryItem } from '~~/shared/types/library'
 import type { QuickPreviewItem } from '~~/shared/types/quickPreview'
+import type { TeamChatMessage } from '~~/shared/types/teamChat'
+import type { TeamFileReference } from '~~/shared/types/teamCollaboration'
 import { getFileIcon, formatFileSize, formatFileTime } from '~/utils/file'
 definePageMeta({ middleware: 'auth', layout: 'user', key: route => route.path })
 const route = useRoute(),
@@ -17,8 +19,17 @@ const { data, pending, error, refresh } = await useFetch<TeamDetails>(`/api/team
 useHead(() => ({ title: `${data.value?.name ?? localize('Team spaces')} · FileJet` }))
 const { openToast } = useToast(),
     { confirm } = useConfirm()
-const tab = ref<'files' | 'members' | 'chat'>('files'),
-    working = ref(false),
+const tab = computed(() => {
+    const value = route.query.tab
+    return value === 'chat' || value === 'members' || value === 'tasks' || value === 'reviews' ? value : 'files'
+})
+const focusMessage = computed(() => {
+    const id = route.query.message
+    return typeof id === 'string' && /^[1-9][0-9]{0,18}$/.test(id) ? id : undefined
+})
+const showTab = (target: 'files' | 'members' | 'chat' | 'tasks' | 'reviews', message?: string) =>
+    router.replace({ query: { ...route.query, tab: target === 'files' ? undefined : target, message } })
+const working = ref(false),
     search = ref('')
 const view = ref<'grid' | 'list'>('grid'),
     sort = ref<'newest' | 'oldest' | 'name-asc' | 'name-desc'>('newest')
@@ -44,7 +55,25 @@ watch([search, sort, view, folderId], () => {
 watch(totalPages, total => {
     currentPage.value = Math.min(currentPage.value, Math.max(1, total))
 })
-const preview = ref<QuickPreviewItem | null>(null)
+const preview = ref<(QuickPreviewItem & { revision?: number }) | null>(null)
+const attachedFile = ref<TeamFileReference | null>(null)
+const workSource = ref<{ message: TeamChatMessage } | { file: TeamFileReference } | null>(null)
+const fileReference = (item: LibraryItem): TeamFileReference => ({
+    id: item.id, name: item.name, size: item.size, mime_type: item.mime_type ?? null
+})
+const folderFiles = computed(() => (data.value?.items ?? []).filter(item => item.type === 'file').map(fileReference))
+const chatUnread = ref(0)
+watch(() => data.value?.unreadCount, value => { chatUnread.value = value ?? 0 }, { immediate: true })
+const previewTeamFile = (file: TeamFileReference) => { preview.value = { ...file, type: 'file' } }
+const attachInChat = (item: LibraryItem) => {
+    attachedFile.value = fileReference(item)
+    void showTab('chat')
+}
+const workSaved = (target: 'tasks' | 'reviews') => {
+    workSource.value = null
+    openToast(target === 'tasks' ? localize('Task created.') : localize('Review requested.'), 'success')
+    void showTab(target)
+}
 watch(folderId, () => {
     search.value = ''
     preview.value = null
@@ -337,14 +366,14 @@ const exitTeam = async () => {
                             class="inbox-button"
                             :class="{ 'inbox-primary': tab === 'files' }"
                             :aria-pressed="tab === 'files'"
-                            @click="tab = 'files'"
+                            @click="showTab('files')"
                         >
                             {{ $msg('Files') }}</button
                         ><button
                             class="inbox-button"
                             :class="{ 'inbox-primary': tab === 'members' }"
                             :aria-pressed="tab === 'members'"
-                            @click="tab = 'members'"
+                            @click="showTab('members')"
                         >
                             {{ $msg('Members') }} <span class="text-xs opacity-70">{{ data.memberCount }}</span>
                         </button>
@@ -353,10 +382,17 @@ const exitTeam = async () => {
                             class="inbox-button"
                             :class="{ 'inbox-primary': tab === 'chat' }"
                             :aria-pressed="tab === 'chat'"
-                            @click="tab = 'chat'"
+                            @click="showTab('chat')"
                         >
                             <Icon name="solar:chat-round-line-linear" aria-hidden="true" />{{ $msg('Chat') }}
+                            <span v-if="chatUnread" class="rounded-md bg-accent/15 px-1.5 text-xs">
+                                {{ $msg('{count} unread', { count: chatUnread }) }}
+                            </span>
                         </button>
+                        <button type="button" class="inbox-button" :class="{ 'inbox-primary': tab === 'tasks' }"
+                            :aria-pressed="tab === 'tasks'" @click="showTab('tasks')">{{ $msg('Tasks') }}</button>
+                        <button type="button" class="inbox-button" :class="{ 'inbox-primary': tab === 'reviews' }"
+                            :aria-pressed="tab === 'reviews'" @click="showTab('reviews')">{{ $msg('File reviews') }}</button>
                     </div>
                 </header>
                 <section
@@ -420,7 +456,7 @@ const exitTeam = async () => {
                             @keydown.enter.self="openItem(item)"
                         >
                             <template #actions
-                                ><div class="ml-auto flex gap-1" @click.stop @keydown.stop>
+                                ><div class="team-grid-actions ml-auto flex gap-1" @click.stop @keydown.stop>
                                     <a
                                         v-if="item.type === 'file'"
                                         :href="download(item)"
@@ -452,6 +488,18 @@ const exitTeam = async () => {
                                     {{ formatFileTime(item.created_at) }}</span
                                 ></template
                             >
+                            <template #footer>
+                                <div v-if="item.type === 'file'" class="team-grid-actions flex flex-wrap gap-1" @click.stop @keydown.stop>
+                                    <button type="button" class="team-icon" :title="$msg('Share in chat')"
+                                        :aria-label="$msg('Share in chat')" @click="attachInChat(item)">
+                                        <Icon name="solar:chat-round-line-linear" />
+                                    </button>
+                                    <button type="button" class="team-icon" :title="$msg('Request file review')"
+                                        :aria-label="$msg('Request file review')" @click="workSource = { file: fileReference(item) }">
+                                        <Icon name="solar:check-circle-linear" />
+                                    </button>
+                                </div>
+                            </template>
                         </ItemGridCard>
                     </ItemGrid>
                     <div v-else class="divide-y divide-divider">
@@ -484,6 +532,14 @@ const exitTeam = async () => {
                                 :aria-label="$msg('Download')"
                                 ><Icon name="solar:download-linear" /></a
                             ><button
+                                v-if="item.type === 'file'" type="button" class="team-icon"
+                                :title="$msg('Share in chat')" :aria-label="$msg('Share in chat')" @click="attachInChat(item)"
+                            ><Icon name="solar:chat-round-line-linear" /></button>
+                            <button
+                                v-if="item.type === 'file'" type="button" class="team-icon"
+                                :title="$msg('Request file review')" :aria-label="$msg('Request file review')" @click="workSource = { file: fileReference(item) }"
+                            ><Icon name="solar:check-circle-linear" /></button>
+                            <button
                                 v-if="canEdit"
                                 class="team-icon"
                                 :disabled="working"
@@ -512,7 +568,12 @@ const exitTeam = async () => {
                         }}</span>
                     </p>
                 </section>
-                <TeamChat v-else-if="tab === 'chat'" :team-id="id" />
+                <TeamChat v-else-if="tab === 'chat'" :team-id="id" :members="data.members" :files="folderFiles"
+                    :selected-file="attachedFile" :focus-message="focusMessage" :can-pin="canEdit"
+                    @file-change="attachedFile = $event" @preview="previewTeamFile" @task="workSource = { message: $event }"
+                    @unread="chatUnread = $event" />
+                <TeamWorkList v-else-if="tab === 'tasks' || tab === 'reviews'" :key="tab" :team-id="id" :kind="tab"
+                    @preview="previewTeamFile" @message="showTab('chat', $event)" />
                 <section v-else class="rounded-2xl border border-divider bg-surface p-5 max-mobile:p-3">
                     <h2 class="text-base font-semibold text-foreground">{{ $msg('Members') }}</h2>
                     <p class="mt-2 text-xs leading-6 text-muted">
@@ -648,8 +709,11 @@ const exitTeam = async () => {
         <FileQuickPreview
             :item="preview"
             :api-base="preview ? `/api/teams/${id}/files/${preview.id}` : undefined"
+            :revision="preview?.revision"
             @close="preview = null"
         />
+        <TeamWorkForm v-if="data" :team-id="id" :members="data.members" :source="workSource"
+            @close="workSource = null" @saved="workSaved" />
     </div>
 </template>
 <style scoped>
@@ -680,5 +744,9 @@ const exitTeam = async () => {
 }
 .team-grid {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
+}
+.team-grid-actions .team-icon {
+    width: 2rem;
+    height: 2rem;
 }
 </style>
