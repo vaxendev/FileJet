@@ -197,7 +197,9 @@ try {
     await api(team + '/members', { method: 'POST', body: { username: username(owner), role: 'EDITOR' }, status: 409 })
     await api(team + '/members/' + owner, { method: 'PATCH', body: { role: 'VIEWER' }, status: 400 })
 
-    assert.deepEqual((await api(chat, { auth: viewer })).json(), { messages: [], hasMore: false, pinned: [], unreadCount: 0 })
+    assert.deepEqual((await api(chat, { auth: viewer })).json(), {
+        messages: [], hasMore: false, pinned: [], unreadCount: 0, edits: [], editCursor: '0'
+    })
     const firstMessage = { requestId: randomUUID(), message: '  Discuss <b>the plan</b>\nnext week.  ' }
     await api(chat, { auth: outsider, method: 'POST', body: firstMessage, status: 404 })
     await api(chat, { auth: viewer, method: 'POST', body: firstMessage, status: 403, headers: { Origin: 'https://foreign.example' } })
@@ -324,6 +326,24 @@ try {
     await api(pin, { method: 'PUT', auth: viewer, status: 403, body: { pinned: true } })
     await api(pin, { method: 'PUT', auth: editor, body: { pinned: true } })
     assert.equal((await api(chat, { auth: viewer })).json().pinned[0].id, sharedFile.id)
+    const editPath = chat + '/' + sharedFile.id
+    const textEdit = { message: fileMessage.message + ' updated text', editVersion: sharedFile.editVersion }
+    await api(editPath, { method: 'PATCH', auth: editor, body: textEdit, status: 403 })
+    await api(editPath, { method: 'PATCH', body: { ...textEdit, message: 'Removed mention' }, status: 400 })
+    const edit = (await api(editPath, {
+        method: 'PATCH', body: { ...textEdit, createdAt: '2000-01-01', fileId: randomUUID(), replyTo: outsideMessage.id }
+    })).json()
+    const liveEdit = (await api(chat + '?after=' + sharedFile.id + '&editsAfter=0', { auth: viewer })).json()
+    assert.deepEqual(liveEdit.messages, [])
+    assert.deepEqual(liveEdit.edits, [edit])
+    assert.equal(liveEdit.editCursor, edit.editVersion)
+    assert.equal(liveEdit.pinned[0].excerpt, edit.body.slice(0, 180))
+    const editedMessage = (await api(chat + '?at=' + sharedFile.id)).json().messages.at(-1)
+    assert.equal(editedMessage.createdAt, sharedFile.createdAt)
+    assert.deepEqual(editedMessage.reply, sharedFile.reply)
+    assert.deepEqual(editedMessage.file, sharedFile.file)
+    assert.deepEqual((await api(mentions, { auth: viewer })).json().mentions.map(entry => entry.id), [sharedFile.id])
+    await api(editPath, { method: 'PATCH', body: { ...textEdit, message: fileMessage.message + ' stale edit' }, status: 409 })
     assert.equal((await api(chat + '?at=' + firstSaved.id)).json().messages.at(-1).id, firstSaved.id)
     await api(pin, { method: 'PUT', auth: editor, body: { pinned: false } })
     assert.deepEqual((await api(chat)).json().pinned, [])

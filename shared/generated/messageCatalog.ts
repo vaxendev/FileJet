@@ -1765,7 +1765,12 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "mb946fb6d": "Incorrect Hidden password.",
     "m79e842f5": "Choose a file up to 25 MB.",
     "mdea408d3": "Attach a file",
-    "m2d603512": "Remove attachment"
+    "m2d603512": "Remove attachment",
+    "m1ecc06ce": "No pinned messages.",
+    "mbfeb2eea": "Edit message",
+    "me893bc45": "You can only edit your own messages.",
+    "m33a3c22b": "Keep the original mentions when editing a message.",
+    "m3d5d9a3": "This message changed. Reopen the editor and try again."
   },
   "tr": {
     "m34dc962f": "Daha önce:",
@@ -3532,7 +3537,12 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "mb946fb6d": "Gizli bölüm şifresi yanlış.",
     "m79e842f5": "En fazla 25 MB boyutunda bir dosya seç.",
     "mdea408d3": "Dosya ekle",
-    "m2d603512": "Eki kaldır"
+    "m2d603512": "Eki kaldır",
+    "m1ecc06ce": "Sabitlenmiş mesaj yok.",
+    "mbfeb2eea": "Mesajı düzenle",
+    "me893bc45": "Yalnızca kendi mesajlarını düzenleyebilirsin.",
+    "m33a3c22b": "Mesajı düzenlerken mevcut bahsetmeleri koru.",
+    "m3d5d9a3": "Bu mesaj değişti. Düzenleyiciyi yeniden açıp tekrar dene."
   },
   "de": {
     "m4af72ffa": "pro Datei",
@@ -5299,6 +5309,11 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "mb946fb6d": "Falsches Passwort.",
     "m79e842f5": "Wähle eine Datei mit höchstens 25 MB.",
     "mdea408d3": "Datei anhängen",
-    "m2d603512": "Anhang entfernen"
+    "m2d603512": "Anhang entfernen",
+    "m1ecc06ce": "Keine angehefteten Nachrichten.",
+    "mbfeb2eea": "Nachricht bearbeiten",
+    "me893bc45": "Du kannst nur deine eigenen Nachrichten bearbeiten.",
+    "m33a3c22b": "Behalte beim Bearbeiten die ursprünglichen Erwähnungen bei.",
+    "m3d5d9a3": "Diese Nachricht wurde geändert. Öffne den Editor erneut und versuche es noch einmal."
   }
 }

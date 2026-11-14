@@ -1763,5 +1763,10 @@
   "mb946fb6d": "Incorrect Hidden password.",
   "m79e842f5": "Choose a file up to 25 MB.",
   "mdea408d3": "Attach a file",
-  "m2d603512": "Remove attachment"
+  "m2d603512": "Remove attachment",
+  "m1ecc06ce": "No pinned messages.",
+  "mbfeb2eea": "Edit message",
+  "me893bc45": "You can only edit your own messages.",
+  "m33a3c22b": "Keep the original mentions when editing a message.",
+  "m3d5d9a3": "This message changed. Reopen the editor and try again."
 }

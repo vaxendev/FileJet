@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useDocumentVisibility, useIntervalFn } from '@vueuse/core'
+import { onClickOutside, useDocumentVisibility, useIntervalFn } from '@vueuse/core'
 import { $fetch as teamFetch, type FetchError } from 'ofetch'
-import { teamMessageLimit, type TeamChatMessage, type TeamChatPage, type TeamChatQuote } from '~~/shared/types/teamChat'
+import { teamMessageLimit, type TeamChatEdit, type TeamChatMessage, type TeamChatPage, type TeamChatQuote } from '~~/shared/types/teamChat'
 import type { TeamMember } from '~~/shared/types/team'
 import type { TeamFileReference } from '~~/shared/types/teamCollaboration'
-import { teamMentionQuery, teamMentionText, teamMentionTokens } from '~~/shared/utils/teamMentions'
+import { sameTeamMentions, teamMentionQuery, teamMentionText, teamMentionTokens } from '~~/shared/utils/teamMentions'
 
 const props = defineProps<{
     teamId: string
@@ -25,6 +25,12 @@ const endpoint = `/api/teams/${encodeURIComponent(props.teamId)}/messages`
 const timestamp = computed(() => new Intl.DateTimeFormat(currentLocaleTag(), { dateStyle: 'short', timeStyle: 'short' }))
 const messages = ref<TeamChatMessage[]>([])
 const pins = ref<TeamChatQuote[]>([])
+const pinsOpen = ref(false)
+const pinsMenu = ref<HTMLElement | null>(null)
+const pinsButton = ref<HTMLButtonElement | null>(null)
+const pinsId = useId()
+const pinsHeadingId = useId()
+onClickOutside(pinsMenu, () => { pinsOpen.value = false })
 const reply = ref<TeamChatQuote | null>(null)
 const composer = ref<HTMLTextAreaElement | null>(null)
 const picker = ref<HTMLInputElement | null>(null)
@@ -47,6 +53,12 @@ const readError = ref('')
 const sendError = ref('')
 const draft = ref('')
 const sending = ref(false)
+const editing = ref<{ id: string; editVersion: string; original: string }>()
+const editBody = ref('')
+const editInput = ref<HTMLTextAreaElement[]>()
+const editSaving = ref(false)
+const editError = ref('')
+const changedMentions = computed(() => editing.value && !sameTeamMentions(editing.value.original, editBody.value.trim()))
 const suggestions = computed(() => {
     if (!mention.value) return []
     const prefix = mention.value.query.toLowerCase()
@@ -74,6 +86,7 @@ const displayMessages = computed(() => messages.value.map((message, index) => {
         Date.parse(message.createdAt) - Date.parse(previous.createdAt) < 5 * 60000) }
 }))
 let receivedThrough: string | undefined
+let editsThrough: string | undefined
 let acknowledged: string | undefined
 let markingRead = false
 let pendingSend: { message: string; requestId: string; fileId?: string; replyTo?: string } | undefined
@@ -88,11 +101,39 @@ const scrollToEnd = async () => {
     if (region) region.scrollTop = region.scrollHeight
 }
 
+const newerQuote = (incoming: TeamChatQuote, current?: TeamChatQuote | null) =>
+    current?.id === incoming.id && BigInt(current.editVersion) > BigInt(incoming.editVersion) ? current : incoming
+const messageQuote = (message: TeamChatMessage): TeamChatQuote => ({
+    id: message.id, authorName: message.authorName, excerpt: message.body.slice(0, 180), editVersion: message.editVersion
+})
+
 function mergeMessages(incoming: TeamChatMessage[]) {
     if (!incoming.length) return
     const byId = new Map(messages.value.map(message => [message.id, message]))
-    for (const message of incoming) byId.set(message.id, message)
+    for (const message of incoming) {
+        const current = byId.get(message.id)
+        const changes = current && BigInt(current.editVersion) > BigInt(message.editVersion)
+            ? { body: current.body, editVersion: current.editVersion }
+            : {}
+        byId.set(message.id, { ...message, ...changes, reply: message.reply ? newerQuote(message.reply, current?.reply) : null })
+    }
     messages.value = [...byId.values()].sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1))
+}
+
+function applyEdits(edits: TeamChatEdit[]) {
+    if (!edits.length) return
+    const byId = new Map(edits.map(edit => [edit.id, edit]))
+    const updateQuote = (quote: TeamChatQuote) => {
+        const update = byId.get(quote.id)
+        return update ? newerQuote({ ...quote, excerpt: update.body.slice(0, 180), editVersion: update.editVersion }, quote) : quote
+    }
+    messages.value = messages.value.map(message => {
+        const edit = byId.get(message.id)
+        const changes = edit && BigInt(edit.editVersion) >= BigInt(message.editVersion) ? edit : {}
+        return { ...message, ...changes, reply: message.reply ? updateQuote(message.reply) : null }
+    })
+    pins.value = pins.value.map(updateQuote)
+    if (reply.value) reply.value = updateQuote(reply.value)
 }
 
 function chatError(failure: unknown, fallback: string) {
@@ -130,9 +171,9 @@ const load = async (older = false, reset = false) => {
         const target = jumpTarget.value
         const query = older
             ? { before: messages.value[0]?.id }
-            : reset || !loaded.value ? { at: target } : { after: receivedThrough }
+            : reset || !loaded.value || target ? { at: target } : { after: receivedThrough }
         const page = await teamFetch<TeamChatPage>(endpoint, {
-            query,
+            query: { ...query, editsAfter: reset ? undefined : editsThrough },
             timeout: 10000
         })
         if (unavailable.value) return
@@ -146,12 +187,15 @@ const load = async (older = false, reset = false) => {
             receivedThrough = undefined
             missingTarget.value = Boolean(target && !page.messages.some(message => message.id === target))
         }
-        if (!older) catchingUp.value = Boolean(!reset && receivedThrough && page.hasMore)
+        if (!older) catchingUp.value = Boolean(!target && !reset && receivedThrough && page.hasMore)
         if (older || !receivedThrough) hasOlder.value = page.hasMore
         if (!older && page.messages.length) receivedThrough = page.messages.at(-1)?.id
-        pins.value = page.pinned
+        const currentPins = new Map(pins.value.map(pin => [pin.id, pin]))
+        pins.value = page.pinned.map(pin => newerQuote(pin, currentPins.get(pin.id)))
         emit('unread', page.unreadCount)
         mergeMessages(page.messages)
+        editsThrough = page.editCursor
+        applyEdits(page.edits)
         loaded.value = true
         readError.value = ''
 
@@ -177,6 +221,46 @@ const jump = async (id?: string) => {
     if (id) {
         await nextTick()
         document.getElementById(`team-message-${id}`)?.focus({ preventScroll: true })
+    }
+}
+
+const openPinnedMessage = (id: string) => {
+    pinsOpen.value = false
+    void jump(id)
+}
+const closePins = () => {
+    if (!pinsOpen.value) return
+    pinsOpen.value = false
+    pinsButton.value?.focus()
+}
+const startEdit = async (message: TeamChatMessage) => {
+    if (message.authorId !== user.value?.id || editSaving.value) return
+    editing.value = { id: message.id, editVersion: message.editVersion, original: message.body }
+    editBody.value = message.body
+    editError.value = ''
+    await nextTick()
+    editInput.value?.[0]?.focus()
+}
+const cancelEdit = () => {
+    if (editSaving.value) return
+    editing.value = undefined
+    editError.value = ''
+}
+const saveEdit = async () => {
+    const target = editing.value
+    if (!target || editSaving.value || changedMentions.value) return
+    editSaving.value = true
+    editError.value = ''
+    try {
+        const edit = await teamFetch<TeamChatEdit>(`${endpoint}/${target.id}`, {
+            method: 'PATCH', body: { message: editBody.value, editVersion: target.editVersion }, timeout: 10000
+        })
+        applyEdits([edit])
+        editing.value = undefined
+    } catch (failure) {
+        editError.value = resolveApiError(failure)
+    } finally {
+        editSaving.value = false
     }
 }
 
@@ -246,7 +330,7 @@ const togglePin = async (id: string) => {
         })
         const message = messages.value.find(message => message.id === id)
         if (pinned && message) {
-            pins.value = [{ id, authorName: message.authorName, excerpt: message.body.slice(0, 180) }, ...pins.value]
+            pins.value = [messageQuote(message), ...pins.value]
         } else if (!pinned) {
             pins.value = pins.value.filter(pin => pin.id !== id)
         }
@@ -301,10 +385,10 @@ const send = async () => {
 
 const visibility = useDocumentVisibility()
 useIntervalFn(() => {
-    if (visibility.value === 'visible' && !jumpTarget.value) void load()
+    if (visibility.value === 'visible') void load()
 }, 4000)
 watch(visibility, state => {
-    if (state === 'visible' && !jumpTarget.value) void load()
+    if (state === 'visible') void load()
 })
 watch(() => props.focusMessage, id => void jump(id))
 onMounted(() => void jump(props.focusMessage))
@@ -312,20 +396,32 @@ onMounted(() => void jump(props.focusMessage))
 
 <template>
     <section class="flex min-w-0 flex-col gap-3 rounded-2xl border border-divider bg-surface p-5 max-mobile:p-3">
-        <h2 class="text-base font-semibold text-foreground">{{ $msg('Team chat') }}</h2>
-        <div v-if="pins.length" class="rounded-lg border border-divider px-3 py-2">
-            <h3 class="mb-1 text-xs font-semibold text-muted">{{ $msg('Pinned messages') }}</h3>
-            <ul class="max-h-24 divide-y divide-divider overflow-y-auto">
-                <li v-for="pin in pins" :key="pin.id" class="flex items-center gap-2">
-                    <button type="button" class="min-w-0 flex-1 truncate py-1.5 text-left text-sm text-accent" :disabled="loading" @click="jump(pin.id)">
-                        {{ pin.authorName ?? $msg('Deleted user') }} · {{ pin.excerpt || $msg('Shared file') }}
-                    </button>
-                    <button v-if="canPin" type="button" class="shrink-0 text-xs text-muted" :disabled="pinBusy" @click="togglePin(pin.id)">
-                        {{ $msg('Unpin') }}
-                    </button>
-                </li>
-            </ul>
-        </div>
+        <header class="flex items-center justify-between gap-2">
+            <h2 class="text-base font-semibold text-foreground">{{ $msg('Team chat') }}</h2>
+            <div ref="pinsMenu" class="relative" @keydown.esc.stop="closePins">
+                <button ref="pinsButton" type="button" class="inbox-button"
+                    :aria-label="$msg('Pinned messages')" :title="$msg('Pinned messages')"
+                    :aria-expanded="pinsOpen" :aria-controls="pinsId" :disabled="unavailable" @click="pinsOpen = !pinsOpen">
+                    <Icon :name="pinsOpen ? 'solar:pin-bold' : 'solar:pin-linear'" size="20" aria-hidden="true" />
+                    <span v-if="pins.length" class="text-xs">{{ pins.length }}</span>
+                </button>
+                <section v-show="pinsOpen" :id="pinsId" :aria-labelledby="pinsHeadingId" class="absolute right-0 z-20 mt-2 w-[min(22rem,calc(100vw-3.5rem))] rounded-lg border border-divider bg-surface p-3 shadow-xl">
+                    <h3 :id="pinsHeadingId" class="mb-2 text-sm font-semibold text-foreground">{{ $msg('Pinned messages') }}</h3>
+                    <p v-if="!pins.length" class="py-2 text-sm text-muted">{{ $msg('No pinned messages.') }}</p>
+                    <ul v-else class="max-h-[min(18rem,45dvh)] divide-y divide-divider overflow-y-auto">
+                        <li v-for="pin in pins" :key="pin.id" class="flex items-center gap-2">
+                            <button type="button" class="min-w-0 flex-1 py-2 text-left text-sm" :disabled="loading" @click="openPinnedMessage(pin.id)">
+                                <strong class="block truncate text-foreground">{{ pin.authorName ?? $msg('Deleted user') }}</strong>
+                                <span class="line-clamp-2 wrap-anywhere text-muted">{{ pin.excerpt || $msg('Shared file') }}</span>
+                            </button>
+                            <button v-if="canPin" type="button" class="shrink-0 text-xs text-muted" :disabled="pinBusy" @click="togglePin(pin.id)">
+                                {{ $msg('Unpin') }}
+                            </button>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+        </header>
         <button v-if="jumpTarget" type="button" class="inbox-button self-end" :disabled="loading" @click="jump()">
             {{ $msg('Back to latest messages') }}
         </button>
@@ -378,7 +474,18 @@ onMounted(() => void jump(props.focusMessage))
                         <span class="wrap-anywhere text-sm font-semibold text-foreground">{{ message.authorName ?? $msg('Deleted user') }}</span>
                         <time :datetime="message.createdAt" class="text-[11px] text-muted">{{ timestamp.format(new Date(message.createdAt)) }}</time>
                     </div>
-                    <p v-if="message.body" class="whitespace-pre-wrap wrap-anywhere text-sm leading-6 text-foreground"><template v-for="(segment, index) in message.segments" :key="index"><span v-if="segment.mention" class="rounded-sm bg-accent/20 px-0.5 font-medium text-accent">{{ segment.text }}</span><template v-else>{{ segment.text }}</template></template></p>
+                    <form v-if="editing?.id === message.id" class="flex flex-col gap-2 py-1" @submit.prevent="saveEdit" @keydown.esc.stop.prevent="cancelEdit">
+                        <textarea ref="editInput" v-model="editBody" class="inbox-input max-h-40 resize-y" :aria-label="$msg('Edit message')"
+                            :maxlength="teamMessageLimit" :disabled="editSaving" rows="2" />
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button type="submit" class="inbox-button inbox-primary" :disabled="editSaving || changedMentions">{{ $msg('Save changes') }}</button>
+                            <button type="button" class="inbox-button" :disabled="editSaving" @click="cancelEdit">{{ $msg('Cancel') }}</button>
+                        </div>
+                        <p v-if="changedMentions || editError" role="alert" class="text-sm text-danger">
+                            {{ changedMentions ? $msg('Keep the original mentions when editing a message.') : editError }}
+                        </p>
+                    </form>
+                    <p v-else-if="message.body" class="whitespace-pre-wrap wrap-anywhere text-sm leading-6 text-foreground"><template v-for="(segment, index) in message.segments" :key="index"><span v-if="segment.mention" class="rounded-sm bg-accent/20 px-0.5 font-medium text-accent">{{ segment.text }}</span><template v-else>{{ segment.text }}</template></template></p>
                     <button v-if="message.file" type="button" class="mt-2 flex max-w-full items-center gap-2 rounded-lg border border-divider px-3 py-2 text-left text-accent"
                         @click="emit('preview', message.file)">
                         <Icon name="solar:document-linear" class="shrink-0" />
@@ -388,8 +495,12 @@ onMounted(() => void jump(props.focusMessage))
                     </div>
                     </div>
                     <div class="absolute right-3 -top-3 flex rounded-md border border-divider bg-surface opacity-0 shadow-sm group-hover/message:opacity-100 group-focus-within/message:opacity-100 pointer-coarse:static pointer-coarse:ml-12 pointer-coarse:w-fit pointer-coarse:opacity-100">
+                        <button v-if="message.authorId === user?.id" type="button" class="grid size-8 place-items-center text-muted hover:text-accent"
+                            :aria-label="$msg('Edit message')" :title="$msg('Edit message')" :disabled="editSaving" @click="startEdit(message)">
+                            <Icon name="solar:pen-linear" />
+                        </button>
                         <button type="button" class="grid size-8 place-items-center text-muted hover:text-accent" :title="$msg('Reply')" :aria-label="$msg('Reply')"
-                            @click="reply = { id: message.id, authorName: message.authorName, excerpt: message.body.slice(0, 180) }; composer?.focus()">
+                            @click="reply = messageQuote(message); composer?.focus()">
                             <Icon name="solar:reply-linear" />
                         </button>
                         <button type="button" class="grid size-8 place-items-center text-muted hover:text-accent" :title="$msg('Create task')" :aria-label="$msg('Create task')" @click="emit('task', message)">

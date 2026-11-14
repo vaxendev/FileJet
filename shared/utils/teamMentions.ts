@@ -12,6 +12,13 @@ export function teamMentionTokens(body: string) {
     }))
 }
 
+export function sameTeamMentions(previous: string, next: string) {
+    const mentions = (text: string) => teamMentionTokens(text).map(token => text.slice(token.start, token.end))
+    const initial = mentions(previous)
+    const updated = mentions(next)
+    return initial.length === updated.length && initial.every((mention, index) => mention === updated[index])
+}
+
 export function teamMentionQuery(body: string, caret: number) {
     const match = /(^|\s)@([\p{L}\p{M}\p{N}_.-]*)$/u.exec(body.slice(0, caret))
     if (!match || /^[\p{L}\p{M}\p{N}_@.-]/u.test(body.slice(caret))) return null

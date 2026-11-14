@@ -23,19 +23,6 @@
                     {{ item.label }}
                 </NuxtLink>
             </div>
-            <details :open="settingsOpen" class="group/settings" @toggle="settingsOpen = ($event.target as HTMLDetailsElement).open">
-                <summary class="sidebar-link list-none">
-                    <Icon name="solar:settings-linear" class="shrink-0 text-[1.3rem]" />
-                    {{ $msg('Settings') }}
-                    <Icon name="solar:alt-arrow-down-linear" class="ml-auto transition-transform group-open/settings:rotate-180" />
-                </summary>
-                <div class="ml-4 mt-1 border-l border-divider pl-2">
-                    <NuxtLink v-for="item in settings" :key="item.to" :to="item.to" class="sidebar-link"
-                        :class="{ active: isActive(item.to) }">
-                        <Icon :name="item.icon" class="shrink-0 text-[1.15rem]" /> {{ item.label }}
-                    </NuxtLink>
-                </div>
-            </details>
         </nav>
 
         <div class="sidebar-account shrink-0 border-t border-divider pt-3 max-laptop:hidden">
@@ -52,15 +39,6 @@ const route = useRoute()
 const isActive = (path: string) => route.path === path || (['/inbox', '/teams'].includes(path) && route.path.startsWith(path + '/'))
 
 const currentUser = useAuthUser()
-const settings = computed(() => [
-    { label: localize('Preferences'), to: '/settings/preferences', icon: 'solar:tuning-2-linear' },
-    { label: localize('Quarantine'), to: '/quarantine', icon: 'solar:shield-warning-linear' },
-    { label: localize('Activity'), to: '/activity', icon: 'solar:history-linear' }
-])
-const settingsOpen = ref(settings.value.some(item => isActive(item.to)))
-watch(() => route.path, path => {
-    if (settings.value.some(item => item.to === path)) settingsOpen.value = true
-})
 const navigation = computed(() => [
     {
         get label() { return localize("MAIN MENU") },

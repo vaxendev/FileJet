@@ -62,6 +62,11 @@
                         <span>{{ $msg("Appearance") }}</span>
                         <Icon name="solar:alt-arrow-right-linear" class="account-item-arrow" size="14" aria-hidden="true" />
                     </NuxtLink>
+                    <NuxtLink to="/settings" role="menuitem" tabindex="-1" class="account-menu-item" @click="closeMenu()">
+                        <Icon name="solar:settings-linear" size="19" aria-hidden="true" />
+                        <span>{{ $msg('Settings') }}</span>
+                        <Icon name="solar:alt-arrow-right-linear" class="account-item-arrow" size="14" aria-hidden="true" />
+                    </NuxtLink>
                 </div>
 
                 <div class="account-theme-section" role="group" :aria-label='$msg("Theme")'>

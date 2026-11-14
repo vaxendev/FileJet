@@ -36,6 +36,7 @@ const pageTitle = computed(() => {
         '/trash': 'Trash',
         '/quarantine': 'Quarantine',
         '/activity': localize("Activity history"),
+        '/settings': localize('Settings'),
         '/settings/preferences': 'Preferences',
         '/settings/personalization': 'Appearance'
     }

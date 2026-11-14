@@ -7,7 +7,8 @@ import type { TeamDB } from './teamSpaces'
 export const teamChatQuoteSelect = {
     id: true,
     author: { select: { username: true } },
-    body: true
+    body: true,
+    edit_version: true
 } satisfies Prisma.team_messagesSelect
 export const teamChatMessageSelect = {
     ...teamChatQuoteSelect,
@@ -21,7 +22,10 @@ type TeamChatRow = Prisma.team_messagesGetPayload<{ select: typeof teamChatMessa
 type TeamChatQuoteRow = Prisma.team_messagesGetPayload<{ select: typeof teamChatQuoteSelect }>
 
 export const serializeTeamChatQuote = (message: TeamChatQuoteRow): TeamChatQuote => ({
-    id: message.id.toString(), authorName: message.author?.username ?? null, excerpt: message.body.slice(0, 180)
+    id: message.id.toString(),
+    authorName: message.author?.username ?? null,
+    excerpt: message.body.slice(0, 180),
+    editVersion: message.edit_version?.toString() ?? '0'
 })
 
 export const serializeTeamChatMessage = (message: TeamChatRow, visibleFiles: Set<string>): TeamChatMessage => ({
@@ -30,6 +34,7 @@ export const serializeTeamChatMessage = (message: TeamChatRow, visibleFiles: Set
     authorName: message.author?.username ?? null,
     body: message.body,
     createdAt: message.created_at.toISOString(),
+    editVersion: message.edit_version?.toString() ?? '0',
     reply: message.reply_to ? serializeTeamChatQuote(message.reply_to) : null,
     file: message.file && visibleFiles.has(message.file.id) ? teamFileReference(message.file) : null
 })

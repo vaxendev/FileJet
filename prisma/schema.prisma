@@ -72,6 +72,7 @@ model team_messages {
   reply_to_id BigInt?
   file_id String? @db.Uuid
   pinned_at DateTime? @db.Timestamptz(6)
+  edit_version BigInt?
   created_at DateTime @default(now()) @db.Timestamptz(6)
   team team_spaces @relation(fields: [team_id], references: [id], onDelete: Cascade)
   author users? @relation(fields: [author_id], references: [id], onDelete: SetNull)
@@ -86,6 +87,7 @@ model team_messages {
   @@index([file_id])
   @@index([reply_to_id])
   @@index([team_id, pinned_at])
+  @@index([team_id, edit_version])
 }
 
 model team_chat_reads {
