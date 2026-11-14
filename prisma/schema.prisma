@@ -191,6 +191,7 @@ model users {
   files        files[]
   folders      folders[]
   notes        notes[]
+  todo_items   todo_items[]
   favorites    favorites[]
   shared_items shared_items[]
   trash trash[]
@@ -200,6 +201,17 @@ model users {
   activity_entries activity_entries[]
   note_versions note_versions[]
   admin_events admin_events[]
+}
+
+model todo_items {
+  user_id String @db.Uuid
+  id String @db.Uuid
+  title String @db.VarChar(200)
+  completed Boolean @default(false)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  @@id([user_id, id])
+  @@index([user_id, created_at, id])
 }
 
 model admin_events {

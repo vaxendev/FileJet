@@ -34,6 +34,7 @@ const pageTitle = computed(() => {
         '/inbox': 'Inbox',
         '/teams': localize('Team spaces'),
         '/tasks': localize('My tasks'),
+        '/todo': localize('Todo List'),
         '/trash': 'Trash',
         '/quarantine': 'Quarantine',
         '/activity': localize("Activity history"),

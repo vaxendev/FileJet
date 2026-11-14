@@ -1798,5 +1798,13 @@
   "m1b75669f": "Current Hidden password",
   "mc5911dbc": "Hidden password changed.",
   "m1ff18937": "Choose a different Hidden password.",
-  "m68390dc6": "The Hidden password changed. Try again."
+  "m68390dc6": "The Hidden password changed. Try again.",
+  "me3e7fcaf": "Todo List",
+  "m4fce12f8": "New to-do",
+  "mda5f59f8": "Edit to-do",
+  "m9abb20ff": "Delete to-do",
+  "m4ed7a12f": "Filter to-dos",
+  "ma94bc62d": "No matching to-dos.",
+  "me4c88860": "No to-dos yet.",
+  "mce42e3b0": "Enter a to-do title of up to 200 characters."
 }

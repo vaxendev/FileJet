@@ -1800,7 +1800,15 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "m1b75669f": "Current Hidden password",
     "mc5911dbc": "Hidden password changed.",
     "m1ff18937": "Choose a different Hidden password.",
-    "m68390dc6": "The Hidden password changed. Try again."
+    "m68390dc6": "The Hidden password changed. Try again.",
+    "me3e7fcaf": "Todo List",
+    "m4fce12f8": "New to-do",
+    "mda5f59f8": "Edit to-do",
+    "m9abb20ff": "Delete to-do",
+    "m4ed7a12f": "Filter to-dos",
+    "ma94bc62d": "No matching to-dos.",
+    "me4c88860": "No to-dos yet.",
+    "mce42e3b0": "Enter a to-do title of up to 200 characters."
   },
   "tr": {
     "m34dc962f": "Daha önce:",
@@ -3602,7 +3610,15 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "m1b75669f": "Mevcut gizli alan şifresi",
     "mc5911dbc": "Gizli alan şifresi değiştirildi.",
     "m1ff18937": "Farklı bir gizli alan şifresi seç.",
-    "m68390dc6": "Gizli alan şifresi değişti. Tekrar dene."
+    "m68390dc6": "Gizli alan şifresi değişti. Tekrar dene.",
+    "me3e7fcaf": "Yapılacaklar Listesi",
+    "m4fce12f8": "Yeni yapılacak",
+    "mda5f59f8": "Yapılacağı düzenle",
+    "m9abb20ff": "Yapılacağı sil",
+    "m4ed7a12f": "Yapılacakları filtrele",
+    "ma94bc62d": "Filtreye uyan madde yok.",
+    "me4c88860": "Liste henüz boş.",
+    "mce42e3b0": "En fazla 200 karakterlik bir başlık gir."
   },
   "de": {
     "m4af72ffa": "pro Datei",
@@ -5404,6 +5420,14 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "m1b75669f": "Aktuelles Passwort für „Ausgeblendet“",
     "mc5911dbc": "Passwort für „Ausgeblendet“ geändert.",
     "m1ff18937": "Wähle ein anderes Passwort für „Ausgeblendet“.",
-    "m68390dc6": "Das Passwort für „Ausgeblendet“ wurde geändert. Versuche es erneut."
+    "m68390dc6": "Das Passwort für „Ausgeblendet“ wurde geändert. Versuche es erneut.",
+    "me3e7fcaf": "Aufgabenliste",
+    "m4fce12f8": "Neue Aufgabe",
+    "mda5f59f8": "Aufgabe bearbeiten",
+    "m9abb20ff": "Aufgabe löschen",
+    "m4ed7a12f": "Aufgaben filtern",
+    "ma94bc62d": "Keine passenden Aufgaben.",
+    "me4c88860": "Noch keine Aufgaben vorhanden.",
+    "mce42e3b0": "Gib einen Aufgabentitel mit bis zu 200 Zeichen ein."
   }
 }

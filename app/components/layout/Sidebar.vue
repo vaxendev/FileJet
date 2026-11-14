@@ -56,7 +56,7 @@ const navigation = computed(() => [
             { get label() { return localize("Shared") }, to: '/shared', icon: 'solar:share-circle-linear', activeIcon: 'solar:share-circle-bold' },
             { get label() { return localize("Inbox") }, to: '/inbox', icon: 'solar:inbox-in-linear', activeIcon: 'solar:inbox-in-bold' },
             { get label() { return localize('Team spaces') }, to: '/teams', icon: 'solar:users-group-rounded-linear', activeIcon: 'solar:users-group-rounded-bold' },
-            { get label() { return localize('My tasks') }, to: '/tasks', icon: 'solar:checklist-linear', activeIcon: 'solar:checklist-bold' },
+            { get label() { return localize('Todo List') }, to: '/todo', icon: 'solar:checklist-linear', activeIcon: 'solar:checklist-bold' },
             { get label() { return localize("Trash") }, to: '/trash', icon: 'material-symbols:delete-outline-rounded', activeIcon: 'material-symbols:delete-rounded' }
         ]
     },
