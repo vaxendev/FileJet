@@ -14,8 +14,7 @@ export default defineEventHandler(async event => {
             where: {
                 user_id: session.userId,
                 parent_folder_id: null,
-                hidden: false,
-                team_space: { is: null }
+                hidden: false
             },
             orderBy: {
                 created_at: 'desc'

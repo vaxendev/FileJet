@@ -11,20 +11,6 @@ export async function writeAdminEvent(tx: Prisma.TransactionClient, actor: { id:
     } })
 }
 
-export function writeMessageDeletionEvent(tx: Prisma.TransactionClient, actor: { id: string; username: string },
-    team: { id: string; name: string }, message: { id: bigint; author_id: string | null; author: { username: string } | null }) {
-    return tx.admin_events.create({ data: {
-        action: 'team_message_deleted',
-        actor_id: actor.id,
-        actor_username: actor.username,
-        target_user_id: message.author_id,
-        target_username: message.author?.username,
-        team_id: team.id,
-        team_name: team.name,
-        message_id: message.id
-    } })
-}
-
 export const adminEventView = (row: Prisma.admin_eventsGetPayload<object>): AdminEvent => ({
     id: row.id, actorId: row.actor_id, actorName: row.actor_username, userId: row.target_user_id, username: row.target_username,
     action: row.action as AdminAction, roleBefore: row.role_before, roleAfter: row.role_after,

@@ -8,7 +8,7 @@ import pg from 'pg'
 
 const base = process.env.FILEJET_TEST_URL || 'http://127.0.0.1:55322'
 const db = new pg.Client({ connectionString: process.env.DATABASE_URL })
-const [owner, other, parent, child, teamRoot, file, nestedFile, note, nestedNote, team] = Array.from({ length: 10 }, randomUUID)
+const [owner, other, parent, child, file, nestedFile, note, nestedNote] = Array.from({ length: 8 }, randomUUID)
 const storage = resolve('storage')
 const fixture = resolve(storage, owner)
 assert.equal(fixture, storage + sep + owner)
@@ -46,9 +46,8 @@ try {
     for (const id of [owner, other])
         await db.query('INSERT INTO users(id, username, password_hash, storage_used) VALUES ($1, $2, $3, 1000)',
             [id, 'qa_hidden_' + id, 'unused-fixture-password'])
-    for (const [id, name, parentId] of [[parent, 'Project', null], [child, 'Private subfolder', parent], [teamRoot, 'Team root', null]])
+    for (const [id, name, parentId] of [[parent, 'Project', null], [child, 'Private subfolder', parent]])
         await db.query('INSERT INTO folders(id, user_id, name, parent_folder_id) VALUES ($1,$2,$3,$4)', [id, owner, name, parentId])
-    await db.query('INSERT INTO team_spaces(id,owner_id,root_folder_id,name) VALUES($1,$2,$3,$4)', [team, owner, teamRoot, 'Fixture team'])
     await mkdir(fixture, { recursive: true })
     for (const [id, name, folderId] of [[file, 'root.txt', null], [nestedFile, 'child.txt', child]]) {
         await writeFile(resolve(fixture, id), bytes)
@@ -71,7 +70,6 @@ try {
     await hidden('file', file, true, { auth: other, status: 404 })
     await hidden('file', file, true, { origin: 'https://foreign.example', status: 403 })
     await hidden('file', file, 'true', { status: 400 })
-    await hidden('folder', teamRoot, true, { status: 400 })
     assert.equal((await list('/api/notes')).notes.length, 2)
     assert.equal((await list('/api/favorites')).favorites.length, 2)
     const beforeZip = await api(links[parent] + '/download', { auth: null })
@@ -119,7 +117,6 @@ try {
     await api('/api/shared', { method: 'POST', body: { itemId: nestedNote, itemType: 'note' }, status: 404 })
     const zip = await api(links[parent] + '/download', { auth: null })
     assert.deepEqual(Object.keys(unzipSync(zip.buffer)), ['Project/'])
-    await api('/api/items/move', { method: 'POST', body: { items: [{ id: file, type: 'file' }], destinationId: teamRoot }, status: 400 })
 
     const trashed = (await api('/api/files/' + file, { method: 'DELETE' })).json()
     await api('/api/trash/' + trashed.trashIds[0], { method: 'PATCH' })

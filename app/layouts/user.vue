@@ -32,9 +32,6 @@ const pageTitle = computed(() => {
         '/hidden': localize('Hidden'),
         '/shared': 'Shared',
         '/inbox': 'Inbox',
-        '/teams': localize('Team spaces'),
-        '/tasks': localize('My tasks'),
-        '/todo': localize('Todo List'),
         '/trash': 'Trash',
         '/quarantine': 'Quarantine',
         '/activity': localize("Activity history"),
@@ -44,7 +41,7 @@ const pageTitle = computed(() => {
         '/settings/personalization': 'Appearance'
     }
 
-    return titles[route.path] || (route.path.startsWith('/teams/') ? localize('Team spaces') : route.path.startsWith('/inbox/') ? 'Inbox' : 'FileJet')
+    return titles[route.path] || (route.path.startsWith('/inbox/') ? 'Inbox' : 'FileJet')
 })
 
 </script>

@@ -6,7 +6,7 @@ import { throwError } from './error'
 export async function libraryFolderScopes(userId: string, db: Prisma.TransactionClient = prisma) {
     const folders = await db.folders.findMany({
         where: { user_id: userId },
-        select: { id: true, name: true, parent_folder_id: true, hidden: true, team_space: { select: { id: true } } }
+        select: { id: true, name: true, parent_folder_id: true, hidden: true }
     })
     const children = new Map<string, string[]>()
     for (const folder of folders) {
@@ -15,16 +15,9 @@ export async function libraryFolderScopes(userId: string, db: Prisma.Transaction
         entries.push(folder.id)
         children.set(folder.parent_folder_id, entries)
     }
-    const descendants = (roots: string[]) => {
-        const ids = new Set(roots)
-        for (const id of ids) for (const child of children.get(id) ?? []) ids.add(child)
-        return ids
-    }
-    return {
-        folders,
-        hiddenFolders: descendants(folders.filter(folder => folder.hidden).map(folder => folder.id)),
-        teamFolders: descendants(folders.filter(folder => folder.team_space).map(folder => folder.id))
-    }
+    const hiddenFolders = new Set(folders.filter(folder => folder.hidden).map(folder => folder.id))
+    for (const id of hiddenFolders) for (const child of children.get(id) ?? []) hiddenFolders.add(child)
+    return { folders, hiddenFolders }
 }
 
 export async function ownedLibraryVisibility(userId: string, id: string, type: SharedItemType, db: Prisma.TransactionClient = prisma) {

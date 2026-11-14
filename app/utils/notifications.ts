@@ -20,6 +20,7 @@ export const normalizeNotificationHistory = (value: unknown, now = Date.now()): 
     for (const item of source.entries) {
         if (!item || typeof item !== 'object') continue
         const entry = item as Record<string, unknown>
+        if (typeof entry.href === 'string' && /^\/(teams|tasks|todo)(?:[/?#]|$)/.test(entry.href)) continue
         if (typeof entry.id !== 'string' || !entry.id || entry.id.length > 100 || ids.has(entry.id)
             || typeof entry.title !== 'string' || !entry.title.trim() || typeof entry.message !== 'string'
             || typeof entry.createdAt !== 'number' || !Number.isFinite(entry.createdAt)

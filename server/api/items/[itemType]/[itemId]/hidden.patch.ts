@@ -4,7 +4,7 @@ import { assertShareOrigin } from '~~/server/utils/shares'
 import { readShareBody } from '~~/server/utils/shareBody'
 import { throwError } from '~~/server/utils/error'
 import { lockStorageUser } from '~~/server/utils/storage'
-import { libraryFolderScopes, ownedLibraryVisibility } from '~~/server/utils/hiddenItems'
+import { ownedLibraryVisibility } from '~~/server/utils/hiddenItems'
 import { isUuid } from '~~/server/utils/validation'
 import { protectHiddenRows } from '~~/server/utils/hiddenAccess'
 
@@ -26,8 +26,6 @@ export default defineEventHandler(async event => {
         const item = await ownedLibraryVisibility(userId, id, type, tx)
         if (!item) throwError(404, 'Item not found.')
         if (!hidden) await protectHiddenRows(event, userId, [item], tx)
-        if (hidden && item.folderId && (await libraryFolderScopes(userId, tx)).teamFolders.has(item.folderId))
-            throwError(400, 'Team items cannot be hidden.')
         const where = { id, user_id: userId }, data = { hidden }
         const updated = type === 'file' ? await tx.files.updateMany({ where, data })
             : type === 'folder' ? await tx.folders.updateMany({ where, data }) : await tx.notes.updateMany({ where, data })

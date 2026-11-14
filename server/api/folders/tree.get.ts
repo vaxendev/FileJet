@@ -7,8 +7,8 @@ export default defineEventHandler(async event => {
 
     if (!session) throwError(401, 'You need to be logged in.')
 
-    const { folders, hiddenFolders, teamFolders } = await libraryFolderScopes(session.userId)
-    return { folders: folders.filter(folder => !teamFolders.has(folder.id) && !hiddenFolders.has(folder.id))
+    const { folders, hiddenFolders } = await libraryFolderScopes(session.userId)
+    return { folders: folders.filter(folder => !hiddenFolders.has(folder.id))
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(({ id, name, parent_folder_id }) => ({ id, name, parent_folder_id })) }
 })

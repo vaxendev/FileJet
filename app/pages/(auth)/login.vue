@@ -58,9 +58,6 @@
 
 <script setup lang="ts">
 import { loginSchema } from '~~/shared/schemas/auth'
-import { isTeamJoinKey } from '~~/shared/types/team'
-
-const route = useRoute()
 
 const username = ref('')
 const password = ref('')
@@ -97,8 +94,7 @@ const handleLogin = async () => {
 
         openToast(localize("Logged in successfully"), 'success')
 
-        const invite = route.query.teamInvite
-        await navigateTo(isTeamJoinKey(invite) ? `/teams/join/${invite}` : '/home')
+        await navigateTo('/home')
     } catch (e: any) {
         openToast(resolveApiError(e, localize("Login failed")), 'error')
     }

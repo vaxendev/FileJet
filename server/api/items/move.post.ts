@@ -24,7 +24,7 @@ export default defineEventHandler(async event => {
                     items.filter(item => item.type === type).map(item => item.id)
 
                 const [allFolders, files, notes] = await Promise.all([
-                    tx.folders.findMany({ where: { user_id: userId }, include: { team_space: { select: { id: true } } } }),
+                    tx.folders.findMany({ where: { user_id: userId } }),
                     tx.files.findMany({ where: { user_id: userId, id: { in: ids('file') } } }),
                     tx.notes.findMany({ where: { user_id: userId, id: { in: ids('note') } } })
                 ])
@@ -32,7 +32,6 @@ export default defineEventHandler(async event => {
                 const folderMap = new Map(allFolders.map(folder => [folder.id, folder]))
                 const selectedFolderIds = new Set(ids('folder'))
                 const chosenFolders = allFolders.filter(folder => selectedFolderIds.has(folder.id))
-                if (chosenFolders.some(folder => folder.team_space)) throwError(400, 'Team space roots cannot be moved.')
 
                 if (
                     files.length !== ids('file').length ||
@@ -50,22 +49,6 @@ export default defineEventHandler(async event => {
                     ...chosenFolders.map(folder => ({ hidden: folder.hidden, folderId: folder.id })),
                     ...(destinationId ? [{ folderId: destinationId }] : [])
                 ], tx)
-
-                const teamRoot = (folderId: string | null) => {
-                    const visited = new Set<string>()
-                    while (folderId && !visited.has(folderId)) {
-                        visited.add(folderId)
-                        const folder = folderMap.get(folderId)
-                        if (!folder) break
-                        if (folder.team_space) return folder.id
-                        folderId = folder.parent_folder_id
-                    }
-                    return null
-                }
-
-                const destinationTeam = teamRoot(destinationId)
-                if (destinationTeam && [...chosenFolders, ...files, ...notes].some(item => item.hidden))
-                    throwError(400, 'Hidden items cannot be moved into a team.')
 
                 const insideSelection = (parentId: string | null): boolean => {
                     const visited = new Set<string>()
