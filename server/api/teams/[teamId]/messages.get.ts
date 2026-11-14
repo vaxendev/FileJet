@@ -22,13 +22,13 @@ export default defineEventHandler(async (event): Promise<TeamChatPage> => {
         const team = await teamAccess(tx, teamId, actor)
         const [rows, pinned, counts, edits] = await Promise.all([
             tx.team_messages.findMany({
-                where: { team_id: teamId, id: { lt: before, gt: after, lte: at } },
+                where: { team_id: teamId, deleted_at: null, id: { lt: before, gt: after, lte: at } },
                 select: teamChatMessageSelect,
                 orderBy: { id: after === undefined ? 'desc' : 'asc' },
                 take: pageSize + 1
             }),
             tx.team_messages.findMany({
-                where: { team_id: teamId, pinned_at: { not: null } },
+                where: { team_id: teamId, deleted_at: null, pinned_at: { not: null } },
                 select: teamChatQuoteSelect,
                 orderBy: [{ pinned_at: 'desc' }, { id: 'desc' }],
                 take: 20
@@ -37,7 +37,7 @@ export default defineEventHandler(async (event): Promise<TeamChatPage> => {
             tx.team_messages.findMany({
                 where: { team_id: teamId, edit_version: editsAfter === undefined ? { not: null } : { gt: editsAfter } },
                 orderBy: { edit_version: editsAfter === undefined ? 'desc' : 'asc' },
-                select: { id: true, body: true, edit_version: true },
+                select: { id: true, body: true, edit_version: true, deleted_at: true },
                 take: editsAfter === undefined ? 1 : pageSize
             })
         ])
@@ -52,7 +52,7 @@ export default defineEventHandler(async (event): Promise<TeamChatPage> => {
             pinned: pinned.map(serializeTeamChatQuote),
             unreadCount: Number(counts[0]?.unread ?? 0),
             edits: editsAfter === undefined ? [] : edits.map(row => ({
-                id: row.id.toString(), body: row.body, editVersion: row.edit_version!.toString()
+                id: row.id.toString(), body: row.deleted_at ? null : row.body, editVersion: row.edit_version!.toString()
             })),
             editCursor: edits.at(-1)?.edit_version?.toString() ?? editsAfter?.toString() ?? '0'
         }

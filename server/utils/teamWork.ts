@@ -15,7 +15,7 @@ export const taskCanUpdate = (task: TaskRow, team: TeamAccess, actor: string) =>
 
 export const serializeTeamTask = (task: TaskRow, team: TeamAccess, actor: string): TeamTask => ({
     id: task.id,
-    messageId: task.message_id.toString(),
+    messageId: task.message_id?.toString() ?? null,
     title: task.title,
     assigneeName: task.assignee?.username ?? null,
     dueOn: task.due_on.toISOString().slice(0, 10),

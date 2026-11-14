@@ -17,7 +17,7 @@ export default defineEventHandler(async event => {
 
     return teamWrite(event, 'view', async (tx, team, actor) => {
         const row = await tx.team_messages.findFirst({
-            where: { team_id: team.id, id },
+            where: { team_id: team.id, id, deleted_at: null },
             select: { body: true, author_id: true, file_id: true, edit_version: true }
         })
         if (!row) throwError(404, 'Team message not found.')

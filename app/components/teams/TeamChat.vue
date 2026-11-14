@@ -16,11 +16,12 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{
     preview: [file: TeamFileReference]
-    task: [message: TeamChatMessage]
     'file-change': [file: TeamFileReference | null]
     unread: [count: number]
 }>()
 const user = useAuthUser()
+const { confirm } = useConfirm()
+const { openToast } = useToast()
 const endpoint = `/api/teams/${encodeURIComponent(props.teamId)}/messages`
 const timestamp = computed(() => new Intl.DateTimeFormat(currentLocaleTag(), { dateStyle: 'short', timeStyle: 'short' }))
 const messages = ref<TeamChatMessage[]>([])
@@ -58,6 +59,9 @@ const editBody = ref('')
 const editInput = ref<HTMLTextAreaElement[]>()
 const editSaving = ref(false)
 const editError = ref('')
+const deleting = ref<string>()
+const deletedMessages = new Set<string>()
+const canDelete = (message: TeamChatMessage) => message.authorId === user.value?.id || user.value?.role === 'ADMIN'
 const changedMentions = computed(() => editing.value && !sameTeamMentions(editing.value.original, editBody.value.trim()))
 const suggestions = computed(() => {
     if (!mention.value) return []
@@ -86,6 +90,7 @@ const displayMessages = computed(() => messages.value.map((message, index) => {
         Date.parse(message.createdAt) - Date.parse(previous.createdAt) < 5 * 60000) }
 }))
 let receivedThrough: string | undefined
+let oldestLoaded: string | undefined
 let editsThrough: string | undefined
 let acknowledged: string | undefined
 let markingRead = false
@@ -111,11 +116,13 @@ function mergeMessages(incoming: TeamChatMessage[]) {
     if (!incoming.length) return
     const byId = new Map(messages.value.map(message => [message.id, message]))
     for (const message of incoming) {
+        if (deletedMessages.has(message.id)) continue
         const current = byId.get(message.id)
         const changes = current && BigInt(current.editVersion) > BigInt(message.editVersion)
             ? { body: current.body, editVersion: current.editVersion }
             : {}
-        byId.set(message.id, { ...message, ...changes, reply: message.reply ? newerQuote(message.reply, current?.reply) : null })
+        const quote = message.reply
+        byId.set(message.id, { ...message, ...changes, reply: quote && !deletedMessages.has(quote.id) ? newerQuote(quote, current?.reply) : null })
     }
     messages.value = [...byId.values()].sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1))
 }
@@ -123,17 +130,27 @@ function mergeMessages(incoming: TeamChatMessage[]) {
 function applyEdits(edits: TeamChatEdit[]) {
     if (!edits.length) return
     const byId = new Map(edits.map(edit => [edit.id, edit]))
+    for (const edit of edits) {
+        if (edit.body !== null) continue
+        deletedMessages.add(edit.id)
+        if (editing.value?.id === edit.id) editing.value = undefined
+        if (jumpTarget.value === edit.id) missingTarget.value = true
+    }
     const updateQuote = (quote: TeamChatQuote) => {
         const update = byId.get(quote.id)
-        return update ? newerQuote({ ...quote, excerpt: update.body.slice(0, 180), editVersion: update.editVersion }, quote) : quote
+        return typeof update?.body === 'string'
+            ? newerQuote({ ...quote, excerpt: update.body.slice(0, 180), editVersion: update.editVersion }, quote)
+            : quote
     }
-    messages.value = messages.value.map(message => {
+    messages.value = messages.value.filter(message => !deletedMessages.has(message.id)).map(message => {
         const edit = byId.get(message.id)
-        const changes = edit && BigInt(edit.editVersion) >= BigInt(message.editVersion) ? edit : {}
-        return { ...message, ...changes, reply: message.reply ? updateQuote(message.reply) : null }
+        const changes = typeof edit?.body === 'string' && BigInt(edit.editVersion) >= BigInt(message.editVersion)
+            ? { body: edit.body, editVersion: edit.editVersion } : {}
+        const quote = message.reply
+        return { ...message, ...changes, reply: quote && !deletedMessages.has(quote.id) ? updateQuote(quote) : null }
     })
-    pins.value = pins.value.map(updateQuote)
-    if (reply.value) reply.value = updateQuote(reply.value)
+    pins.value = pins.value.filter(pin => !deletedMessages.has(pin.id)).map(updateQuote)
+    if (reply.value) reply.value = deletedMessages.has(reply.value.id) ? null : updateQuote(reply.value)
 }
 
 function chatError(failure: unknown, fallback: string) {
@@ -170,7 +187,7 @@ const load = async (older = false, reset = false) => {
     try {
         const target = jumpTarget.value
         const query = older
-            ? { before: messages.value[0]?.id }
+            ? { before: oldestLoaded }
             : reset || !loaded.value || target ? { at: target } : { after: receivedThrough }
         const page = await teamFetch<TeamChatPage>(endpoint, {
             query: { ...query, editsAfter: reset ? undefined : editsThrough },
@@ -185,13 +202,15 @@ const load = async (older = false, reset = false) => {
         if (reset) {
             messages.value = []
             receivedThrough = undefined
-            missingTarget.value = Boolean(target && !page.messages.some(message => message.id === target))
+            oldestLoaded = undefined
+            missingTarget.value = Boolean(target && (deletedMessages.has(target) || !page.messages.some(message => message.id === target)))
         }
         if (!older) catchingUp.value = Boolean(!target && !reset && receivedThrough && page.hasMore)
         if (older || !receivedThrough) hasOlder.value = page.hasMore
+        if (page.messages[0] && (older || !oldestLoaded)) oldestLoaded = page.messages[0].id
         if (!older && page.messages.length) receivedThrough = page.messages.at(-1)?.id
         const currentPins = new Map(pins.value.map(pin => [pin.id, pin]))
-        pins.value = page.pinned.map(pin => newerQuote(pin, currentPins.get(pin.id)))
+        pins.value = page.pinned.filter(pin => !deletedMessages.has(pin.id)).map(pin => newerQuote(pin, currentPins.get(pin.id)))
         emit('unread', page.unreadCount)
         mergeMessages(page.messages)
         editsThrough = page.editCursor
@@ -261,6 +280,26 @@ const saveEdit = async () => {
         editError.value = resolveApiError(failure)
     } finally {
         editSaving.value = false
+    }
+}
+const deleteMessage = async (message: TeamChatMessage) => {
+    if (!canDelete(message) || deleting.value) return
+    deleting.value = message.id
+    try {
+        if (!await confirm({
+            title: localize('Delete message?'),
+            message: localize('This message will be permanently deleted.'),
+            confirmText: localize('Delete'),
+            variant: 'danger'
+        }) || deletedMessages.has(message.id)) return
+
+        const deletion = await teamFetch<TeamChatEdit>(`${endpoint}/${message.id}`, { method: 'DELETE', timeout: 10000 })
+        applyEdits([deletion])
+        await load()
+    } catch (failure) {
+        openToast(resolveApiError(failure), 'error')
+    } finally {
+        deleting.value = undefined
     }
 }
 
@@ -503,13 +542,15 @@ onMounted(() => void jump(props.focusMessage))
                             @click="reply = messageQuote(message); composer?.focus()">
                             <Icon name="solar:reply-linear" />
                         </button>
-                        <button type="button" class="grid size-8 place-items-center text-muted hover:text-accent" :title="$msg('Create task')" :aria-label="$msg('Create task')" @click="emit('task', message)">
-                            <Icon name="solar:checklist-linear" />
-                        </button>
                         <button v-if="canPin" type="button" class="grid size-8 place-items-center text-muted hover:text-accent" :disabled="pinBusy"
                             :title="pins.some(pin => pin.id === message.id) ? $msg('Unpin') : $msg('Pin')"
                             :aria-label="pins.some(pin => pin.id === message.id) ? $msg('Unpin') : $msg('Pin')" @click="togglePin(message.id)">
                             <Icon name="solar:pin-linear" />
+                        </button>
+                        <button v-if="canDelete(message)" type="button" class="grid size-8 place-items-center text-muted hover:text-danger"
+                            :title="$msg('Delete message')" :aria-label="$msg('Delete message')" :disabled="Boolean(deleting)"
+                            @click="deleteMessage(message)">
+                            <Icon name="solar:trash-bin-trash-linear" />
                         </button>
                     </div>
                 </li>

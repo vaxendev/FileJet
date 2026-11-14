@@ -9,7 +9,7 @@ export default defineEventHandler(async event => {
     const pinned = body.pinned
     await teamWrite(event, 'edit', async (tx, team) => {
         const message = await tx.team_messages.findFirst({
-            where: { team_id: team.id, id }, select: { pinned_at: true }
+            where: { team_id: team.id, id, deleted_at: null }, select: { pinned_at: true }
         })
         if (!message) throwError(404, 'Team message not found.')
         if (Boolean(message.pinned_at) === pinned) return

@@ -8,7 +8,7 @@ export interface TeamFileReference {
 
 export interface TeamTask {
     id: string
-    messageId: string
+    messageId: string | null
     title: string
     assigneeName: string | null
     dueOn: string

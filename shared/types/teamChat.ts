@@ -20,7 +20,7 @@ export interface TeamChatMessage {
     file: TeamFileReference | null
 }
 
-export type TeamChatEdit = Pick<TeamChatMessage, 'id' | 'body' | 'editVersion'>
+export type TeamChatEdit = Pick<TeamChatMessage, 'id' | 'editVersion'> & { body: string | null }
 
 export interface TeamChatPage {
     messages: TeamChatMessage[]

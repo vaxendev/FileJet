@@ -37,6 +37,7 @@ const pageTitle = computed(() => {
         '/quarantine': 'Quarantine',
         '/activity': localize("Activity history"),
         '/settings': localize('Settings'),
+        '/settings/hidden': localize('Hidden'),
         '/settings/preferences': 'Preferences',
         '/settings/personalization': 'Appearance'
     }

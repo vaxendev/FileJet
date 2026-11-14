@@ -4,6 +4,7 @@ useHead(() => ({ title: `${localize('Settings')} · FileJet` }))
 const links = computed(() => [
     { title: localize('Account & preferences'), to: '/settings/preferences', icon: 'solar:user-circle-linear' },
     { title: localize('Appearance'), to: '/settings/personalization', icon: 'solar:palette-linear' },
+    { title: localize('Hidden'), to: '/settings/hidden', icon: 'solar:eye-closed-linear' },
     { title: localize('Quarantine'), to: '/quarantine', icon: 'solar:shield-warning-linear' },
     { title: localize('Activity history'), to: '/activity', icon: 'solar:history-linear' }
 ])

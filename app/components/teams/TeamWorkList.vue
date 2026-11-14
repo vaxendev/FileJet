@@ -3,7 +3,7 @@ import { $fetch as teamFetch } from 'ofetch'
 import type { TeamFileReference, TeamFileReview, TeamListPage, TeamTask } from '~~/shared/types/teamCollaboration'
 
 const props = defineProps<{ teamId: string; kind: 'tasks' | 'reviews' }>()
-const emit = defineEmits<{ preview: [file: TeamFileReference]; message: [id: string] }>()
+const emit = defineEmits<{ preview: [file: TeamFileReference]; message: [id: string]; createTask: [] }>()
 const endpoint = `/api/teams/${props.teamId}/${props.kind}`
 const tasks = ref<TeamTask[]>([])
 const reviews = ref<TeamFileReview[]>([])
@@ -74,12 +74,17 @@ onMounted(() => void load())
     <section class="min-w-0 rounded-2xl border border-divider bg-surface p-5 max-mobile:p-3">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 class="font-semibold text-foreground">{{ kind === 'tasks' ? $msg('Tasks') : $msg('File reviews') }}</h2>
-            <button type="button" class="inbox-button" :disabled="loading || busyId !== null" @click="load()">{{ $msg('Refresh') }}</button>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" class="inbox-button" :disabled="loading || busyId !== null" @click="load()">{{ $msg('Refresh') }}</button>
+                <button v-if="kind === 'tasks'" type="button" class="inbox-button inbox-primary" @click="emit('createTask')">
+                    {{ $msg('Create task') }}
+                </button>
+            </div>
         </div>
         <p v-if="error" role="alert" class="mb-3 text-sm text-danger">{{ error }}</p>
         <p v-if="!loaded && loading" role="status" class="py-5 text-sm text-muted">{{ $msg('Loading...') }}</p>
         <p v-else-if="loaded && !tasks.length && !reviews.length" class="py-5 text-sm text-muted">
-            {{ kind === 'tasks' ? $msg('Create a task from a chat message.') : $msg('Request a review from a team file.') }}
+            {{ kind === 'tasks' ? $msg('No tasks yet.') : $msg('Request a review from a team file.') }}
         </p>
         <ul v-if="kind === 'tasks'" class="divide-y divide-divider">
             <li v-for="task in tasks" :key="task.id" class="flex flex-wrap items-center justify-between gap-3 py-4">
@@ -92,7 +97,7 @@ onMounted(() => void load())
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <button type="button" class="inbox-button" @click="emit('message', task.messageId)">{{ $msg('View message') }}</button>
+                    <button v-if="task.messageId" type="button" class="inbox-button" @click="emit('message', task.messageId)">{{ $msg('View message') }}</button>
                     <button v-if="task.canUpdate" type="button" class="inbox-button" :disabled="busyId !== null" @click="updateTask(task)">
                         {{ task.completed ? $msg('Reopen') : $msg('Mark complete') }}
                     </button>

@@ -19,9 +19,10 @@ export default defineEventHandler(async event => {
     return teamWrite(event, 'view', async (tx, team, actor) => {
         const existing = await tx.team_messages.findUnique({
             where: { team_id_request_id: { team_id: team.id, request_id: requestId } },
-            select: { ...teamChatMessageSelect, file_id: true, reply_to_id: true }
+            select: { ...teamChatMessageSelect, file_id: true, reply_to_id: true, deleted_at: true }
         })
         if (existing) {
+            if (existing.deleted_at) throwError(409, 'This message ID has already been used.')
             if (existing.author_id !== actor || existing.body !== message || existing.reply_to_id !== replyTo || existing.file_id !== fileId)
                 throwError(409, 'This message ID has already been used.')
             const visible = existing.file_id ? await teamReferenceIds(tx, team, [existing.file_id]) : []
@@ -29,7 +30,7 @@ export default defineEventHandler(async event => {
         }
         if (fileId) await teamFile(tx, team, fileId)
         if (replyTo && !(await tx.team_messages.findFirst({
-            where: { team_id: team.id, id: replyTo }, select: { id: true }
+            where: { team_id: team.id, id: replyTo, deleted_at: null }, select: { id: true }
         }))) throwError(404, 'Team message not found.')
 
         const names = teamMentionNames(message)

@@ -2,10 +2,10 @@
 import type { LibraryItem } from '~~/shared/types/library'
 import { formatFileSize, getFileIcon } from '~/utils/file'
 
-definePageMeta({ middleware: 'auth', layout: 'user' })
+definePageMeta({ middleware: 'auth', layout: 'user', alias: ['/hidden'] })
 useHead(() => ({ title: `${localize('Hidden')} · FileJet` }))
 const { busy, setHidden } = useHiddenItems()
-const accessUrl = '/api/items/hidden/access'
+const nuxtApp = useNuxtApp()
 type Access = { configured: boolean; expiresAt: number | null }
 const access = ref<Access>()
 const data = ref<LibraryItem[]>([])
@@ -44,7 +44,7 @@ const loadAccess = async () => {
     pending.value = true
     error.value = ''
     try {
-        const next = await $fetch<Access>(accessUrl)
+        const next = await nuxtApp.$hiddenAccess.status()
         if (disposed) return
         reset(next)
         await refresh()
@@ -59,8 +59,8 @@ const submit = async () => {
     submitting.value = true
     error.value = ''
     try {
-        const next = await $fetch<Access>(accessUrl, {
-            method: 'POST', body: { setup: !access.value.configured, password: password.value, confirmPassword: confirmation.value }
+        const next = await nuxtApp.$hiddenAccess.unlock({
+            setup: !access.value.configured, password: password.value, confirmPassword: confirmation.value
         })
         if (disposed) return
         password.value = ''
@@ -80,7 +80,7 @@ const lock = async () => {
     submitting.value = true
     error.value = ''
     try {
-        await $fetch(accessUrl, { method: 'DELETE' })
+        await nuxtApp.$hiddenAccess.lock()
         reset({ configured: true, expiresAt: null })
     } catch (failure) {
         error.value = resolveApiError(failure)
@@ -97,7 +97,10 @@ const items = computed(() => data.value
 const { currentPage, totalPages, paginatedItems } = usePagination(items, ref(24))
 watch(search, () => { currentPage.value = 1 })
 watch(totalPages, total => { currentPage.value = Math.min(currentPage.value, Math.max(1, total)) })
-const href = (item: LibraryItem) => `/${{ file: 'files', folder: 'folders', note: 'notes' }[item.type]}/${item.id}?from=/hidden`
+const href = (item: LibraryItem) => ({
+    path: `/${{ file: 'files', folder: 'folders', note: 'notes' }[item.type]}/${item.id}`,
+    query: { from: '/settings/hidden' }
+})
 const icon = (item: LibraryItem) => item.type === 'file' ? getFileIcon(item.mime_type ?? null, item.name)
     : item.type === 'folder' ? 'solar:folder-bold' : 'solar:notebook-bold'
 </script>
@@ -105,6 +108,10 @@ const icon = (item: LibraryItem) => item.type === 'file' ? getFileIcon(item.mime
 <template>
     <div class="min-h-0 flex-1 overflow-y-auto">
         <section class="flex w-full min-w-0 flex-col gap-3">
+            <NuxtLink to="/settings" class="flex w-fit items-center gap-1 text-sm text-accent">
+                <Icon name="solar:alt-arrow-left-linear" aria-hidden="true" />
+                {{ $msg('Settings') }}
+            </NuxtLink>
             <div v-if="error" role="alert" class="rounded-xl border border-divider bg-surface p-3">
                 <p class="text-sm text-danger">{{ error }}</p>
                 <button v-if="!access || access.expiresAt" type="button" class="inbox-button mt-3" @click="loadAccess()">{{ $msg('Try again') }}</button>

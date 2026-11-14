@@ -3,7 +3,6 @@ import { $fetch as teamFetch } from 'ofetch'
 import { teamCan, type TeamDetails, type TeamSettings, type TeamRole, type TeamMember } from '~~/shared/types/team'
 import type { LibraryItem } from '~~/shared/types/library'
 import type { QuickPreviewItem } from '~~/shared/types/quickPreview'
-import type { TeamChatMessage } from '~~/shared/types/teamChat'
 import type { TeamFileReference } from '~~/shared/types/teamCollaboration'
 import { getFileIcon, formatFileSize, formatFileTime } from '~/utils/file'
 definePageMeta({ middleware: 'auth', layout: 'user', key: route => route.path })
@@ -57,7 +56,8 @@ watch(totalPages, total => {
 })
 const preview = ref<(QuickPreviewItem & { revision?: number }) | null>(null)
 const attachedFile = ref<TeamFileReference | null>(null)
-const workSource = ref<{ message: TeamChatMessage } | { file: TeamFileReference } | null>(null)
+const workSource = ref<{ kind: 'tasks' } | { kind: 'reviews'; file: TeamFileReference } | null>(null)
+const workListVersion = ref(0)
 const fileReference = (item: LibraryItem): TeamFileReference => ({
     id: item.id, name: item.name, size: item.size, mime_type: item.mime_type ?? null
 })
@@ -71,7 +71,8 @@ const attachInChat = (item: LibraryItem) => {
 const workSaved = (target: 'tasks' | 'reviews') => {
     workSource.value = null
     openToast(target === 'tasks' ? localize('Task created.') : localize('Review requested.'), 'success')
-    void showTab(target)
+    if (tab.value === target) workListVersion.value++
+    else void showTab(target)
 }
 watch(folderId, () => {
     search.value = ''
@@ -494,7 +495,7 @@ const exitTeam = async () => {
                                         <Icon name="solar:chat-round-line-linear" />
                                     </button>
                                     <button type="button" class="team-icon" :title="$msg('Request file review')"
-                                        :aria-label="$msg('Request file review')" @click="workSource = { file: fileReference(item) }">
+                                        :aria-label="$msg('Request file review')" @click="workSource = { kind: 'reviews', file: fileReference(item) }">
                                         <Icon name="solar:check-circle-linear" />
                                     </button>
                                 </div>
@@ -536,7 +537,7 @@ const exitTeam = async () => {
                             ><Icon name="solar:chat-round-line-linear" /></button>
                             <button
                                 v-if="item.type === 'file'" type="button" class="team-icon"
-                                :title="$msg('Request file review')" :aria-label="$msg('Request file review')" @click="workSource = { file: fileReference(item) }"
+                                :title="$msg('Request file review')" :aria-label="$msg('Request file review')" @click="workSource = { kind: 'reviews', file: fileReference(item) }"
                             ><Icon name="solar:check-circle-linear" /></button>
                             <button
                                 v-if="canEdit"
@@ -569,10 +570,10 @@ const exitTeam = async () => {
                 </section>
                 <TeamChat v-else-if="tab === 'chat'" :team-id="id" :members="data.members" :can-upload="canUpload"
                     :selected-file="attachedFile" :focus-message="focusMessage" :can-pin="canEdit"
-                    @file-change="attachedFile = $event" @preview="previewTeamFile" @task="workSource = { message: $event }"
+                    @file-change="attachedFile = $event" @preview="previewTeamFile"
                     @unread="chatUnread = $event" />
-                <TeamWorkList v-else-if="tab === 'tasks' || tab === 'reviews'" :key="tab" :team-id="id" :kind="tab"
-                    @preview="previewTeamFile" @message="showTab('chat', $event)" />
+                <TeamWorkList v-else-if="tab === 'tasks' || tab === 'reviews'" :key="`${tab}:${workListVersion}`" :team-id="id" :kind="tab"
+                    @create-task="workSource = { kind: 'tasks' }" @preview="previewTeamFile" @message="showTab('chat', $event)" />
                 <section v-else class="rounded-2xl border border-divider bg-surface p-5 max-mobile:p-3">
                     <h2 class="text-base font-semibold text-foreground">{{ $msg('Members') }}</h2>
                     <p class="mt-2 text-xs leading-6 text-muted">

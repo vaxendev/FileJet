@@ -1770,7 +1770,11 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "mbfeb2eea": "Edit message",
     "me893bc45": "You can only edit your own messages.",
     "m33a3c22b": "Keep the original mentions when editing a message.",
-    "m3d5d9a3": "This message changed. Reopen the editor and try again."
+    "m3d5d9a3": "This message changed. Reopen the editor and try again.",
+    "m595ff4fd": "Delete message",
+    "m740e4d66": "Delete message?",
+    "mb3f07db7": "This message will be permanently deleted.",
+    "mff606f8c": "No tasks yet."
   },
   "tr": {
     "m34dc962f": "Daha önce:",
@@ -3542,7 +3546,11 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "mbfeb2eea": "Mesajı düzenle",
     "me893bc45": "Yalnızca kendi mesajlarını düzenleyebilirsin.",
     "m33a3c22b": "Mesajı düzenlerken mevcut bahsetmeleri koru.",
-    "m3d5d9a3": "Bu mesaj değişti. Düzenleyiciyi yeniden açıp tekrar dene."
+    "m3d5d9a3": "Bu mesaj değişti. Düzenleyiciyi yeniden açıp tekrar dene.",
+    "m595ff4fd": "Mesajı sil",
+    "m740e4d66": "Mesaj silinsin mi?",
+    "mb3f07db7": "Bu mesaj kalıcı olarak silinecek.",
+    "mff606f8c": "Henüz görev yok."
   },
   "de": {
     "m4af72ffa": "pro Datei",
@@ -5314,6 +5322,10 @@ export const messageCatalog: Record<string, Record<string, string>> = {
     "mbfeb2eea": "Nachricht bearbeiten",
     "me893bc45": "Du kannst nur deine eigenen Nachrichten bearbeiten.",
     "m33a3c22b": "Behalte beim Bearbeiten die ursprünglichen Erwähnungen bei.",
-    "m3d5d9a3": "Diese Nachricht wurde geändert. Öffne den Editor erneut und versuche es noch einmal."
+    "m3d5d9a3": "Diese Nachricht wurde geändert. Öffne den Editor erneut und versuche es noch einmal.",
+    "m595ff4fd": "Nachricht löschen",
+    "m740e4d66": "Nachricht löschen?",
+    "mb3f07db7": "Diese Nachricht wird dauerhaft gelöscht.",
+    "mff606f8c": "Noch keine Aufgaben."
   }
 }

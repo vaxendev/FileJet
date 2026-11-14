@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { $fetch as teamFetch } from 'ofetch'
 import type { TeamMember } from '~~/shared/types/team'
-import type { TeamChatMessage } from '~~/shared/types/teamChat'
 import type { TeamFileReference } from '~~/shared/types/teamCollaboration'
 
 const props = defineProps<{
     teamId: string
     members: TeamMember[]
-    source: { message: TeamChatMessage } | { file: TeamFileReference } | null
+    source: { kind: 'tasks' } | { kind: 'reviews'; file: TeamFileReference } | null
 }>()
 const emit = defineEmits<{ close: []; saved: [tab: 'tasks' | 'reviews'] }>()
 const user = useAuthUser()
@@ -20,8 +19,9 @@ const dueOn = ref('')
 const note = ref('')
 const busy = ref(false)
 const error = ref('')
-const isTask = computed(() => props.source && 'message' in props.source)
+const isTask = computed(() => props.source?.kind === 'tasks')
 const candidates = computed(() => props.members.filter(member => isTask.value || member.id !== user.value?.id))
+let taskRequest: { id: string; input: string } | undefined
 
 watch(() => props.source, async source => {
     if (!source) {
@@ -32,7 +32,8 @@ watch(() => props.source, async source => {
     dueOn.value = ''
     note.value = ''
     error.value = ''
-    title.value = 'message' in source ? (source.message.body || source.message.file?.name || '').split('\n')[0]!.slice(0, 160) : ''
+    title.value = ''
+    taskRequest = undefined
     await nextTick()
     if (props.source === source && !dialog.value?.open) dialog.value?.showModal()
 }, { flush: 'post' })
@@ -49,12 +50,17 @@ const save = async () => {
     busy.value = true
     error.value = ''
     try {
-        const tab = 'message' in source ? 'tasks' : 'reviews'
-        const body = 'message' in source
-            ? { messageId: source.message.id, title: title.value, assigneeId: assignee.value, dueOn: dueOn.value }
-            : { fileId: source.file.id, reviewerId: assignee.value, note: note.value }
-        await teamFetch(`/api/teams/${props.teamId}/${tab}`, { method: 'POST', body, timeout: 10000 })
-        emit('saved', tab)
+        let body
+        if (source.kind === 'tasks') {
+            const task = { title: title.value.trim(), assigneeId: assignee.value, dueOn: dueOn.value }
+            const input = JSON.stringify(task)
+            if (taskRequest?.input !== input) taskRequest = { id: crypto.randomUUID(), input }
+            body = { ...task, requestId: taskRequest.id }
+        } else {
+            body = { fileId: source.file.id, reviewerId: assignee.value, note: note.value }
+        }
+        await teamFetch(`/api/teams/${props.teamId}/${source.kind}`, { method: 'POST', body, timeout: 10000 })
+        emit('saved', source.kind)
     } catch (failure) {
         error.value = resolveApiError(failure)
     } finally {
@@ -94,7 +100,7 @@ const save = async () => {
                 <p v-if="error" role="alert" class="text-sm text-danger">{{ error }}</p>
                 <footer class="flex flex-wrap justify-end gap-2">
                     <button type="button" class="inbox-button" :disabled="busy" @click="close">{{ $msg('Cancel') }}</button>
-                    <button type="submit" class="inbox-button inbox-primary" :disabled="busy || !assignee">
+                    <button type="submit" class="inbox-button inbox-primary" :disabled="busy || !assignee || (isTask && !title.trim())">
                         {{ busy ? $msg('Saving...') : isTask ? $msg('Create task') : $msg('Request review') }}
                     </button>
                 </footer>

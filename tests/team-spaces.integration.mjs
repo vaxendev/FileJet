@@ -359,6 +359,38 @@ try {
     await api(tasks + '/' + task.id, { method: 'PATCH', auth: uploader, body: { completed: true }, status: 403 })
     assert.equal((await api(tasks + '/' + task.id, { method: 'PATCH', auth: viewer, body: { completed: true } })).json().task.completed, true)
     assert.equal((await api(tasks + '/' + task.id, { method: 'PATCH', body: { completed: false } })).json().task.completed, false)
+    const standaloneInput = { title: 'Plan release', assigneeId: viewer, dueOn: '2027-02-04', requestId: randomUUID() }
+    await api(tasks, { auth: outsider, method: 'POST', body: standaloneInput, status: 404 })
+    const standalone = (await api(tasks, { auth: viewer, method: 'POST', body: standaloneInput })).json().task
+    assert.equal(standalone.messageId, null)
+    assert.equal((await api(tasks, { auth: viewer, method: 'POST', body: standaloneInput })).json().task.id, standalone.id)
+    await api(tasks, { auth: viewer, method: 'POST', body: { ...standaloneInput, title: 'Different title' }, status: 409 })
+    assert.ok((await api(tasks)).json().items.some(item => item.id === standalone.id))
+
+    const firstPath = chat + '/' + firstSaved.id
+    await api(firstPath, { method: 'DELETE', auth: null, status: 401 })
+    await api(firstPath, { method: 'DELETE', auth: outsider, status: 404 })
+    await api(firstPath, { method: 'DELETE', auth: editor, status: 403 })
+    await api(firstPath, { method: 'DELETE', auth: viewer, status: 403, headers: { Origin: 'https://foreign.example' } })
+    const ownDeletion = (await api(firstPath, { method: 'DELETE', auth: viewer })).json()
+    assert.equal(ownDeletion.body, null)
+    assert.deepEqual((await api(firstPath, { method: 'DELETE', auth: viewer })).json(), ownDeletion)
+    await api(chat, { method: 'POST', auth: viewer, body: firstMessage, status: 409 })
+
+    await api(editPath, { method: 'DELETE', auth: editor, status: 403 })
+    await db.query("UPDATE users SET role = 'ADMIN' WHERE id = $1", [editor])
+    await api(editPath, { method: 'PATCH', auth: editor, body: textEdit, status: 403 })
+    await api(pin, { method: 'PUT', body: { pinned: true } })
+    const adminDeletion = (await api(editPath, { method: 'DELETE', auth: editor })).json()
+    const afterDelete = (await api(chat + '?editsAfter=' + liveEdit.editCursor, { auth: viewer })).json()
+    assert.ok(afterDelete.edits.some(edit => edit.id === ownDeletion.id && edit.body === null))
+    assert.ok(afterDelete.edits.some(edit => edit.id === adminDeletion.id && edit.body === null))
+    assert.ok(!afterDelete.messages.some(message => message.id === sharedFile.id || message.reply?.id === sharedFile.id))
+    assert.deepEqual(afterDelete.pinned, [])
+    assert.ok(!(await api('/api/teams/mentions', { auth: viewer })).json().mentions.some(mention => mention.id === sharedFile.id))
+    assert.equal((await api(tasks)).json().items.find(item => item.id === task.id).messageId, null)
+    await api(chat, { auth: viewer, method: 'POST', body: { requestId: randomUUID(), message: 'Gone', replyTo: sharedFile.id }, status: 404 })
+    await api(editPath, { method: 'PATCH', body: textEdit, status: 404 })
     const reviews = team + '/reviews'
     const reviewInput = { fileId, reviewerId: viewer, note: 'Please check the plan.' }
     await api(reviews, { method: 'POST', body: { ...reviewInput, reviewerId: outsider }, status: 400 })
