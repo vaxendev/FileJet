@@ -48,7 +48,7 @@ export async function adminHistory(query: Record<string, unknown>): Promise<Admi
     if (type) throwError(400,'Item type applies to user activity.')
     if (action && !Object.hasOwn(adminActionLabels,action)) throwError(400,'Invalid action filter.')
     const where: Prisma.admin_eventsWhereInput = { ...(userId?{target_user_id:userId}:{}), ...(actorId?{actor_id:actorId}:{}), ...(account?{target_username:{contains:account,mode:'insensitive'}}:{}), ...(actor?{actor_username:{contains:actor,mode:'insensitive'}}:{}), ...(action?{action}:{}), ...(Object.keys(dates).length?{created_at:dates}:{}), ...(position?{AND:position}:{}) }
-    if (q) where.OR = [{target_username:{contains:q,mode:'insensitive'}},{actor_username:{contains:q,mode:'insensitive'}}]
+    if (q) where.OR = [{target_username:{contains:q,mode:'insensitive'}},{actor_username:{contains:q,mode:'insensitive'}},{team_name:{contains:q,mode:'insensitive'}}]
     const rows = await prisma.admin_events.findMany({where,orderBy:[{created_at:'desc'},{id:'desc'}],take:limit+1})
     return {source:'admin',items:rows.slice(0,limit).map(adminEventView),nextCursor:next(rows)}
 }

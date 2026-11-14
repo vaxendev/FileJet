@@ -16,7 +16,25 @@ const date = (value: string) => new Date(value).toLocaleString(currentLocaleTag(
         </li>
     </ul>
     <ul v-else-if="adminItems?.length" class="m-0 list-none divide-y divide-divider p-0">
-        <li v-for="item in adminItems" :key="item.id" class="flex min-w-0 gap-3 py-4 first:pt-0 last:pb-0"><Icon name="solar:shield-user-linear" class="mt-1 shrink-0 text-xl text-accent" aria-hidden="true" /><div class="min-w-0 flex-1"><div class="flex flex-wrap justify-between gap-2"><strong class="text-sm text-foreground">{{ $msg(adminActionLabels[item.action]) }}</strong><time :datetime="item.createdAt" class="text-xs text-muted">{{ date(item.createdAt) }}</time></div><p class="mb-0 mt-1 break-all text-sm text-content">{{ item.username }}</p><p class="mb-0 mt-1 break-all text-xs text-muted">{{ $msg("By") }} {{ item.actorName }}{{ item.actorId ? '' : $msg('· account removed') }}</p><p v-if="item.roleBefore !== item.roleAfter" class="mb-0 mt-2 text-xs text-muted">{{ $msg("Role:") }} {{ item.roleBefore ? $msg(item.roleBefore === 'ADMIN' ? 'Administrator' : 'User') : '—' }} → {{ item.roleAfter ? $msg(item.roleAfter === 'ADMIN' ? 'Administrator' : 'User') : $msg('Removed') }}</p><p v-if="item.quotaBefore !== item.quotaAfter" class="mb-0 mt-1 text-xs text-muted">{{ $msg("Quota:") }} {{ item.quotaBefore === null ? '—' : formatFileSize(item.quotaBefore) }} → {{ item.quotaAfter === null ? $msg('Removed') : formatFileSize(item.quotaAfter) }}</p></div></li>
+        <li v-for="item in adminItems" :key="item.id" class="flex min-w-0 gap-3 py-4 first:pt-0 last:pb-0">
+            <Icon name="solar:shield-user-linear" class="mt-1 shrink-0 text-xl text-accent" aria-hidden="true" />
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap justify-between gap-2">
+                    <strong class="text-sm text-foreground">{{ $msg(adminActionLabels[item.action]) }}</strong>
+                    <time :datetime="item.createdAt" class="text-xs text-muted">{{ date(item.createdAt) }}</time>
+                </div>
+                <template v-if="item.team">
+                    <p class="mb-0 mt-1 wrap-anywhere text-sm text-content">{{ item.team.name }}</p>
+                    <p class="mb-0 mt-1 wrap-anywhere text-xs text-muted">
+                        {{ $msg('Message ID') }} {{ item.team.messageId }} · {{ item.username ?? $msg('Deleted user') }}
+                    </p>
+                </template>
+                <p v-else class="mb-0 mt-1 break-all text-sm text-content">{{ item.username }}</p>
+                <p class="mb-0 mt-1 break-all text-xs text-muted">{{ $msg("By") }} {{ item.actorName }}{{ item.actorId ? '' : $msg('· account removed') }}</p>
+                <p v-if="item.roleBefore !== item.roleAfter" class="mb-0 mt-2 text-xs text-muted">{{ $msg("Role:") }} {{ item.roleBefore ? $msg(item.roleBefore === 'ADMIN' ? 'Administrator' : 'User') : '—' }} → {{ item.roleAfter ? $msg(item.roleAfter === 'ADMIN' ? 'Administrator' : 'User') : $msg('Removed') }}</p>
+                <p v-if="item.quotaBefore !== item.quotaAfter" class="mb-0 mt-1 text-xs text-muted">{{ $msg("Quota:") }} {{ item.quotaBefore === null ? '—' : formatFileSize(item.quotaBefore) }} → {{ item.quotaAfter === null ? $msg('Removed') : formatFileSize(item.quotaAfter) }}</p>
+            </div>
+        </li>
     </ul>
     <p v-else class="m-0 py-6 text-center text-sm text-muted">{{ $msg("No activity matches these filters.") }}</p>
 </template>

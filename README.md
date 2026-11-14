@@ -64,11 +64,15 @@ Members can edit or delete their own chat messages. FileJet administrators can d
 
 Open **Tasks** and choose **Create task** to assign a task to a teammate and set a due date. The assignee, task creator, and team owner can complete or reopen the task. Tasks previously created from chat remain available if their source message is deleted.
 
+Open **My tasks** to see assignments across your teams and filter upcoming, overdue, or completed work. The notification center shows new assignments and reminders for open tasks due today or within the next two days.
+
+Use **Search messages** in a team chat to find messages by text, author, or attachment name. Select a result to open the message in context. Administrator deletions appear under **Admin → Activity history → Admin actions** with the administrator, team, time, and message ID.
+
 Use **Request file review** on a team file to assign a reviewer. The assigned member can approve that version or request changes.
 
 Shared files use the owner's storage quota. Removed content goes to the owner's Trash. A team upload supports up to six files, 25 MB each and 50 MB in total.
 
-Apply pending migrations, including `202611140003_team_tasks_and_message_deletion`, and regenerate the Prisma client before restarting an existing instance. Run `npm run test:teams` against a running FileJet instance with PostgreSQL and ClamAV. Set `FILEJET_TEST_URL` to the app origin if it differs from `http://127.0.0.1:3022`.
+Apply pending migrations, including `202611140004_task_inbox_and_chat_audit`, and regenerate the Prisma client before restarting an existing instance. Run `npm run test:teams` against a running FileJet instance with PostgreSQL and ClamAV. Set `FILEJET_TEST_URL` to the app origin if it differs from `http://127.0.0.1:3022`.
 
 ### Sharing
 
@@ -158,6 +162,8 @@ Saved versions count toward storage, including while the file is in Trash. Resto
 ### Hidden items
 
 Choose **Hide item** from the menu of a personal file, folder, or note. The item keeps its location and appears under **Settings → Hidden**. Set a separate password the first time you open Hidden. Access locks when you leave Hidden, after 15 minutes, or when you choose **Lock Hidden**. Hidden items and descendants stay out of regular lists, and their public share links pause until they are visible again. Use **Make visible** to restore visibility. Existing installations need migration `202611140001_hidden_password`.
+
+Choose **Change Hidden password** in **Settings → Hidden** and enter the current password to set a new one. Changing it locks Hidden across sessions.
 
 ### Trash
 

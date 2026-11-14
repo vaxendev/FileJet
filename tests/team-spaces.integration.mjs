@@ -366,6 +366,45 @@ try {
     assert.equal((await api(tasks, { auth: viewer, method: 'POST', body: standaloneInput })).json().task.id, standalone.id)
     await api(tasks, { auth: viewer, method: 'POST', body: { ...standaloneInput, title: 'Different title' }, status: 409 })
     assert.ok((await api(tasks)).json().items.some(item => item.id === standalone.id))
+    const assigned = '/api/teams/assigned-tasks'
+    const notifications = '/api/teams/task-notifications'
+    await db.query("INSERT INTO team_members (team_id, user_id, role) VALUES ($1, $2, 'VIEWER')", [otherTeam.id, viewer])
+    const otherTask = (await api(other + '/tasks', {
+        auth: viewer, method: 'POST', body: { title: 'Second team task', assigneeId: viewer, dueOn: '2027-02-05' }
+    })).json().task
+    assert.equal((await api(assigned + '?today=2027-02-02&filter=overdue', { auth: viewer })).json().items[0].id, task.id)
+    const upcoming = (await api(assigned + '?today=2027-02-02&filter=upcoming', { auth: viewer })).json().items
+    assert.deepEqual(upcoming.map(item => [item.id, item.teamId]), [[standalone.id, id], [otherTask.id, otherTeam.id]])
+    assert.deepEqual((await api(assigned + '?task=' + standalone.id, { auth: outsider })).json().items, [])
+    assert.equal((await api(assigned + '?task=' + otherTask.id, { auth: viewer })).json().items[0].teamId, otherTeam.id)
+    await api(assigned + '?filter=unknown', { status: 400 })
+    const alerts = (await api(notifications + '?today=2027-02-02', { auth: viewer })).json().notifications
+    assert.deepEqual(alerts.filter(alert => alert.id === standalone.id).map(alert => alert.kind), ['assigned', 'due'])
+    assert.ok(!alerts.some(alert => alert.id === otherTask.id && alert.kind === 'due'))
+    await api(tasks + '/' + standalone.id, { method: 'PATCH', auth: viewer, body: { completed: true } })
+    assert.deepEqual((await api(assigned + '?filter=completed', { auth: viewer })).json().items.map(item => item.id), [standalone.id])
+    assert.ok(!(await api(notifications + '?today=2027-02-02', { auth: viewer })).json().notifications.some(
+        alert => alert.id === standalone.id && alert.kind === 'due'))
+
+    const search = chat + '/search'
+    await api(search + '?q=updated', { auth: outsider, status: 404 })
+    const searchResult = (await api(search + '?q=UPDATED&author=' + username(owner), { auth: viewer })).json()
+    assert.deepEqual(searchResult.items.map(item => item.id), [sharedFile.id])
+    const byFile = (await api(search + '?file=' + encodeURIComponent(searchResult.items[0].fileName), { auth: viewer })).json()
+    assert.ok(byFile.items.some(item => item.id === sharedFile.id))
+    await db.query('UPDATE files SET hidden = true WHERE id = $1', [fileId])
+    try {
+        assert.deepEqual((await api(search + '?file=' + encodeURIComponent(searchResult.items[0].fileName), { auth: viewer })).json().items, [])
+        assert.equal((await api(search + '?q=updated', { auth: viewer })).json().items[0].fileName, null)
+    } finally {
+        await db.query('UPDATE files SET hidden = false WHERE id = $1', [fileId])
+    }
+    const firstSearchPage = (await api(search + '?q=Message', { auth: viewer })).json()
+    assert.equal(firstSearchPage.items.length, 25)
+    const secondSearchPage = (await api(search + '?q=Message&before=' + firstSearchPage.next, { auth: viewer })).json()
+    assert.ok(secondSearchPage.items.every(item => BigInt(item.id) < BigInt(firstSearchPage.next)))
+    assert.deepEqual((await api(search + '?q=%25', { auth: viewer })).json().items, [])
+    assert.deepEqual((await api(search + '?q=updated&author=' + username(viewer), { auth: viewer })).json().items, [])
 
     const firstPath = chat + '/' + firstSaved.id
     await api(firstPath, { method: 'DELETE', auth: null, status: 401 })
@@ -382,6 +421,15 @@ try {
     await api(editPath, { method: 'PATCH', auth: editor, body: textEdit, status: 403 })
     await api(pin, { method: 'PUT', body: { pinned: true } })
     const adminDeletion = (await api(editPath, { method: 'DELETE', auth: editor })).json()
+    await api(editPath, { method: 'DELETE', auth: editor })
+    const auditUrl = '/api/admin/activity?source=admin&action=team_message_deleted&q=Shared%20project'
+    await api(auditUrl, { auth: viewer, status: 403 })
+    const entries = (await api(auditUrl, { auth: editor })).json().items.filter(entry => entry.team?.id === id)
+    assert.equal(entries.length, 1)
+    assert.deepEqual(entries[0].team, { id, name: teamBody.name, messageId: sharedFile.id })
+    assert.equal(entries[0].actorId, editor)
+    assert.ok(!JSON.stringify(entries[0]).includes(textEdit.message))
+    assert.deepEqual((await api(search + '?q=updated', { auth: viewer })).json().items, [])
     const afterDelete = (await api(chat + '?editsAfter=' + liveEdit.editCursor, { auth: viewer })).json()
     assert.ok(afterDelete.edits.some(edit => edit.id === ownDeletion.id && edit.body === null))
     assert.ok(afterDelete.edits.some(edit => edit.id === adminDeletion.id && edit.body === null))
@@ -420,6 +468,7 @@ try {
     await api(chat, { auth: viewer, status: 404 })
     await api(tasks, { auth: viewer, status: 404 })
     await api(reviews, { auth: viewer, status: 404 })
+    assert.ok((await api(assigned, { auth: viewer })).json().items.every(item => item.teamId !== id))
     assert.deepEqual((await api(mentions, { auth: viewer })).json().mentions, [])
     await api(chat, { auth: viewer, method: 'POST', body: firstMessage, status: 404 })
     await api(team + '/members/' + uploader, { method: 'DELETE' })
@@ -443,6 +492,7 @@ try {
     console.log('Team integration passed: invitations, chat, unread counts, mentions, replies, pins, files, tasks, reviews, roles and Trash.')
 } finally {
     try {
+        await db.query('DELETE FROM admin_events WHERE actor_id=ANY($1::uuid[])', [users])
         await db.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [users])
         const target = resolve(storage, owner)
         assert.equal(target, storage + sep + owner)

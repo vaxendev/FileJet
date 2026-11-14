@@ -461,6 +461,7 @@ onMounted(() => void jump(props.focusMessage))
                 </section>
             </div>
         </header>
+        <TeamChatSearch v-if="!unavailable" :team-id="teamId" :jumping="loading" @select="jump" />
         <button v-if="jumpTarget" type="button" class="inbox-button self-end" :disabled="loading" @click="jump()">
             {{ $msg('Back to latest messages') }}
         </button>

@@ -10,10 +10,10 @@ export const taskSelect = {
 } satisfies Prisma.team_tasksSelect
 type TaskRow = Prisma.team_tasksGetPayload<{ select: typeof taskSelect }>
 
-export const taskCanUpdate = (task: TaskRow, team: TeamAccess, actor: string) =>
+export const taskCanUpdate = (task: TaskRow, team: Pick<TeamAccess, 'role'>, actor: string) =>
     team.role === 'OWNER' || task.assignee_id === actor || task.created_by_id === actor
 
-export const serializeTeamTask = (task: TaskRow, team: TeamAccess, actor: string): TeamTask => ({
+export const serializeTeamTask = (task: TaskRow, team: Pick<TeamAccess, 'role'>, actor: string): TeamTask => ({
     id: task.id,
     messageId: task.message_id?.toString() ?? null,
     title: task.title,
@@ -22,6 +22,16 @@ export const serializeTeamTask = (task: TaskRow, team: TeamAccess, actor: string
     completed: Boolean(task.completed_at),
     canUpdate: taskCanUpdate(task, team, actor)
 })
+
+export const assignedTaskWhere = (actor: string): Prisma.team_tasksWhereInput => ({
+    assignee_id: actor,
+    team: { OR: [{ owner_id: actor }, { members: { some: { user_id: actor } } }] }
+})
+
+export const assignedTaskSelect = {
+    ...taskSelect,
+    team: { select: { id: true, name: true } }
+} satisfies Prisma.team_tasksSelect
 
 export function taskDueDate(value: unknown): Date {
     if (typeof value !== 'string' || !/^[1-9]\d{3}-\d{2}-\d{2}$/.test(value))

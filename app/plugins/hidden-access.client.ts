@@ -45,6 +45,8 @@ export default defineNuxtPlugin(() => {
                 },
                 unlock: (body: { setup: boolean; password: string; confirmPassword: string }) =>
                     queue(() => fetchAccess<HiddenAccess>(accessUrl, { method: 'POST', body, timeout: 15000 })),
+                changePassword: (body: { currentPassword: string; password: string; confirmPassword: string }) =>
+                    queue(() => fetchAccess<HiddenAccess>(accessUrl, { method: 'PATCH', body, timeout: 15000 })),
                 lock
             }
         }

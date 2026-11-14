@@ -97,7 +97,6 @@ try {
     sessionCookies.delete(owner)
     await api('/api/items/hidden', { status: 423 })
     assert.equal(hiddenCookies.get(owner), sameAccountGrant)
-    await api(access, { method: 'POST', body: { password: 'wrong-password' }, status: 401 })
     await api(access, { method: 'POST', body: { password } })
     await hidden('folder', child, true)
     const hiddenList = await api('/api/items/hidden')
@@ -135,8 +134,19 @@ try {
     assert.deepEqual((await api(links[file] + '/download', { auth: null })).buffer, bytes)
     await api(links[nestedNote], { auth: null })
     assert.equal((await list('/api/folders/' + parent)).items[0].id, child)
+    const grantBeforeChange = hiddenCookies.get(owner)
     await api(access, { method: 'DELETE' })
     await api('/api/items/hidden', { status: 423 })
+    const newPassword = 'new-hidden-fixture-password'
+    const passwordChange = { currentPassword: password, password: newPassword, confirmPassword: newPassword }
+    await api(access, { method: 'PATCH', auth: null, status: 401, body: passwordChange })
+    await api(access, { method: 'PATCH', origin: 'https://foreign.example', status: 403, body: passwordChange })
+    await api(access, { method: 'PATCH', body: { ...passwordChange, currentPassword: 'incorrect-password' }, status: 401 })
+    assert.deepEqual((await api(access, { method: 'PATCH', body: passwordChange })).json(), { configured: true, expiresAt: null })
+    hiddenCookies.set(owner, grantBeforeChange)
+    await api('/api/items/hidden', { status: 423 })
+    await api(access, { method: 'POST', body: { password: newPassword } })
+    assert.ok((await list(access)).expiresAt > Date.now())
     console.log('Hidden items integration passed: ownership, lists, nested shares, ZIP, safe restore and original location.')
 } finally {
     try {

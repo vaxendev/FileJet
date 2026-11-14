@@ -33,6 +33,7 @@ const pageTitle = computed(() => {
         '/shared': 'Shared',
         '/inbox': 'Inbox',
         '/teams': localize('Team spaces'),
+        '/tasks': localize('My tasks'),
         '/trash': 'Trash',
         '/quarantine': 'Quarantine',
         '/activity': localize("Activity history"),

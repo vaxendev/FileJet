@@ -128,6 +128,7 @@ model team_tasks {
   @@index([team_id, created_at, id])
   @@index([created_by_id])
   @@index([assignee_id])
+  @@index([assignee_id, completed_at, due_on, id])
   @@unique([team_id, request_id])
 }
 
@@ -205,8 +206,11 @@ model admin_events {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   actor_id String? @db.Uuid
   actor_username String @db.VarChar(50)
-  target_user_id String @db.Uuid
-  target_username String @db.VarChar(50)
+  target_user_id String? @db.Uuid
+  target_username String? @db.VarChar(50)
+  team_id String? @db.Uuid
+  team_name String? @db.VarChar(120)
+  message_id BigInt?
   action String @db.VarChar(32)
   role_before UserRole?
   role_after UserRole?

@@ -69,6 +69,7 @@ const create = async (body: TeamSettings) => {
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-2">
+                    <NuxtLink to="/tasks" class="inbox-button">{{ $msg('My tasks') }}</NuxtLink>
                     <NuxtLink to="/teams/explore" class="inbox-button">{{ $msg('Public teams') }}</NuxtLink>
                     <button type="button" class="inbox-button inbox-primary" @click="openCreate">
                         <Icon name="solar:users-group-rounded-linear" size="20" />{{ $msg('Create team space') }}

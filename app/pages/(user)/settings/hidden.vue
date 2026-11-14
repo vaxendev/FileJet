@@ -5,6 +5,7 @@ import { formatFileSize, getFileIcon } from '~/utils/file'
 definePageMeta({ middleware: 'auth', layout: 'user', alias: ['/hidden'] })
 useHead(() => ({ title: `${localize('Hidden')} · FileJet` }))
 const { busy, setHidden } = useHiddenItems()
+const { openToast } = useToast()
 const nuxtApp = useNuxtApp()
 type Access = { configured: boolean; expiresAt: number | null }
 const access = ref<Access>()
@@ -14,6 +15,10 @@ const submitting = ref(false)
 const error = ref('')
 const password = ref('')
 const confirmation = ref('')
+const changingPassword = ref(false)
+const currentPassword = ref('')
+const newPassword = ref('')
+const newConfirmation = ref('')
 let expiry: ReturnType<typeof setTimeout> | undefined
 let disposed = false
 
@@ -88,6 +93,33 @@ const lock = async () => {
         submitting.value = false
     }
 }
+const togglePasswordForm = () => {
+    changingPassword.value = !changingPassword.value
+    password.value = ''
+    confirmation.value = ''
+    currentPassword.value = ''
+    newPassword.value = ''
+    newConfirmation.value = ''
+    error.value = ''
+}
+const changePassword = async () => {
+    if (submitting.value) return
+    submitting.value = true
+    error.value = ''
+    try {
+        const next = await nuxtApp.$hiddenAccess.changePassword({
+            currentPassword: currentPassword.value, password: newPassword.value, confirmPassword: newConfirmation.value
+        })
+        if (disposed) return
+        togglePasswordForm()
+        reset(next)
+        openToast(localize('Hidden password changed.'), 'success', { notification: false })
+    } catch (failure) {
+        error.value = resolveApiError(failure)
+    } finally {
+        submitting.value = false
+    }
+}
 onMounted(loadAccess)
 onBeforeUnmount(() => { disposed = true; clearTimeout(expiry) })
 const search = ref('')
@@ -114,9 +146,28 @@ const icon = (item: LibraryItem) => item.type === 'file' ? getFileIcon(item.mime
             </NuxtLink>
             <div v-if="error" role="alert" class="rounded-xl border border-divider bg-surface p-3">
                 <p class="text-sm text-danger">{{ error }}</p>
-                <button v-if="!access || access.expiresAt" type="button" class="inbox-button mt-3" @click="loadAccess()">{{ $msg('Try again') }}</button>
+                <button v-if="!access || (access.expiresAt && !changingPassword)" type="button" class="inbox-button mt-3" @click="loadAccess()">{{ $msg('Try again') }}</button>
             </div>
             <p v-if="pending && !access?.expiresAt" role="status" class="p-3 text-sm text-muted">{{ $msg('Loading...') }}</p>
+            <form v-else-if="changingPassword" class="flex w-full max-w-md flex-col gap-3 rounded-xl border border-divider bg-surface p-4" @submit.prevent="changePassword">
+                <h2 class="font-semibold text-foreground">{{ $msg('Change Hidden password') }}</h2>
+                <label class="flex flex-col gap-1 text-sm">
+                    {{ $msg('Current Hidden password') }}
+                    <input v-model="currentPassword" class="inbox-input" type="password" autocomplete="current-password" maxlength="128" required />
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                    {{ $msg('New password') }}
+                    <input v-model="newPassword" class="inbox-input" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                    {{ $msg('Confirm new password') }}
+                    <input v-model="newConfirmation" class="inbox-input" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+                </label>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button type="button" class="inbox-button" :disabled="submitting" @click="togglePasswordForm">{{ $msg('Cancel') }}</button>
+                    <button type="submit" class="inbox-button inbox-primary" :disabled="submitting">{{ $msg('Change password') }}</button>
+                </div>
+            </form>
             <form v-else-if="access && !access.expiresAt" class="flex w-full max-w-md flex-col gap-3 rounded-xl border border-divider bg-surface p-4" @submit.prevent="submit">
                 <h2 class="font-semibold text-foreground">{{ access.configured ? $msg('Unlock Hidden') : $msg('Set a Hidden password') }}</h2>
                 <label class="flex flex-col gap-1 text-sm">
@@ -131,10 +182,14 @@ const icon = (item: LibraryItem) => item.type === 'file' ? getFileIcon(item.mime
                 <button type="submit" class="inbox-button inbox-primary self-start" :disabled="submitting">
                     {{ access.configured ? $msg('Unlock Hidden') : $msg('Set password') }}
                 </button>
+                <button v-if="access.configured" type="button" class="inbox-button self-start" :disabled="submitting" @click="togglePasswordForm">
+                    {{ $msg('Change Hidden password') }}
+                </button>
             </form>
             <template v-else-if="access?.expiresAt">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <SearchBox v-model="search" class="min-w-0 flex-1" :placeholder="$msg('Search hidden items…')" />
+                <button type="button" class="inbox-button" :disabled="submitting || busy" @click="togglePasswordForm">{{ $msg('Change Hidden password') }}</button>
                 <button type="button" class="inbox-button" :disabled="submitting || busy" @click="lock">{{ $msg('Lock Hidden') }}</button>
             </div>
             <p v-if="pending" role="status" class="p-3 text-sm text-muted">{{ $msg('Loading...') }}</p>

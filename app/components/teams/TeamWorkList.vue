@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { $fetch as teamFetch } from 'ofetch'
+import { formatTaskDay } from '~/utils/taskDates'
 import type { TeamFileReference, TeamFileReview, TeamListPage, TeamTask } from '~~/shared/types/teamCollaboration'
 
 const props = defineProps<{ teamId: string; kind: 'tasks' | 'reviews' }>()
@@ -13,8 +14,7 @@ const loading = ref(false)
 const busyId = ref<string | null>(null)
 const error = ref('')
 const notes = ref<Record<string, string>>({})
-const dueDate = (date: string) => new Intl.DateTimeFormat(currentLocaleTag(), { dateStyle: 'medium', timeZone: 'UTC' })
-    .format(new Date(date + 'T00:00:00Z'))
+const dueDate = (date: string) => formatTaskDay(date, currentLocaleTag())
 const reviewStatus = (review: TeamFileReview) => {
     if (review.stale && review.status === 'PENDING') return localize('File version changed')
     return localize({ PENDING: 'Awaiting review', APPROVED: 'Approved', CHANGES_REQUESTED: 'Changes requested' }[review.status])

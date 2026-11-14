@@ -1,4 +1,5 @@
 import { requireAdmin } from '../../../../../utils/admin'
+import { writeMessageDeletionEvent } from '../../../../../utils/adminEvents'
 import { throwError } from '../../../../../utils/error'
 import { teamChatCursor } from '../../../../../utils/teamChat'
 import { teamWrite } from '../../../../../utils/teamSpaces'
@@ -10,10 +11,12 @@ export default defineEventHandler(async event => {
     return teamWrite(event, 'view', async (tx, team, actor) => {
         const message = await tx.team_messages.findFirst({
             where: { team_id: team.id, id },
-            select: { author_id: true, deleted_at: true, edit_version: true }
+            select: { id: true, author_id: true, author: { select: { username: true } }, deleted_at: true, edit_version: true }
         })
         if (!message) throwError(404, 'Team message not found.')
-        if (message.author_id !== actor) await requireAdmin(event, tx)
+        const account = message.author_id !== actor ? await requireAdmin(event, tx) : await tx.users.findUnique({
+            where: { id: actor }, select: { id: true, username: true, role: true }
+        })
         if (message.deleted_at) return { id: id.toString(), body: null, editVersion: message.edit_version!.toString() }
 
         const [deleted] = await tx.$queryRaw<{ edit_version: bigint }[]>`
@@ -26,6 +29,7 @@ export default defineEventHandler(async event => {
         await tx.team_messages.updateMany({ where: { team_id: team.id, reply_to_id: id }, data: { reply_to_id: null } })
         await tx.team_chat_mentions.deleteMany({ where: { message_id: id } })
         await tx.team_tasks.updateMany({ where: { team_id: team.id, message_id: id }, data: { message_id: null } })
+        if (account?.role === 'ADMIN') await writeMessageDeletionEvent(tx, account, team, message)
 
         return { id: id.toString(), body: null, editVersion: deleted!.edit_version.toString() }
     })

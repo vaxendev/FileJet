@@ -16,6 +16,22 @@ export interface TeamTask {
     canUpdate: boolean
 }
 
+export interface AssignedTeamTask extends TeamTask {
+    teamId: string
+    teamName: string
+}
+
+export const assignedTaskFilters = ['all', 'upcoming', 'overdue', 'completed'] as const
+export type AssignedTaskFilter = typeof assignedTaskFilters[number]
+
+export interface TeamTaskNotification {
+    id: string
+    title: string
+    teamName: string
+    dueOn: string
+    kind: 'assigned' | 'due'
+}
+
 export type TeamReviewStatus = 'PENDING' | 'APPROVED' | 'CHANGES_REQUESTED'
 
 export interface TeamFileReview {

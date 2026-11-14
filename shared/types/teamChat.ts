@@ -30,3 +30,16 @@ export interface TeamChatPage {
     edits: TeamChatEdit[]
     editCursor: string
 }
+
+export interface TeamChatSearchResult {
+    id: string
+    authorName: string | null
+    excerpt: string
+    createdAt: string
+    fileName: string | null
+}
+
+export interface TeamChatSearchPage {
+    items: TeamChatSearchResult[]
+    next: string | null
+}
