@@ -1,7 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @import "tailwindcss";
-@import "@nuxt/ui";
 
 @import "./motion.css";
 @import "./responsive.css";
@@ -9,26 +8,6 @@
 @import "./themes.css";
 @import "./notifications.css";
 @import "./details-mobile.css";
-
-:root {
-    --ui-radius: 0.5rem;
-    --ui-primary: var(--color-primary);
-    --ui-text-dimmed: var(--color-muted);
-    --ui-text-muted: var(--color-muted);
-    --ui-text-toned: var(--color-label);
-    --ui-text: var(--color-content);
-    --ui-text-highlighted: var(--color-foreground);
-    --ui-text-inverted: var(--color-on-primary);
-    --ui-bg: var(--color-surface);
-    --ui-bg-muted: var(--color-input);
-    --ui-bg-elevated: var(--color-control);
-    --ui-bg-accented: var(--color-raised);
-    --ui-bg-inverted: var(--color-foreground);
-    --ui-border: var(--color-divider);
-    --ui-border-muted: var(--color-divider);
-    --ui-border-accented: var(--color-control-border);
-    --ui-border-inverted: var(--color-foreground);
-}
 
 /* Theme colors stay named so light, dark and accent themes work consistently. */
 

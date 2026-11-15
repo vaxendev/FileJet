@@ -1,13 +1,11 @@
 <template>
-    <UCard
-        variant="outline"
-        :ui="{ body: 'contents' }"
-        class="file-card group/file-card min-w-0 overflow-hidden min-h-40 p-2.5 flex flex-col justify-start
-            bg-surface border border-divider rounded-xl ring-0 cursor-pointer transition-colors duration-200 gap-2.5
+    <div
+        class="file-card group/file-card min-w-0 overflow-hidden min-h-40 p-3 flex flex-col justify-start
+            bg-surface border border-divider rounded-3xl cursor-pointer transition-colors duration-200 gap-2
             hover:bg-control hover:border-hover-border selected:border-hover-border"
         :class="{ selected }"
     >
-        <div class="file-preview relative w-full rounded-lg aspect-4/3 overflow-hidden bg-preview shrink-0" :class="{ selected }">
+        <div class="file-preview relative w-full rounded-[11px] aspect-4/3 overflow-hidden bg-preview shrink-0" :class="{ selected }">
             <slot name="preview">
                 <div class="file-preview-placeholder h-full flex items-center justify-center text-highlight text-[3.5rem]">
                     <Icon :name="icon" />
@@ -35,7 +33,7 @@
             </div>
         </div>
         <slot name="footer" />
-    </UCard>
+    </div>
 </template>
 
 <script setup lang="ts">

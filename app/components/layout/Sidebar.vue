@@ -1,6 +1,7 @@
 <template>
-    <aside class="sidebar-area flex h-full min-h-0 w-58 shrink-0 flex-col gap-5 overflow-hidden rounded-2xl border border-divider bg-surface p-3">
-        <NuxtLink to="/home" :aria-label='$msg("FileJet home")' class="logo-area flex h-12 w-fit items-center gap-1 overflow-hidden rounded-md px-2 no-underline">
+    <aside class="sidebar-area w-64 h-full min-h-0 overflow-hidden p-4 bg-surface border border-divider rounded-xl
+        shrink-0 flex flex-col gap-5">
+        <NuxtLink to="/home" :aria-label='$msg("FileJet home")' class="logo-area flex w-40 h-12 items-center gap-1 overflow-hidden no-underline">
             <BrandMark />
             <span class="text-xl font-bold tracking-tight text-foreground">FileJet</span>
         </NuxtLink>
@@ -8,22 +9,19 @@
         <nav :aria-label='$msg("Main navigation")' class="sidebar-navigation min-h-0 flex-1 overflow-y-auto overscroll-contain flex flex-col gap-5">
             <div v-for="section in navigation" :key="section.label" class="menu-section flex flex-col gap-1">
                 <span class="menu-title mx-3 mb-1 text-xs font-medium leading-normal text-muted">{{ section.label }}</span>
-                <UButton
+                <NuxtLink
                     v-for="item in section.items"
                     :key="item.to"
                     :to="item.to"
-                    color="neutral"
-                    variant="ghost"
-                    block
-                    :active="isActive(item.to)"
-                    active-color="primary"
-                    active-variant="soft"
-                    class="min-h-10 justify-start gap-2.5 px-3"
-                    :class="isActive(item.to) ? 'bg-accent/12 text-accent hover:bg-accent/16' : undefined"
-                    :aria-current="isActive(item.to) ? 'page' : undefined"
-                    :leading-icon="isActive(item.to) ? item.activeIcon : item.icon"
-                    :label="item.label"
-                />
+                    class="sidebar-link"
+                    :class="{ active: isActive(item.to) }"
+                >
+                    <Icon
+                        class="shrink-0 text-[1.3rem]"
+                        :name="isActive(item.to) ? item.activeIcon : item.icon"
+                    />
+                    {{ item.label }}
+                </NuxtLink>
             </div>
         </nav>
 
@@ -38,7 +36,7 @@ import AccountMenu from './AccountMenu.vue'
 import BrandMark from '~/components/ui/BrandMark.vue'
 
 const route = useRoute()
-const isActive = (path: string) => route.path === path || route.path.startsWith(path + '/')
+const isActive = (path: string) => route.path === path || (path === '/inbox' && route.path.startsWith('/inbox/'))
 
 const currentUser = useAuthUser()
 const navigation = computed(() => [
@@ -66,3 +64,17 @@ const navigation = computed(() => [
     }] : [])
 ])
 </script>
+
+<style scoped>
+@reference "~/assets/css/tailwind.css";
+
+@layer components {
+    .sidebar-link {
+        @apply flex items-center gap-2 w-full py-2 px-3 text-foreground;
+        @apply bg-transparent border-0 rounded-md no-underline text-sm font-medium cursor-pointer;
+        @apply leading-normal min-h-9 hover:bg-control is-active:bg-primary is-active:text-on-primary;
+        @apply is-active:font-semibold is-active:hover:bg-primary;
+        @apply is-active:hover:text-on-primary;
+    }
+}
+</style>

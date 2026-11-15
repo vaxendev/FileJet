@@ -1,18 +1,25 @@
 <template>
     <div class="view-switcher w-24 h-10 max-mobile:h-11 pointer-coarse:h-11 shrink-0 flex items-center
         justify-center bg-surface-hover p-0.75 gap-0.75 border border-divider rounded-lg">
-        <UButton
+        <button
             v-for="view in views"
             :key="view.value"
             type="button"
             :aria-label="view.label"
             :aria-pressed="modelValue === view.value"
-            :color="modelValue === view.value ? 'primary' : 'neutral'"
-            :variant="modelValue === view.value ? 'solid' : 'ghost'"
-            :icon="view.icon"
-            class="view-button h-full min-w-0 flex-1 justify-center rounded-md p-0"
+            class="view-button flex-1 h-full min-w-0 p-0 flex items-center justify-center text-foreground
+                bg-transparent border-0 rounded-sm cursor-pointer text-sm font-medium leading-normal hover:bg-raised
+                is-active:bg-primary focus-visible:outline-2 focus-visible:outline-accent
+                focus-visible:-outline-offset-2 is-active:text-on-primary is-active:hover:bg-primary
+                is-active:hover:text-on-primary"
+            :class="{ active: modelValue === view.value }"
             @click="emit('update:modelValue', view.value)"
-        />
+        >
+            <Icon
+                :name="view.icon"
+                class="block text-lg shrink-0 text-inherit size-4.5"
+            />
+        </button>
     </div>
 </template>
 
