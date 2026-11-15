@@ -1,277 +1,111 @@
 <template>
-    <div class="dashboard-page flex flex-col gap-3 size-full">
-        <section class="stats-grid grid grid-cols-3 max-mobile:grid-cols-1 gap-3 shrink-0">
-            <div class="stat-card min-h-32 flex items-center gap-4 p-4 bg-surface border border-divider rounded-3xl">
-                <div class="stat-icon flex items-center justify-center text-accent bg-accent/12 rounded-[0.675rem] text-[1.6rem]
-                    size-[3.4rem]">
-                    <Icon
-                        name="solar:document-linear"
-                        aria-hidden="true"
-                    />
-                </div>
-
-                <div class="stat-info flex flex-col gap-[0.2rem]">
-                    <strong class="text-foreground text-[1.7rem] font-bold">{{ files.length }}</strong>
-                    <span class="text-muted text-[0.9rem]">{{ $msg("Files") }}</span>
-                </div>
-                <p class="stat-description hidden">{{ $msg("Uploaded files") }}</p>
-            </div>
-
-            <div class="stat-card min-h-32 flex items-center gap-4 p-4 bg-surface border border-divider rounded-3xl">
-                <div class="stat-icon flex items-center justify-center text-accent bg-accent/12 rounded-[0.675rem] text-[1.6rem]
-                    size-[3.4rem]">
-                    <Icon
-                        name="solar:folder-linear"
-                        aria-hidden="true"
-                    />
-                </div>
-
-                <div class="stat-info flex flex-col gap-[0.2rem]">
-                    <strong class="text-foreground text-[1.7rem] font-bold">{{ folders.length }}</strong>
-                    <span class="text-muted text-[0.9rem]">{{ $msg("Folders") }}</span>
-                </div>
-                <p class="stat-description hidden">{{ $msg("Created folders") }}</p>
-            </div>
-
-            <div class="stat-card min-h-32 flex items-center gap-4 p-4 bg-surface border border-divider rounded-3xl">
-                <div class="stat-icon flex items-center justify-center text-accent bg-accent/12 rounded-[0.675rem] text-[1.6rem]
-                    size-[3.4rem]">
-                    <Icon
-                        name="solar:notebook-linear"
-                        aria-hidden="true"
-                    />
-                </div>
-
-                <div class="stat-info flex flex-col gap-[0.2rem]">
-                    <strong class="text-foreground text-[1.7rem] font-bold">{{ notes.length }}</strong>
-                    <span class="text-muted text-[0.9rem]">{{ $msg("Notes") }}</span>
-                </div>
-                <p class="stat-description hidden">{{ $msg("Saved notes") }}</p>
-            </div>
+    <div class="flex h-full min-h-0 flex-col gap-4 overflow-y-auto [scrollbar-color:var(--color-scrollbar)_transparent] [scrollbar-width:thin]">
+        <section class="grid shrink-0 grid-cols-3 gap-3 max-mobile:grid-cols-1" :aria-label="$msg('Dashboard')">
+            <NuxtLink v-for="stat in libraryStats" :key="stat.to" :to="stat.to" class="group block rounded-xl">
+                <UCard class="h-full bg-surface transition-colors group-hover:bg-surface-hover" variant="outline"
+                    :ui="{ body: 'flex items-center gap-4 p-4 sm:p-5' }">
+                    <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-accent/12 text-xl text-accent">
+                        <Icon :name="stat.icon" aria-hidden="true" />
+                    </span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm text-label">{{ $msg(stat.label) }}</span>
+                        <strong class="block text-2xl font-semibold tracking-tight text-foreground">{{ stat.count.toLocaleString(currentLocaleTag()) }}</strong>
+                    </span>
+                    <Icon name="solar:alt-arrow-right-linear" class="shrink-0 text-muted group-hover:text-accent" aria-hidden="true" />
+                </UCard>
+            </NuxtLink>
         </section>
 
-        <section class="dashboard-grid grid grid-cols-[minmax(0,_1.85fr)_minmax(0,_1.15fr)] gap-3 flex-1 min-h-0">
-            <div class="dashboard-left flex flex-col min-w-0 h-full min-h-0">
-                <div class="dashboard-card h-full flex flex-col min-h-0 bg-surface border border-divider rounded-3xl
-                    overflow-hidden">
-                    <div class="card-header flex items-center justify-between p-4 shrink-0">
-                        <h2 class="m-0 text-foreground text-lg font-semibold leading-tight">{{ $msg("Recent Files") }}</h2>
-
-                        <NuxtLink class="flex items-center gap-[0.3rem] text-accent no-underline text-sm font-medium leading-normal
-                            hover:text-accent" to="/files">
-                            {{ $msg("View all") }}
-                            <Icon name="solar:arrow-right-linear" />
-                        </NuxtLink>
+        <div class="grid grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] items-start gap-4 max-tablet:grid-cols-1">
+            <UCard as="section" variant="outline" :ui="{ header: 'p-4 sm:px-5 sm:py-4', body: 'p-0 sm:p-0' }">
+                <template #header>
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-base font-semibold text-foreground">{{ $msg('Recent Files') }}</h2>
+                        <UButton to="/files" color="neutral" variant="ghost" :label="$msg('View all')" trailing-icon="solar:arrow-right-linear" />
                     </div>
-
-                    <div
-                        class="files-list flex-1 min-h-0 pt-0 pr-[1.4rem] pb-2 pl-[1.4rem] overflow-y-auto overflow-x-hidden
-                            [scrollbar-width:thin] [scrollbar-color:var(--color-scrollbar)_transparent] files-empty:flex
-                            files-empty:flex-col"
-                        :class="{ 'files-list-empty': files.length === 0 }"
-                    >
-                        <div
-                            v-if="files.length === 0"
-                            class="empty-files flex-1 min-h-48 flex flex-col justify-center items-center gap-[0.45rem] text-muted
-                                text-center"
-                        >
-                            <div class="empty-files-icon mb-2 flex items-center justify-center text-3xl leading-[inherit] text-accent
-                                size-[3.2rem]">
-                                <Icon class="text-[0.825rem] text-muted"
-                                    name="solar:file-bold"
-                                    size="3rem"
-                                />
-                            </div>
-
-                            <strong class="text-[0.95rem] font-semibold text-foreground">{{ $msg("No files yet") }}</strong>
-
-                            <span class="text-[0.825rem] text-muted"> {{ $msg("Your recent files will appear here.") }} </span>
-
-                            <NuxtLink
-                                to="/files"
-                                class="empty-files-link mt-[0.35rem] flex items-center gap-1 text-accent text-[0.825rem] font-medium
-                                    no-underline hover:text-accent"
-                            >
-                                {{ $msg("Open Files") }}
-                                <Icon class="text-[0.825rem] text-muted" name="solar:arrow-right-linear" />
+                </template>
+                <div v-if="!recentFiles.length" class="flex min-h-52 flex-col items-center justify-center gap-3 p-5 text-center">
+                    <span class="grid size-12 place-items-center rounded-xl bg-control text-2xl text-accent">
+                        <Icon name="solar:file-bold" aria-hidden="true" />
+                    </span>
+                    <strong class="text-sm font-semibold text-foreground">{{ $msg('No files yet') }}</strong>
+                    <UButton to="/files" color="primary" variant="soft" :label="$msg('Open Files')" />
+                </div>
+                <ul v-else class="divide-y divide-divider px-3 sm:px-5">
+                    <li v-for="file in recentFiles" :key="file.id" class="flex min-h-17 items-center gap-3 py-2">
+                        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-control text-xl text-accent">
+                            <Icon :name="getFileIcon(file.mime_type, file.original_name)" aria-hidden="true" />
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <input v-if="editingFileId === file.id"
+                                :ref="element => { nameInput = element as HTMLInputElement | null }"
+                                v-model="editingFileName" type="text" class="inbox-input"
+                                :aria-label="$msg('Rename')" :readonly="isSavingRename"
+                                @keydown.enter.prevent="saveRename(file)" @keydown.esc.prevent="cancelRename" @blur="saveRename(file)" />
+                            <NuxtLink v-else :to="{ path: '/files/' + file.id, query: { from: '/home' } }"
+                                class="block truncate rounded-sm text-sm font-semibold text-foreground hover:text-accent" :title="file.name">
+                                {{ file.name }}
                             </NuxtLink>
+                            <p class="mt-0.5 truncate text-xs text-muted">{{ getFileType(file.original_name) }} · {{ formatFileTime(file.created_at) }}</p>
                         </div>
-                        <template v-else>
-                            <div
-                                v-for="file in recentFiles"
-                                :key="file.id"
-                                class="file-main w-full min-h-[4.6rem] flex items-center justify-between border-t border-t-divider"
-                                @click="openFile(file)"
-                            >
-                                <div class="file-left flex-1 min-w-0 flex items-center gap-[0.85rem]">
-                                    <div class="file-icon shrink-0 flex items-center justify-center text-accent bg-accent/12 rounded-md text-xl
-                                        leading-[inherit] size-10">
-                                        <Icon
-                                            :name="getFileIcon(file.mime_type, file.original_name)"
-                                        />
-                                    </div>
+                        <span class="shrink-0 text-xs text-muted max-mobile:hidden">{{ formatFileSize(file.size) }}</span>
+                        <ItemMenu type="file" :is-favorite="isFileFavorite(file.id)" hideable
+                            :can-copy="canCopyFile(file.mime_type, file.original_name)"
+                            @hide="setHidden('file', file.id)" @open="openFile(file)" @download="handleDownload(file.id)"
+                            @rename="startRename(file)" @copy="handleCopy(file)" @favorite="handleFavorite(file)" @delete="handleDelete(file)" />
+                    </li>
+                </ul>
+            </UCard>
 
-                                    <div class="file-info min-w-0 flex flex-col gap-1">
-                                        <input
-                                            v-if="editingFileId === file.id"
-                                            :ref="
-                                                element => {
-                                                    nameInput = element as HTMLInputElement | null
-                                                }
-                                            "
-                                            v-model="editingFileName"
-                                            type="text"
-                                            class="file-name-input w-full min-w-0 py-1 px-2 text-foreground bg-control border border-primary rounded-md
-                                                text-sm font-semibold outline-none leading-normal focus-visible:border-accent"
-                                            :readonly="isSavingRename"
-                                            @keydown.enter.prevent="saveRename(file)"
-                                            @keydown.esc.prevent="cancelRename"
-                                            @blur="saveRename(file)"
-                                            @click.stop
-                                        />
-                                        <strong class="text-foreground text-sm font-semibold leading-normal truncate" v-else>{{ file.name }}</strong>
-                                        <span class="text-muted text-xs font-normal leading-normal"
-                                            >{{ getFileType(file.original_name) }} •
-                                            {{ formatFileTime(file.created_at) }}</span
-                                        >
-                                    </div>
-                                </div>
-
-                                <div class="file-right shrink-0 flex items-center gap-[0.675rem]">
-                                    <span class="file-size min-w-18 text-muted text-[0.85rem] text-right">{{ formatFileSize(file.size) }}</span>
-
-                                    <ItemMenu
-                                        type="file"
-                                        :is-favorite="isFileFavorite(file.id)"
-                                        hideable
-                                        @hide="setHidden('file', file.id)"
-                                        :can-copy="canCopyFile(file.mime_type, file.original_name)"
-                                        @open="openFile(file)"
-                                        @download="handleDownload(file.id)"
-                                        @rename="startRename(file)"
-                                        @copy="handleCopy(file)"
-                                        @favorite="handleFavorite(file)"
-                                        @delete="handleDelete(file)"
-                                        @click.stop
-                                    />
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dashboard-right flex flex-col min-w-0 h-full min-h-0 gap-4 overflow-y-auto">
-                <div class="dashboard-card storage-card bg-surface border border-divider rounded-3xl overflow-hidden flex-1 w-full self-stretch
-                    min-h-0 flex flex-col">
-                    <div class="card-header flex items-center justify-between p-4 mb-2 shrink-0">
-                        <h2 class="m-0 text-foreground text-lg font-semibold leading-tight" :title='$msg("Includes items in Trash")'>{{ $msg("Storage Usage") }}</h2>
-                    </div>
-
-                    <div class="storage-content w-full flex-1 max-laptop:flex-none min-h-0 flex flex-col overflow-y-auto pt-0 pr-[1.4rem] pb-[1.4rem] pl-[1.4rem]" :aria-busy="storageStatus === 'pending'">
+            <div class="grid min-w-0 gap-4">
+                <UCard as="section" variant="outline" :ui="{ header: 'p-4 sm:px-5 sm:py-4', body: 'p-4 sm:p-5' }">
+                    <template #header>
+                        <h2 class="text-base font-semibold text-foreground" :title="$msg('Includes items in Trash')">{{ $msg('Storage Usage') }}</h2>
+                    </template>
+                    <div :aria-busy="storageStatus === 'pending'">
                         <template v-if="storageUsage && !storageError">
-                            <div class="storage-top flex shrink-0 items-center justify-between gap-3 pr-[0.8rem] pl-[0.2rem] mb-[0.4rem]">
-                                <strong class="text-foreground text-[1.275rem]">{{ storagePercent.toLocaleString(currentLocaleTag(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}%</strong>
-                                <span class="text-muted text-[0.85rem]">
-                                    <b class="text-foreground font-semibold">{{ formatFileSize(storageUsage.storageUsed) }}</b> /
-                                    {{ formatFileSize(storageUsage.storageLimit) }}
-                                </span>
+                            <div class="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                                <strong class="text-2xl font-semibold tabular-nums text-foreground">
+                                    {{ storagePercent.toLocaleString(currentLocaleTag(), { maximumFractionDigits: 2 }) }}%
+                                </strong>
+                                <span class="text-xs text-label">{{ formatFileSize(storageUsage.storageUsed) }} / {{ formatFileSize(storageUsage.storageLimit) }}</span>
                             </div>
-                            <meter
-                                class="storage-meter w-full max-w-full h-4 shrink-0 block appearance-none border-0 rounded-sm bg-meter-track"
-                                min="0"
-                                max="100"
-                                :value="Math.min(100, storagePercent)"
-                                :aria-label='$msg("Storage used")'
-                            >{{ storagePercent.toLocaleString(currentLocaleTag(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}%</meter>
-                            <div class="storage-types flex shrink-0 flex-col gap-[1.1rem] mt-12">
-                                <div v-for="type in storageTypes" :key="type.key" class="storage-item flex items-center justify-between gap-3 w-full text-muted text-[0.85rem]">
-                                    <div class="storage-name flex items-center gap-[0.55rem]" :title="type.key === 'documents' ? $msg('Document files and notes') : undefined">
-                                        <span class="storage-dot rounded-full shrink-0 size-[0.55rem]" :class="type.color"></span>
-                                        {{ type.label }}
-                                    </div>
-                                    <span>{{ formatFileSize(storageUsage.categories[type.key]) }}</span>
+                            <UProgress size="sm" :model-value="Math.min(100, storagePercent)"
+                                :get-value-label="() => $msg('Storage used')" />
+                            <dl class="mt-5 grid gap-3">
+                                <div v-for="type in storageTypes" :key="type.key" class="flex justify-between gap-2 text-sm">
+                                    <dt class="flex min-w-0 items-center gap-2 text-label" :title="type.key === 'documents' ? $msg('Document files and notes') : undefined">
+                                        <span class="size-2 shrink-0 rounded-full" :class="type.color" aria-hidden="true" />{{ type.label }}
+                                    </dt>
+                                    <dd class="shrink-0 tabular-nums text-content">{{ formatFileSize(storageUsage.categories[type.key]) }}</dd>
                                 </div>
-                            </div>
+                            </dl>
                         </template>
-                        <div v-else class="py-4" :role="storageError ? 'alert' : 'status'">
-                            <p class="m-0 text-sm text-muted">{{ storageError ? $msg('Storage usage could not be loaded.') : $msg('Loading storage usage...') }}</p>
-                            <button v-if="storageError" type="button" class="mt-3 min-h-10 cursor-pointer rounded-md border border-control-border bg-control px-3 text-sm text-content disabled:opacity-50"
-                                :disabled="storageStatus === 'pending'" @click="refreshStorage()">{{ $msg("Try again") }}</button>
-                        </div>
+                        <p v-else class="text-sm text-muted" :role="storageError ? 'alert' : 'status'">
+                            {{ storageError ? $msg('Storage usage could not be loaded.') : $msg('Loading storage usage...') }}
+                        </p>
+                        <UButton v-if="storageError" class="mt-3" color="neutral" variant="outline" :label="$msg('Try again')"
+                            :disabled="storageStatus === 'pending'" @click="refreshStorage()" />
                     </div>
-                </div>
-                <div class="dashboard-card quick-card bg-surface border border-divider rounded-3xl overflow-hidden flex-1 w-full self-stretch
-                    min-h-0 flex flex-col pb-4">
-                    <div class="card-header flex items-center justify-between p-4 shrink-0">
-                        <h2 class="m-0 text-foreground text-lg font-semibold leading-tight">{{ $msg("Quick Actions") }}</h2>
+                </UCard>
+
+                <UCard as="section" variant="outline" :ui="{ header: 'p-4 sm:px-5 sm:py-4', body: 'p-4 sm:p-5' }">
+                    <template #header>
+                        <h2 class="text-base font-semibold text-foreground">{{ $msg('Quick Actions') }}</h2>
+                    </template>
+                    <div class="grid grid-cols-2 gap-2 max-[375px]:grid-cols-1">
+                        <UploadButton text="Upload File" variant="secondary" class="*:last:grow *:last:justify-start" :disabled="isUploading" @files="uploadRecentFiles" />
+                        <UButton color="neutral" variant="outline" class="min-h-10" icon="solar:add-folder-linear" :label="$msg('New Folder')" @click="folderFormOpen = true" />
+                        <UButton color="neutral" variant="outline" class="min-h-10" icon="solar:notebook-linear" :label="$msg('New Note')" @click="noteFormOpen = true" />
+                        <UButton to="/inbox" color="neutral" variant="outline" class="min-h-10" icon="solar:inbox-in-linear" :label="$msg('Shared Inbox')" />
                     </div>
-
-                    <div class="quick-actions-grid flex-1 max-laptop:flex-none min-h-0 overflow-y-auto grid grid-cols-2 content-start gap-3 py-0 px-4">
-                        <button
-                            @click="navigateTo('/files')"
-                            type="button"
-                            class="quick-action-card min-h-28 flex items-center gap-3 p-4 text-foreground bg-subtle border
-                                border-raised rounded-3xl cursor-pointer transition-[background,border-color,transform] duration-200
-                                hover:bg-raised hover:border-hover-border hover:-translate-y-px"
-                        >
-                            <div class="quick-action-icon flex items-center justify-center shrink-0 rounded-md text-[1.65rem]
-                                text-on-primary bg-primary size-[3.4rem]">
-                                <Icon name="solar:upload-linear" />
-                            </div>
-
-                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">{{ $msg("Upload File") }}</span>
-                        </button>
-
-                        <button
-                            @click="navigateTo('/folders')"
-                            type="button"
-                            class="quick-action-card min-h-28 flex items-center gap-3 p-4 text-foreground bg-subtle border
-                                border-raised rounded-3xl cursor-pointer transition-[background,border-color,transform] duration-200
-                                hover:bg-raised hover:border-hover-border hover:-translate-y-px"
-                        >
-                            <div class="quick-action-icon folder-icon flex items-center justify-center shrink-0 rounded-md text-[1.65rem]
-                                text-accent bg-accent/12 border border-accent/25 size-[3.4rem]">
-                                <Icon name="solar:add-linear" />
-                            </div>
-
-                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">{{ $msg("New Folder") }}</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="quick-action-card min-h-28 flex items-center gap-3 p-4 text-foreground bg-subtle border
-                                border-raised rounded-3xl cursor-pointer transition-[background,border-color,transform] duration-200
-                                hover:bg-raised hover:border-hover-border hover:-translate-y-px"
-                        >
-                            <div class="quick-action-icon note-icon flex items-center justify-center shrink-0 rounded-md text-[1.65rem]
-                                text-accent bg-accent/12 border border-accent/25 size-[3.4rem]">
-                                <Icon name="solar:notebook-linear" />
-                            </div>
-
-                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">{{ $msg("New Note") }}</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="quick-action-card min-h-28 flex items-center gap-3 p-4 text-foreground bg-subtle border
-                                border-raised rounded-3xl cursor-pointer transition-[background,border-color,transform] duration-200
-                                hover:bg-raised hover:border-hover-border hover:-translate-y-px"
-                        >
-                            <div class="quick-action-icon inbox-icon flex items-center justify-center shrink-0 rounded-md text-[1.65rem]
-                                text-on-primary bg-primary border border-primary size-[3.4rem]">
-                                <Icon
-                                    name="solar:users-group-rounded-linear"
-                                    class=""
-                                />
-                            </div>
-
-                            <span class="quick-action-title text-foreground text-[0.95rem] font-semibold text-left">{{ $msg("Shared Inbox") }}</span>
-                        </button>
-                    </div>
-                </div>
+                </UCard>
             </div>
-        </section>
+        </div>
+
+        <UploadProgress :active="isUploading" :progress="uploadProgress" :processing="isProcessing" />
+        <FolderFormModal :open="folderFormOpen" @close="folderFormOpen = false" @saved="refreshDashboard" />
+        <NoteFormModal :open="noteFormOpen" @close="noteFormOpen = false" @saved="refreshDashboard" />
     </div>
 </template>
 
@@ -288,8 +122,10 @@ const { openToast } = useToast()
 
 const { user, files, folders, notes, favorites, error, fetchAll } = useUser()
 const { setHidden } = useHiddenItems()
-const { deleteFile, renameFile, copyFile, downloadFile, isDeleting } = useFileActions()
+const { deleteFile, renameFile, copyFile, downloadFile, uploadFiles, isDeleting, isUploading, uploadProgress, isProcessing } = useFileActions()
 const { addFavorite, removeFavorite } = useFavoriteActions()
+const folderFormOpen = ref(false)
+const noteFormOpen = ref(false)
 
 await fetchAll()
 
@@ -307,6 +143,14 @@ if (error.value) {
 }
 
 const recentFiles = computed(() => files.value.slice(0, 12))
+const libraryStats = computed(() => [
+    { to: '/files', label: 'Files', icon: 'solar:document-linear', count: files.value.length },
+    { to: '/folders', label: 'Folders', icon: 'solar:folder-linear', count: folders.value.length },
+    { to: '/notes', label: 'Notes', icon: 'solar:notebook-linear', count: notes.value.length }
+])
+
+const refreshDashboard = async () => { await Promise.all([fetchAll(), refreshStorage()]) }
+const uploadRecentFiles = (selection: FileList) => uploadFiles(selection, refreshDashboard)
 
 type FileItem = (typeof files.value)[number]
 
@@ -435,91 +279,3 @@ const storagePercent = computed(() => {
     return Math.max(0, used / limit * 100)
 })
 </script>
-
-<style scoped>
-@media (max-width: 600px) {
-    .stats-grid {
-        gap: 0.875rem;
-    }
-
-    .stats-grid .stat-card {
-        position: relative;
-        align-items: stretch;
-        min-height: 10rem;
-        padding: 1.5rem;
-        gap: 0;
-        border-radius: 1.75rem;
-    }
-
-    .stats-grid .stat-icon {
-        position: absolute;
-        top: 1.5rem;
-        right: 1.5rem;
-        width: 1.25rem;
-        height: 1.25rem;
-        font-size: 1.25rem;
-        color: var(--color-muted);
-        background: transparent;
-        border-radius: 0;
-    }
-
-    .stats-grid .stat-info {
-        gap: 0.5rem;
-        padding-right: 2rem;
-        text-align: left;
-    }
-
-    .stats-grid .stat-info span {
-        order: -1;
-        font-size: 0.875rem;
-        line-height: 1.5;
-    }
-
-    .stats-grid .stat-info strong {
-        font-size: 1.875rem;
-        line-height: 1.2;
-    }
-
-    .stats-grid .stat-description {
-        display: block;
-        margin: auto 0 0;
-        padding-top: 1.5rem;
-        color: var(--color-muted);
-        font-size: 0.875rem;
-        line-height: 1.5;
-    }
-}
-
-.files-list::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.files-list::-webkit-scrollbar-thumb {
-    background: var(--color-scrollbar);
-    border-radius: 4px;
-}
-
-.files-list::-webkit-scrollbar-thumb:hover {
-    background: var(--color-hover-border);
-}
-
-.storage-meter::-webkit-meter-bar {
-    background: var(--color-meter-track);
-    border: none;
-    border-radius: 4px;
-
-    box-shadow: none;
-}
-
-.storage-meter::-webkit-meter-optimum-value,
-.storage-meter::-webkit-meter-suboptimum-value,
-.storage-meter::-webkit-meter-even-less-good-value {
-    background: var(--color-accent);
-    border-radius: 4px;
-}
-
-.storage-meter::-moz-meter-bar {
-    background: var(--color-accent);
-    border-radius: 4px;
-}
-</style>
