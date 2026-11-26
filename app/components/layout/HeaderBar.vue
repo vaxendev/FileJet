@@ -1,19 +1,18 @@
 <template>
-    <header class="header-bar w-full h-16 flex items-center justify-between py-0 px-4 bg-surface border border-divider
-        rounded-xl">
-        <button
+    <header class="header-bar flex h-16 w-full items-center justify-between border border-divider bg-surface px-4"
+        :class="route.path === '/home' ? 'rounded-[0.75rem]' : 'rounded-2xl'">
+        <UButton
             type="button"
-            class="navigation-toggle hidden max-laptop:grid size-11 shrink-0 place-items-center mr-2 rounded-lg border
-                border-control-border bg-control text-foreground cursor-pointer focus-visible:outline-2
-                focus-visible:outline-accent"
+            color="neutral"
+            variant="ghost"
+            icon="solar:hamburger-menu-linear"
+            class="navigation-toggle mr-2 hidden size-11 shrink-0 justify-center max-laptop:inline-flex"
             :aria-label='$msg("Open navigation")'
             aria-controls="mobile-navigation"
             aria-haspopup="dialog"
             :aria-expanded="navigationOpen"
             @click="$emit('openNavigation')"
-        >
-            <Icon name="solar:hamburger-menu-linear" size="24" />
-        </button>
+        />
         <div class="title flex-1 min-w-0 mr-4">
             <ClientOnly>
                 <nav
@@ -46,12 +45,11 @@
         </div>
 
         <div class="header-actions header-workspace-actions shrink-0 flex items-center gap-2">
-            <button class="header-theme-shortcut" type="button" :disabled="!preferencesLoaded"
+            <UButton class="header-theme-shortcut" color="neutral" variant="ghost" type="button" :disabled="!preferencesLoaded"
                 :aria-label="resolvedTheme === 'dark' ? $msg('Switch to light theme') : $msg('Switch to dark theme')"
                 :title="resolvedTheme === 'dark' ? $msg('Switch to light theme') : $msg('Switch to dark theme')"
-                @click="setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')">
-                <Icon :name="resolvedTheme === 'dark' ? 'solar:sun-2-linear' : 'solar:moon-linear'" size="20" />
-            </button>
+                :icon="resolvedTheme === 'dark' ? 'solar:sun-2-linear' : 'solar:moon-linear'"
+                @click="setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')" />
 
             <NotificationCenter />
 

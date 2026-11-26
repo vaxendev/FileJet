@@ -2,7 +2,7 @@ import type { TrashItemType, TrashMoveResult } from '~~/shared/types/trash'
 
 export const useTrashActions = () => {
     const router = useRouter()
-    const { syncTrash } = useUser()
+    const { syncTrash, user } = useUser()
     const { openToast } = useToast()
 
     const notifyTrashed = (result: TrashMoveResult, type?: TrashItemType, bulk = false) => {
@@ -36,6 +36,9 @@ export const useTrashActions = () => {
 
                     if (route.path.startsWith('/folders/') && route.params.folderId) {
                         await refreshNuxtData(`folder-details:${route.params.folderId}`)
+                    }
+                    if (route.path === '/home') {
+                        await refreshNuxtData(`recent-files:${user.value?.id ?? 'current'}`)
                     }
 
                     openToast(

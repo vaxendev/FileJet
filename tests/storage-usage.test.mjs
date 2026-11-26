@@ -158,6 +158,9 @@ async function pageFixture() {
         useFileActions: () => ({ deleteFile: async () => calls.push('delete'), renameFile: async () => calls.push('rename'), isDeleting: vue.ref(false) }),
         useFavoriteActions: () => ({}),
         useFetch: async url => {
+            if (url === '/api/files/recent') {
+                return { data: vue.ref({ files: [...files.value] }), error: vue.ref(null), status: vue.ref('success'), refresh: async () => calls.push('recent') }
+            }
             assert.equal(url, '/api/users/@me/storage')
             return { data: storage, error: vue.ref(null), status: vue.ref('success'), refresh: async () => calls.push('storage') }
         }
@@ -185,6 +188,7 @@ test('dashboard uses byte totals, guards zero quota and refreshes storage after 
     await f.page.saveRename(file)
     await f.page.handleDelete(file)
     assert.equal(f.calls.filter(call => call === 'storage').length, 2)
+    assert.equal(f.calls.filter(call => call === 'recent').length, 2)
 })
 
 test('storage dashboard template compiles', () => {

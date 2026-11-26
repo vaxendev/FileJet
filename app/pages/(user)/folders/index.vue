@@ -17,26 +17,14 @@
                         @folder="handleFolders"
                     />
 
-                    <button
+                    <UButton
                         type="button"
-                        class="new-folder-button inline-flex items-center justify-center shrink-0 gap-2 h-10 max-mobile:h-11
-                            pointer-coarse:h-11 py-0 px-3.5 text-on-primary bg-primary border border-primary rounded-lg
-                            shadow-[inset_0_1px_0_#ffffff12,_0_2px_6px_#0003] text-sm font-medium leading-normal
-                            whitespace-nowrap cursor-pointer transition-[background,border-color,transform] duration-180
-                            hover:enabled:bg-primary/85 hover:enabled:border-accent hover:enabled:-translate-y-px
-                            active:enabled:bg-primary/85 active:enabled:translate-y-0
-                            active:enabled:shadow-[inset_0_1px_3px_#0003] focus-visible:outline-2 focus-visible:outline-accent
-                            focus-visible:-outline-offset-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
-                            motion-reduce:transition-none motion-reduce:hover:enabled:translate-y-0"
+                        class="h-10 shrink-0 whitespace-nowrap px-3 max-mobile:h-11 pointer-coarse:h-11"
+                        leading-icon="solar:add-folder-linear"
+                        :label="$msg('New Folder')"
                         :disabled="pending || folderActions.isLoading.value"
                         @click="createFolder"
-                    >
-                        <Icon
-                            name="solar:add-folder-bold"
-                            class="new-folder-icon block shrink-0 text-on-primary text-lg size-4.5"
-                        />
-                        <span>{{ $msg("New Folder") }}</span>
-                    </button>
+                    />
                 </div>
             </div>
         </div>

@@ -8,7 +8,8 @@
                 />
 
                 <div class="toolbar-actions flex items-center flex-wrap gap-2 min-w-0">
-                    <a href="/offline-notes.html" class="inbox-button no-underline">{{ $msg("Offline notes") }}</a>
+                    <UButton to="/offline-notes.html" external color="neutral" variant="outline"
+                        class="h-10 max-mobile:h-11 pointer-coarse:h-11" :label="$msg('Offline notes')" />
                     <TagFilter v-model="activeTag" :items="notes" />
                     <SortDropdown v-model="sortMode" />
                     <ViewSwitcher v-model="viewMode" />
@@ -19,20 +20,13 @@
                         @files="handleNoteUpload"
                     />
 
-                    <button
+                    <UButton
                         type="button"
-                        class="new-note-button h-10 max-mobile:h-11 pointer-coarse:h-11 shrink-0 whitespace-nowrap flex
-                            items-center justify-center gap-2 py-0 px-3 bg-primary text-on-primary border-0 rounded-lg text-sm
-                            font-medium cursor-pointer transition-[background,transform] duration-200 leading-normal
-                            hover:bg-primary/85 hover:-translate-y-px active:translate-y-0"
+                        class="h-10 shrink-0 whitespace-nowrap px-3 max-mobile:h-11 pointer-coarse:h-11"
+                        leading-icon="solar:add-circle-linear"
+                        :label="$msg('New Note')"
                         @click="createNote"
-                    >
-                        <Icon
-                            name="solar:add-circle-bold"
-                            class="new-note-icon block text-lg shrink-0 size-4.5"
-                        />
-                        {{ $msg("New Note") }}
-                    </button>
+                    />
                 </div>
             </div>
         </div>

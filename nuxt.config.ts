@@ -1,5 +1,3 @@
-﻿import tailwindcss from '@tailwindcss/vite'
-
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
 
@@ -7,7 +5,9 @@ export default defineNuxtConfig({
         enabled: true
     },
 
-    modules: ['@nuxt/icon', '@nuxtjs/i18n'],
+    modules: ['@nuxt/icon', '@nuxtjs/i18n', '@nuxt/ui'],
+
+    ui: { colorMode: false, fonts: false },
 
     i18n: {
         defaultLocale: 'en',
@@ -34,7 +34,6 @@ export default defineNuxtConfig({
     },
 
     vite: {
-        plugins: [tailwindcss()],
         esbuild: {
             target: 'es2020'
         }
@@ -66,6 +65,8 @@ export default defineNuxtConfig({
     },
 
     imports: {
+        // Preserve FileJet's undo actions and notification history on its toast composable.
+        imports: [{ name: 'useToast', from: '~/composables/ui/useToast', priority: 10 }],
         dirs: [
             'composables',
             'composables/**',
