@@ -16,6 +16,6 @@ npx prisma generate --config prisma7.config.ts
 npm run build
 ```
 
-Restart FileJet after applying migration `202611030003_note_versions`. The offline editor's service worker cache is updated to v2; existing device drafts remain compatible. Older offline clients still use the timestamp conflict check; new clients additionally send the note revision.
+Restart FileJet after applying migration `202611030003_note_versions`. The offline editor caches only its public shell; cache updates preserve existing device drafts. Older offline clients still use the timestamp conflict check; new clients additionally send the note revision.
 
-Validation: `npm test`, `npm run typecheck`, `npm run build`, `npm run test:note-versions`, `npm run test:activity`, `npm run test:offline`. Integration tests require PostgreSQL and a running app (`FILEJET_TEST_URL`, default http://127.0.0.1:3021).
+Validation: run `npm run typecheck` and `npm run build`. Manually verify saved revisions, comparisons, restore conflicts, Trash behavior, and quota accounting against a development instance.

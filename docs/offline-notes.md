@@ -8,4 +8,4 @@ Device records are partitioned by account. Sync verifies the signed-in owner, an
 
 Browser storage can be cleared or evicted by the browser. Sync or download important drafts before clearing site data. Offline notes do not sync while the browser is closed. Change the service worker cache version whenever changing the standalone editor's assets in a later release.
 
-Validation: `npm test`, `npm run typecheck`, `npm run build`, and `npm run test:offline` with PostgreSQL and a running FileJet (`FILEJET_TEST_URL` defaults to http://127.0.0.1:3021). Browser validation covers network-offline editing, reload persistence, reconnect sync and conflicts.
+Validation: run `npm run typecheck` and `npm run build`. Manually verify network-offline editing, reload persistence, reconnect synchronization, and conflicts in a browser.

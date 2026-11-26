@@ -38,7 +38,7 @@ The application is self-hosted. PostgreSQL stores users and item metadata, while
 - Nested folders, folder uploads in supported browsers, renaming, and moving items.
 - File downloads, folder ZIP downloads, and ZIP downloads of selected items.
 - Image, audio, video, PDF, and text previews for supported formats.
-- Notes with Markdown editing and preview, TXT/Markdown import, and download. Headings, emphasis, lists, links, images, quotes, tables, and code blocks render in note details, Space previews, and public shares. Write/Preview keeps the original Markdown source; raw HTML is displayed as text.
+- Notes with Markdown editing and preview, TXT/Markdown import, and download. Headings, emphasis, lists, links, images, quotes, tables, and code blocks render in note details, quick previews, and public shares. Write/Preview keeps the original Markdown source; raw HTML is displayed as text.
 - Favorites, search, filtering, sorting, pagination, and grid/list views.
 
 ### Desktop and mobile interface
@@ -90,8 +90,6 @@ npm run admin:promote -- EXISTING_USERNAME
 
 Refresh the app to show **Administration → Admin** in navigation. The command requires the server's database access; there is no public bootstrap endpoint.
 
-Run `npm run test:sharing-admin` against a separate test server on port 3018, or set `FILEJET_TEST_URL`. The HTTP/database tests create and clean up temporary accounts and files. Do not point them at an unrelated deployment.
-
 ### Inbox and file requests
 
 - Use **Inbox → Create inbox** to create a named inbox and choose a default approval destination. Open an inbox card to view only the files sent to that inbox; **Edit inbox** updates its name, description, default destination, limits, and expiration while retaining the upload link.
@@ -126,7 +124,7 @@ Files, folders, and notes have an owner-only **Tags** editor in the **Edit** tab
 
 In a file's **Details** or **Edit** tab, use **Version history → Upload new version** to replace its contents while keeping its ID, filename, favorites, and share links. History stays hidden in **Share**. Replacements use resumable uploads and must have the same extension. The previous contents become an owner-only saved version. Download, restore, or permanently delete saved versions from this panel; restoring creates a new current revision and preserves the outgoing contents. Concurrent changes require refreshing the history before retrying.
 
-Saved versions count toward storage, including while the file is in Trash. Restoring from Trash keeps history; permanent deletion of a file or its containing trashed folder removes its saved versions and releases their bytes. A file can retain up to 50 saved versions. Apply `202611010001_file_versions` and regenerate Prisma when updating. With a development server on port 3018 (or `FILEJET_TEST_URL`), run `node --env-file=.env tests/file-versions.integration.mjs` for isolated HTTP/database tests; temporary accounts are cleaned up afterward.
+Saved versions count toward storage, including while the file is in Trash. Restoring from Trash keeps history; permanent deletion of a file or its containing trashed folder removes its saved versions and releases their bytes. A file can retain up to 50 saved versions. Apply `202611010001_file_versions` and regenerate Prisma when updating.
 
 ### Quick preview and interrupted uploads
 
@@ -254,7 +252,7 @@ npx prisma generate --config prisma7.config.ts
 
 ### Database setup
 
-Migration `202611140006_retire_teams_and_todo` archives team and to-do records in PostgreSQL's `retired_collaboration` schema. Former team folders and files appear in their owner's library.
+Team Spaces and Todo List are retired and are no longer available in the interface. Migration `202611140006_retire_teams_and_todo` preserves their historical records in PostgreSQL's `retired_collaboration` schema. Former team folders and files remain in their owner's personal library. Keep the complete migration history when upgrading.
 
 The checked-in migrations extend an existing schema; there is no initial migration that creates all base tables. `prisma migrate deploy` alone cannot initialize an empty database.
 
@@ -354,7 +352,7 @@ File paths resolve relative to the process working directory as `storage/<userId
 | `prisma/` | Database schema and SQL migrations |
 | `prisma7.config.ts` | Prisma CLI configuration |
 | `src/generated/prisma/` | Generated Prisma client |
-| `maintenance/` | Upload recovery tooling |
+| `maintenance/` | Locale generation, administrator bootstrap, and legacy upload recovery |
 | `public/` | Public static assets |
 | `storage/` | Uploaded file contents, excluded from Git |
 
@@ -395,7 +393,7 @@ npm run build
 npm run preview
 ```
 
-The `npm test` and `npm run test:db` scripts reference `tests/`, which is currently excluded from Git and is not included in a fresh clone.
+Use type checking and a production build to validate changes. Automated test suites and their npm commands are not included in this repository.
 
 To recover journaled files left by interrupted uploads, first stop **all** FileJet instances and workers, then run from the project root:
 

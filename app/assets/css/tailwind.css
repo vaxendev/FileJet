@@ -107,15 +107,11 @@
 
 @custom-variant is-invalid (&.invalid);
 
-@custom-variant with-preview (&.with-preview);
-
 @custom-variant grid-pagination (&.grid-pagination);
 
 @custom-variant embedded (&.embedded);
 
 @custom-variant expanded (&.is-expanded);
-
-@custom-variant files-empty (&.files-list-empty);
 
 @custom-variant text-preview (&.text-preview);
 

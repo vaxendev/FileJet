@@ -106,8 +106,7 @@
 
     .items-grid > :nth-child(-n + 12),
     .view-content.grid-view > .file-card:nth-child(-n + 12),
-    .data-view tbody > tr:nth-child(-n + 12),
-    .dashboard-card {
+    .data-view tbody > tr:nth-child(-n + 12) {
         animation: content-appear 180ms ease-out;
     }
 
@@ -117,10 +116,6 @@
 
     .upload-progress-bar.indeterminate {
         animation: upload-pulse 1200ms ease-in-out infinite;
-    }
-
-    .storage-meter::-webkit-progress-value {
-        transition: width 240ms ease-out;
     }
 
     .file-card,

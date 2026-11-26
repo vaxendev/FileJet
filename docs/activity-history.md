@@ -15,4 +15,4 @@ npx prisma generate --config prisma7.config.ts
 
 The application records activity in an awaited Nitro `beforeResponse` hook after a successful operation. History is an operational timeline, not a transaction-coupled security audit: capture/write failures are logged on the server and do not undo a completed user operation. Read requests and failed mutations are excluded.
 
-Validation: `npm test`, `npm run typecheck`, `npm run build`, `npm run test:activity`, `npm run test:offline`, `npm run test:antivirus`. Integration tests need PostgreSQL and a running app; set `FILEJET_TEST_URL` to its origin. Antivirus integration additionally needs real ClamAV with official signatures.
+Validation: run `npm run typecheck` and `npm run build`. Manually verify account-scoped history, filters, pagination, and successful-operation recording against a development instance.

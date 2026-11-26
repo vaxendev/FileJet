@@ -1,20 +1,4 @@
 import { localize } from './messages.ts'
-export async function getDroppedFolderFiles(dataTransfer: DataTransfer): Promise<File[]> {
-    const items = Array.from(dataTransfer.items).filter(item => item.kind === 'file')
-    const entries = items.map(item => item.webkitGetAsEntry?.())
-
-    // Capture the browser's entries before awaiting: drop data is only available during the event.
-    if (!entries.length || entries.some(entry => !entry?.isDirectory)) {
-        const files = Array.from(dataTransfer.files)
-
-        if (files.length && files.every(file => file.webkitRelativePath?.includes('/')))
-            return files
-
-        throw new Error(localize("Drop folders here. Use the Files page to upload individual files."))
-    }
-
-    return readFolderEntries(entries as FileSystemEntry[])
-}
 
 async function readFolderEntries(entries: FileSystemEntry[]): Promise<File[]> {
     const files: File[] = []

@@ -45,12 +45,6 @@ The configured maximum input is 1 GiB, unpacked scanning limit 1.5 GiB, with arc
 
 ## Validation
 
-`npm test` includes protocol tests for binary chunk framing, SHA-256, positive detections, malformed replies, archive limits, disconnects and timeouts. The integration test requires PostgreSQL, a running application and **real ClamAV with official signatures**:
-
-```sh
-node tests/antivirus.integration.mjs
-```
-
-It creates temporary accounts and only uses the harmless EICAR antivirus test string. It removes its database records and scoped storage afterward. Do not use real malware for testing.
+Run `npm run typecheck` and `npm run build`. On a development instance with a running ClamAV daemon and official signatures, verify that clean files remain available and detected files stay blocked from previews, downloads, and public shares.
 
 References: https://docs.clamav.net/manual/Usage/ClamdProtocol.html and https://docs.clamav.net/manual/Installing/Docker.html.

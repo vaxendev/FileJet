@@ -11,5 +11,3 @@ export const noteSchema = z.object({
     // Leading indentation and trailing spaces carry meaning in Markdown.
     content: z.string().refine(value => value.trim().length > 0, messageKey("Content is required."))
 })
-
-export type NoteInput = z.infer<typeof noteSchema>

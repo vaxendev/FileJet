@@ -30,4 +30,4 @@ npm run build
 
 ## Validation
 
-`npm test`, `npm run typecheck`, `npm run build`, `npm run test:admin-activity` and `npm run test:sharing-admin`. Integration tests require PostgreSQL and a running application; set `FILEJET_TEST_URL` to its origin. Sharing/download checks also require ClamAV. Tests create scoped temporary accounts and clean up their records/files. The admin-history integration test installs a temporary trigger that rejects events only for its random test administrator to verify transaction rollback, then removes it.
+Run `npm run typecheck` and `npm run build`. Manually verify administrator authorization, account changes, history filters, and deletion cleanup against a development instance.

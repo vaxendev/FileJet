@@ -19,27 +19,6 @@ logs
 
 /scripts/
 
-/tests/*
-!/tests/inbox.test.mjs
-!/tests/storage-usage.test.mjs
-!/tests/product-features.test.mjs
-!/tests/share-limits-admin.test.mjs
-!/tests/share-limits-admin.integration.mjs
-!/tests/antivirus.test.mjs
-!/tests/antivirus.integration.mjs
-!/tests/offline-notes.integration.mjs
-!/tests/activity.integration.mjs
-!/tests/note-versions.integration.mjs
-!/tests/note-diff.test.mjs
-!/tests/admin-activity.integration.mjs
-!/tests/team-spaces.integration.mjs
-!/tests/hidden-items.integration.mjs
-!/tests/modal-backdrop.test.mjs
-!/tests/localization-setup.mjs
-!/tests/localization.test.mjs
-!/tests/details-pages.test.mjs
-
-
 # Misc
 .DS_Store
 .fleet

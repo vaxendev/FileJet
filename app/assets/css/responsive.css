@@ -100,17 +100,6 @@
     overflow-wrap: anywhere;
 }
 
-@media (max-width: 1500px) {
-    .dashboard-grid {
-        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    }
-
-    .quick-action-card {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
 @media (max-width: 1100px) {
     .user-layout {
         padding-top: max(0.75rem, env(safe-area-inset-top));
@@ -188,46 +177,12 @@
         overflow: visible;
     }
 
-    .dashboard-grid {
-        grid-template-columns: minmax(0, 1fr);
-        flex: none;
-    }
-
-    .dashboard-left, .dashboard-right, .dashboard-card {
-        height: auto;
-        min-height: 0;
-    }
-
-    .dashboard-page .files-list {
-        flex: none;
-        overflow: visible;
-    }
-
-    .dashboard-right {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.75rem;
-    }
-
-    .storage-types {
-        margin-top: 1.5rem;
-    }
-
     .navigation-sheet :is(a, .logout-btn) {
         min-height: 2.75rem;
     }
 }
 
 @media (max-width: 800px) {
-    .dashboard-right {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .quick-action-card {
-        flex-direction: row;
-        align-items: center;
-    }
-
     .contents-toolbar > .search-box {
         flex-basis: 100%;
         max-width: none;
@@ -324,12 +279,6 @@
         padding-inline: 0.5rem;
     }
 
-    .sort-menu {
-        right: auto;
-        left: 0;
-        max-width: calc(100vw - 2rem);
-    }
-
     .shared-status-controls {
         width: 100%;
     }
@@ -371,66 +320,6 @@
         flex-wrap: wrap;
         font-size: 0.6875rem;
         row-gap: 0.125rem;
-    }
-
-    .stats-grid {
-        gap: 0.5rem;
-    }
-
-    .stat-card {
-        min-width: 0;
-        min-height: 6rem;
-        padding: 0.75rem 0.5rem;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .stat-icon {
-        width: 2.25rem;
-        height: 2.25rem;
-        font-size: 1.25rem;
-        flex-shrink: 0;
-    }
-
-    .stat-info {
-        min-width: 0;
-        text-align: center;
-    }
-
-    .stat-info strong {
-        font-size: 1.25rem;
-        overflow-wrap: anywhere;
-    }
-
-    .stat-info span {
-        font-size: 0.75rem;
-    }
-
-    .quick-action-card {
-        padding: 0.75rem;
-        gap: 0.5rem;
-    }
-
-    .quick-action-icon {
-        width: 2.25rem;
-        height: 2.25rem;
-        font-size: 1.25rem;
-    }
-
-    .quick-action-title {
-        font-size: 0.8125rem;
-    }
-
-    .dashboard-page .files-list {
-        padding-inline: 0.75rem;
-    }
-
-    .dashboard-page .file-size {
-        display: none;
-    }
-
-    .file-right {
-        margin-left: 0.5rem;
     }
 
     .file-page .preview-card {
@@ -777,7 +666,7 @@
         min-height: 2.75rem;
     }
 
-    :is(.menu-item, .sort-option, .detail-tabs button, .settings-button, .account-save, .account-cancel) {
+    :is(.menu-item, .detail-tabs button, .settings-button, .account-save, .account-cancel) {
         min-height: 2.75rem;
     }
 
