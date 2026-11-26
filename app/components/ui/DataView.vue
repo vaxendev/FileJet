@@ -1,6 +1,6 @@
 <template>
     <div
-        class="data-view relative flex flex-col flex-1 min-w-0 min-h-0 rounded-3xl
+        class="data-view relative flex flex-col flex-1 min-w-0 min-h-0 rounded-panel
             with-list-pagination:rounded-bl-none with-list-pagination:rounded-br-none"
         :class="{ 'drag-active': isDragging }"
         @dragenter="dragenter"

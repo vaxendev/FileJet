@@ -35,6 +35,7 @@
 @theme {
     --font-sans: Inter, sans-serif;
     --font-mono: monospace;
+    --radius-panel: 1.5rem;
     --color-surface: #1a1a1d;
     --color-canvas: #121214;
     --color-divider: #29292e;
@@ -155,10 +156,13 @@
 
     * {
         @apply font-sans;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-scrollbar) transparent;
     }
 
     body {
         @apply m-0 p-0;
+        color-scheme: inherit;
     }
 
     button, input[type="button"], input[type="submit"], input[type="reset"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), textarea, select {
